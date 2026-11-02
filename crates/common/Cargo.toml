@@ -96,6 +96,8 @@ test_mode = []
 dev_mode = []
 enterprise = []
 foundation = []
+s3 = []
+nats = []
 
 [dev-dependencies]
 tokio = { version = "1.53", features = ["full"] }

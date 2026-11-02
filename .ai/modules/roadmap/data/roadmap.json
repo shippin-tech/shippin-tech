@@ -63,7 +63,7 @@
     {
       "id": "deployable-product",
       "statement": "The scale image runs as its own multi-tenant product: two nodes share FoundationDB, one S3 bucket, and NATS, and two tenants share that deployment. JMAP, CalDAV, and CardDAV are up so another product can connect. That image is what shippin.cloud will pull.",
-      "status": "not_started",
+      "status": "in_progress",
       "exit_proof": "A container built from Dockerfile.fdb, started from resources/scale, returns tenant A's message from the second node after it was appended on the first, and tenant B cannot fetch it. The same process serves JMAP, CalDAV, and CardDAV.",
       "depends_on": ["two-node-shared"]
     },

@@ -15,6 +15,8 @@ Make the scale image a deployable multi-tenant product. `Dockerfile.fdb`, starte
 
 The engine already has this groundwork in `crates/common/src/auth/mod.rs`: a tenant has roles, quotas, and permissions; a domain and an account each carry `id_tenant`.
 
+The scale compose file sets `shippin.tech_SCALE_S3_ENDPOINT`, `shippin.tech_SCALE_S3_ACCESS_KEY`, `shippin.tech_SCALE_S3_SECRET_KEY`, and `shippin.tech_SCALE_NATS_ADDRESS`. On first boot the scale binary writes those into the existing BlobStore and Coordinator registry singletons when they are empty. A one-node build without those variables does not write them.
+
 Do not add, in this phase:
 
 - a license choice in `Cargo.toml` or a `LICENSE` file
