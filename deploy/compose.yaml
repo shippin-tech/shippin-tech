@@ -1,0 +1,32 @@
+name: shippin-test
+services:
+  mail:
+    image: ${SHIPPIN_IMAGE:?Set SHIPPIN_IMAGE to a published image digest}
+    restart: unless-stopped
+    hostname: ${MAIL_HOSTNAME:?Set a unique MAIL_HOSTNAME for this node}
+    environment:
+      shippin.tech_HOSTNAME: ${MAIL_HOSTNAME}
+      shippin.tech_SCALE_S3_ENDPOINT: ${S3_ENDPOINT:?Set S3_ENDPOINT}
+      shippin.tech_SCALE_S3_ACCESS_KEY: ${S3_ACCESS_KEY:?Set S3_ACCESS_KEY}
+      shippin.tech_SCALE_S3_SECRET_KEY: ${S3_SECRET_KEY:?Set S3_SECRET_KEY}
+      shippin.tech_SCALE_S3_BUCKET: ${S3_BUCKET:?Set S3_BUCKET}
+      shippin.tech_SCALE_S3_REGION: ${S3_REGION:-us-east-1}
+      shippin.tech_SCALE_NATS_ADDRESS: ${NATS_ADDRESS:?Set NATS_ADDRESS}
+    volumes:
+      - ./config.json:/etc/shippin.tech/config.json:ro
+      - ./fdb.cluster:/var/fdb/fdb.cluster:ro
+      - node-data:/var/lib/shippin.tech
+    ports:
+      - "${HTTP_BIND:-127.0.0.1}:8080:8080"
+      - "${MAIL_BIND:-127.0.0.1}:25:25"
+      - "${MAIL_BIND:-127.0.0.1}:465:465"
+      - "${MAIL_BIND:-127.0.0.1}:587:587"
+      - "${MAIL_BIND:-127.0.0.1}:993:993"
+      - "${HTTPS_BIND:-127.0.0.1}:443:443"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+volumes:
+  node-data:

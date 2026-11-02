@@ -1,0 +1,69 @@
+# Pull-based test deployments
+
+Requires Linux amd64, Docker Engine, Compose v2 with `up --wait`, and
+util-linux (`flock`). Each server runs one mail node from a prebuilt image.
+
+## Initial setup
+
+1. Commit and push the workflow to your repository. Enable Actions and
+   allow `GITHUB_TOKEN` to write packages. Push to `main`, or manually run
+   **Test container build**. Download its `server-bundle` artifact and extract
+   the included tarball into a dedicated directory on each host.
+2. Provision persistent FoundationDB 7.4, an S3 bucket and NATS reachable
+   from every node's container. This bundle does not provision infrastructure.
+   Do not use `resources/scale/docker-compose.yml` for persistent servers:
+   it stores FoundationDB and MinIO data in temporary memory-backed storage.
+3. Copy `server.env.example` to `server.env`. Set real endpoints/credentials
+   and a unique, stable `MAIL_HOSTNAME` on each host. Nodes in one cluster
+   share FoundationDB, S3 and NATS. Separate test clusters need separate data.
+   S3/NATS environment variables seed empty registry singletons on first
+   boot; editing them later does not overwrite existing registry settings.
+4. Copy the cluster's `fdb.cluster` alongside `config.json`. Its advertised
+   addresses must be reachable inside containers on every host. Ensure both
+   files are readable by container UID 2000. Run `chmod 600 server.env`.
+5. For private GHCR packages, run `docker login ghcr.io -u YOUR_GITHUB_USER`
+   using a token with package read access (`read:packages`, plus organization
+   authorization if required).
+6. Run the exact digest command shown in the successful workflow summary:
+
+   ```sh
+   bash update.sh ghcr.io/OWNER/REPO-scale@sha256:DIGEST
+   ```
+
+The actual image name is lowercase. A `:sha-<full-40-character-commit>` tag
+is also accepted. Use the same digest on all servers. No `latest` tag is used.
+
+Ports bind to loopback initially. Inspect bootstrap output and complete the
+application's accounts/domains/listeners setup before exposing the server:
+
+```sh
+docker compose --env-file server.env logs --tail 100 mail
+docker compose --env-file server.env ps
+```
+
+Set `MAIL_BIND` and `HTTPS_BIND` to the desired server interface and rerun the
+update command when ready. Keep 8080 private. Configure domain DNS, firewall,
+certificates and mail delivery settings separately. Health checks measure
+process liveness; verify actual mail delivery, shared mailbox access and
+tenant isolation before promoting a build.
+
+## Updates and recovery
+
+Review new deployment bundles for configuration changes without overwriting
+your `server.env`, `fdb.cluster` or named volume. Run the new digest command
+on one server, validate it, then update the remaining servers. Each update
+briefly interrupts that node's connections; this is not zero-downtime rollout.
+
+The script pulls first, waits for container health, then saves the successful
+image in `server.env`. It retains `server.env.previous` and appends to
+`deployments.log`. A failed health check leaves the new container running
+for inspection but does not save the failed image selection.
+
+Redeploy a previous digest explicitly with `bash update.sh <previous-image>`.
+There is no automatic rollback: old binaries may not understand data written
+by new builds. Back up FoundationDB and S3 consistently before schema changes.
+Restoring an image does not restore data. Preserve the node-data volume and
+do not run `docker compose down -v` during updates.
+
+References: [GHCR publishing](https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images)
+and [Compose health waiting](https://docs.docker.com/reference/cli/docker/compose/up/).

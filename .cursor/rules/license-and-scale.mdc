@@ -9,7 +9,9 @@ alwaysApply: true
 
 The project license is the Business Source License 1.1. Say so in `crates/main/Cargo.toml` (`license = "BUSL-1.1"`) and the root `LICENSE` file.
 
-BSL is source-available. The Additional Use Grant allows production use except offering a Competing Service substantially similar to shippin.cloud. On the Change Date in `LICENSE` (2030-11-01), the Change License is Apache License, Version 2.0.
+The choice is last. First the scale image runs as its own deployable product. Then shippin.cloud hosts that same image. Only then does `Cargo.toml` and a `LICENSE` file record the choice.
+
+BSL is source-available. It can limit offering the software as a competing hosted service until a published conversion date, then it becomes a stated open license. A true open-source license cannot reserve commercial hosting for shippin.cloud.
 
 Do not mark the project AGPL.
 

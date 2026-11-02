@@ -62,11 +62,7 @@ pdnsutil set-meta shippin.tech.test TSIG-ALLOW-DNSUPDATE shippin.tech-update-key
 pdnsutil set-meta shippin.tech.test ALLOW-DNSUPDATE-FROM '0.0.0.0/0'
 "#;
 
-pub fn foundationdb_cluster_file() -> &'static str {
-    "/tmp/shippin.tech-test-fdb.cluster"
-}
-
-pub async fn ensure_foundationdb() {
+pub async fn ensure_foundationdb() -> String {
     let container = FOUNDATIONDB
         .get_or_init(|| async {
             GenericImage::new("foundationdb/foundationdb", "7.4.6")
@@ -99,34 +95,33 @@ pub async fn ensure_foundationdb() {
         tokio::time::sleep(Duration::from_secs(2)).await;
     }
 
-    // Host processes talk to the published port, not the container bridge IP.
-    let mut result = container
-        .exec(
-            ExecCommand::new(["cat", "/var/fdb/fdb.cluster"])
-                .with_cmd_ready_condition(CmdWaitFor::exit()),
-        )
-        .await
-        .expect("Failed to read FoundationDB cluster file");
-    let raw = String::from_utf8_lossy(&result.stdout_to_vec().await.unwrap_or_default())
-        .trim()
-        .to_string();
-    let host_cluster = raw
-        .rsplit_once('@')
-        .map(|(desc, _)| format!("{desc}@127.0.0.1:4500"))
-        .unwrap_or(raw);
-    std::fs::write(foundationdb_cluster_file(), format!("{host_cluster}\n")).unwrap_or_else(|err| {
-        panic!("Failed to write {}: {err}", foundationdb_cluster_file())
-    });
+    let raw = exec_output(container, ["cat", "/var/fdb/fdb.cluster"]).await;
+    let contents = raw.trim();
+    if contents.is_empty() {
+        panic!("FoundationDB cluster file was empty");
+    }
+    let path = std::env::temp_dir().join("shippin-tech-fdb.cluster");
+    std::fs::write(&path, format!("{contents}\n"))
+        .expect("Failed to write FoundationDB cluster file");
+    path.to_string_lossy().into_owned()
 }
 
 async fn fdbcli(container: &ContainerAsync<GenericImage>, command: &str) -> String {
+    exec_output(
+        container,
+        ["fdbcli", "--exec", command, "--timeout", "5"],
+    )
+    .await
+}
+
+async fn exec_output(
+    container: &ContainerAsync<GenericImage>,
+    command: impl IntoIterator<Item = impl Into<String>>,
+) -> String {
     let mut result = container
-        .exec(
-            ExecCommand::new(["fdbcli", "--exec", command, "--timeout", "5"])
-                .with_cmd_ready_condition(CmdWaitFor::exit()),
-        )
+        .exec(ExecCommand::new(command).with_cmd_ready_condition(CmdWaitFor::exit()))
         .await
-        .expect("Failed to exec fdbcli");
+        .expect("Failed to exec in container");
     let stdout = result.stdout_to_vec().await.unwrap_or_default();
     let stderr = result.stderr_to_vec().await.unwrap_or_default();
     format!(
@@ -239,7 +234,7 @@ pub async fn ensure_nats() {
 pub async fn ensure_minio() {
     MINIO
         .get_or_init(|| async {
-            GenericImage::new("elestio/minio", "latest")
+            GenericImage::new("cgr.dev/chainguard/minio", "latest")
                 .with_env_var("MINIO_ROOT_USER", "minioadmin")
                 .with_env_var("MINIO_ROOT_PASSWORD", "minioadmin")
                 .with_cmd(["server", "/data", "--console-address", ":9001"])

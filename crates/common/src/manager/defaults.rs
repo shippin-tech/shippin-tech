@@ -558,5 +558,207 @@ async fn insert_safe_defaults(bp: &mut Bootstrap) -> trc::Result<()> {
         }
     }
 
+    #[cfg(all(feature = "s3", feature = "nats"))]
+    insert_missing_scale_layout(bp).await?;
+
     Ok(())
+}
+
+/// The scale image's environment names the S3 bucket and the NATS address.
+/// Both are required. A partial set is not written, and an existing singleton
+/// is left as it is so a second node does not replace the first node's record.
+#[cfg(all(feature = "s3", feature = "nats"))]
+#[derive(Debug, PartialEq, Eq)]
+pub enum ScaleLayoutEnv {
+    Absent,
+    Incomplete,
+    Ready(ScaleLayout),
+}
+
+#[cfg(all(feature = "s3", feature = "nats"))]
+#[derive(Debug, PartialEq, Eq)]
+pub struct ScaleLayout {
+    pub endpoint: String,
+    pub access_key: String,
+    pub secret_key: String,
+    pub bucket: String,
+    pub region: String,
+    pub nats_address: String,
+}
+
+#[cfg(all(feature = "s3", feature = "nats"))]
+pub fn scale_layout_from_env() -> ScaleLayoutEnv {
+    scale_layout_from_values(
+        std::env::var("shippin.tech_SCALE_S3_ENDPOINT").ok(),
+        std::env::var("shippin.tech_SCALE_S3_ACCESS_KEY").ok(),
+        std::env::var("shippin.tech_SCALE_S3_SECRET_KEY").ok(),
+        std::env::var("shippin.tech_SCALE_NATS_ADDRESS").ok(),
+        std::env::var("shippin.tech_SCALE_S3_BUCKET").ok(),
+        std::env::var("shippin.tech_SCALE_S3_REGION").ok(),
+    )
+}
+
+#[cfg(all(feature = "s3", feature = "nats"))]
+pub fn scale_layout_from_values(
+    endpoint: Option<String>,
+    access_key: Option<String>,
+    secret_key: Option<String>,
+    nats_address: Option<String>,
+    bucket: Option<String>,
+    region: Option<String>,
+) -> ScaleLayoutEnv {
+    let any = endpoint.is_some()
+        || access_key.is_some()
+        || secret_key.is_some()
+        || nats_address.is_some();
+    match (endpoint, access_key, secret_key, nats_address) {
+        (Some(endpoint), Some(access_key), Some(secret_key), Some(nats_address)) => {
+            ScaleLayoutEnv::Ready(ScaleLayout {
+                endpoint,
+                access_key,
+                secret_key,
+                bucket: bucket.unwrap_or_else(|| "shippin.tech".to_string()),
+                region: region.unwrap_or_else(|| "eu-central-1".to_string()),
+                nats_address,
+            })
+        }
+        _ if any => ScaleLayoutEnv::Incomplete,
+        _ => ScaleLayoutEnv::Absent,
+    }
+}
+
+#[cfg(all(feature = "s3", feature = "nats"))]
+async fn insert_missing_scale_layout(bp: &mut Bootstrap) -> trc::Result<()> {
+    let layout = match scale_layout_from_env() {
+        ScaleLayoutEnv::Absent => return Ok(()),
+        ScaleLayoutEnv::Incomplete => {
+            trc::event!(
+                Server(trc::ServerEvent::Startup),
+                Details = "Scale layout env is incomplete. Set shippin.tech_SCALE_S3_ENDPOINT, shippin.tech_SCALE_S3_ACCESS_KEY, shippin.tech_SCALE_S3_SECRET_KEY, and shippin.tech_SCALE_NATS_ADDRESS together."
+            );
+            return Ok(());
+        }
+        ScaleLayoutEnv::Ready(layout) => layout,
+    };
+
+    if bp.registry.count_object(ObjectType::BlobStore).await? == 0 {
+        let object = BlobStore::S3(S3Store {
+            access_key: PublicStringOptional::Value(PublicStringValue {
+                value: layout.access_key,
+            }),
+            bucket: layout.bucket,
+            region: S3StoreRegion::Custom(S3StoreCustomRegion {
+                custom_endpoint: layout.endpoint,
+                custom_region: layout.region,
+            }),
+            secret_key: SecretKeyOptional::Value(SecretKeyValue {
+                secret: layout.secret_key,
+            }),
+            allow_invalid_certs: true,
+            ..Default::default()
+        });
+        let result = bp
+            .registry
+            .write(RegistryWrite::insert(&object.into()))
+            .await?;
+        if !matches!(result, RegistryWriteResult::Success(_))
+            && bp.registry.count_object(ObjectType::BlobStore).await? == 0
+        {
+            bp.build_error(
+                ObjectType::BlobStore.singleton(),
+                format!("Failed to insert scale blob store: {result}"),
+            );
+        }
+    }
+
+    if bp.registry.count_object(ObjectType::Coordinator).await? == 0 {
+        let object = Coordinator::Nats(NatsCoordinator {
+            addresses: Map::new(vec![layout.nats_address]),
+            use_tls: false,
+            ..Default::default()
+        });
+        let result = bp
+            .registry
+            .write(RegistryWrite::insert(&object.into()))
+            .await?;
+        if !matches!(result, RegistryWriteResult::Success(_))
+            && bp.registry.count_object(ObjectType::Coordinator).await? == 0
+        {
+            bp.build_error(
+                ObjectType::Coordinator.singleton(),
+                format!("Failed to insert scale coordinator: {result}"),
+            );
+        }
+    }
+
+    Ok(())
+}
+
+#[cfg(all(test, feature = "s3", feature = "nats"))]
+mod scale_layout_env_tests {
+    use super::{ScaleLayoutEnv, scale_layout_from_values};
+
+    fn values(
+        endpoint: Option<&str>,
+        access_key: Option<&str>,
+        secret_key: Option<&str>,
+        nats_address: Option<&str>,
+        bucket: Option<&str>,
+        region: Option<&str>,
+    ) -> ScaleLayoutEnv {
+        scale_layout_from_values(
+            endpoint.map(str::to_string),
+            access_key.map(str::to_string),
+            secret_key.map(str::to_string),
+            nats_address.map(str::to_string),
+            bucket.map(str::to_string),
+            region.map(str::to_string),
+        )
+    }
+
+    #[test]
+    fn scale_layout_env_is_all_or_nothing() {
+        assert_eq!(
+            values(None, None, None, None, None, None),
+            ScaleLayoutEnv::Absent
+        );
+        assert_eq!(
+            values(Some("http://minio:9000"), None, None, None, None, None),
+            ScaleLayoutEnv::Incomplete
+        );
+
+        match values(
+            Some("http://minio:9000"),
+            Some("minioadmin"),
+            Some("minioadmin"),
+            Some("nats:4222"),
+            None,
+            None,
+        ) {
+            ScaleLayoutEnv::Ready(layout) => {
+                assert_eq!(layout.endpoint, "http://minio:9000");
+                assert_eq!(layout.access_key, "minioadmin");
+                assert_eq!(layout.secret_key, "minioadmin");
+                assert_eq!(layout.bucket, "shippin.tech");
+                assert_eq!(layout.region, "eu-central-1");
+                assert_eq!(layout.nats_address, "nats:4222");
+            }
+            other => panic!("expected a complete layout, got {other:?}"),
+        }
+
+        match values(
+            Some("http://minio:9000"),
+            Some("minioadmin"),
+            Some("minioadmin"),
+            Some("nats:4222"),
+            Some("mail"),
+            Some("us-east-1"),
+        ) {
+            ScaleLayoutEnv::Ready(layout) => {
+                assert_eq!(layout.bucket, "mail");
+                assert_eq!(layout.region, "us-east-1");
+            }
+            other => panic!("expected a complete layout, got {other:?}"),
+        }
+    }
 }

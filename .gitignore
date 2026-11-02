@@ -17,3 +17,8 @@ run.sh
 !.cursor/rules/**
 !.cursor/hooks.json
 CLAUDE.md
+deploy/server.env
+deploy/server.env.*
+!deploy/server.env.example
+deploy/fdb.cluster
+deploy/deployments.log

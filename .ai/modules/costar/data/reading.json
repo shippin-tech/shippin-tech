@@ -1,8 +1,8 @@
 {
-  "context": "The assessment plan suite_readiness_assess is approved. Engine scale phases are marked done; shippin.cloud, zoho-client, and license-choice are open. Docker and FoundationDB clients are required to re-observe scale_two_nodes.",
-  "objective": "Evidence-back two-node-shared, choose BSL so shippin.cloud can reserve hosted use, set zoho-client as the next product phase, and record that collaborative Docs stays out of scope until mail calendar contacts and admin exist.",
-  "style": "Operating-module updates, license file, product-boundary edit, and a journaled two-node proof.",
+  "context": "The maintainer said the deployable product should be multi-tenant, able to connect to other products, and have the groundwork to scale. Zoho and Google Docs capabilities were not written down.",
+  "objective": "Record the suite map and make the next image proof two isolated tenants with JMAP, CalDAV, and CardDAV up.",
+  "style": "A short map in the product rule and three roadmap objectives.",
   "tone": "Direct.",
-  "audience": "The maintainer and the next coding agent.",
-  "response": "scale_two_nodes observed and journaled, license no longer deciding, zoho-client in progress, Docs deferred in the roadmap, organize.py --check exits 0."
+  "audience": "The next coding agent and the maintainer.",
+  "response": "Mail, calendar, contacts, and tenants stay in this engine. Docs, sheets, slides, drive, chat, and meetings are later products that connect."
 }

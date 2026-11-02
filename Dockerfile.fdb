@@ -47,13 +47,13 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef AS builder
 COPY --from=planner /app/recipe.json recipe.json
-RUN cargo chef cook --release --recipe-path recipe.json
+RUN cargo chef cook --release -p shippin-tech --no-default-features --features "scale,enterprise" --recipe-path recipe.json
 COPY Cargo.toml .
 COPY Cargo.lock .
 COPY crates/ crates/
 COPY resources/ resources/
 COPY tests/ tests/
-RUN cargo build -p shippin-tech --no-default-features --features "scale,enterprise" --release
+RUN cargo build --locked -p shippin-tech --no-default-features --features "scale,enterprise" --release
 
 FROM debian:trixie-slim AS runtime
 
@@ -75,6 +75,6 @@ VOLUME ["/etc/shippin.tech", "/var/lib/shippin.tech"]
 EXPOSE	443 25 110 587 465 143 993 995 4190 8080
 ENV shippin.tech_HEALTHCHECK_URL=https://127.0.0.1:443/healthz/live
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD curl -fsSk -H "X-Forwarded-For: 127.0.0.1" "$shippin.tech_HEALTHCHECK_URL" || curl -fsS -H "X-Forwarded-For: 127.0.0.1" http://127.0.0.1:8080/healthz/live || exit 1
+    CMD curl -fsSk -H "X-Forwarded-For: 127.0.0.1" "$(printenv shippin.tech_HEALTHCHECK_URL)" || curl -fsS -H "X-Forwarded-For: 127.0.0.1" http://127.0.0.1:8080/healthz/live || exit 1
 ENTRYPOINT ["/usr/local/bin/shippin.tech"]
 CMD ["--config", "/etc/shippin.tech/config.json"]

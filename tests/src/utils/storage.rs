@@ -84,11 +84,9 @@ pub async fn build_data_store(typ: &str, path: &str) -> DataStore {
             ..Default::default()
         }),
         DataStoreType::FoundationDb => {
-            crate::utils::containers::ensure_foundationdb().await;
+            let cluster_file = crate::utils::containers::ensure_foundationdb().await;
             DataStore::FoundationDb(FoundationDbStore {
-                cluster_file: Some(
-                    crate::utils::containers::foundationdb_cluster_file().to_string(),
-                ),
+                cluster_file: Some(cluster_file),
                 ..Default::default()
             })
         }
