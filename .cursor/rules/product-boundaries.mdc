@@ -49,6 +49,12 @@ This engine already covers the mail, calendar, contacts, and directory row. Othe
 | Tasks | ToDo | Tasks | Later product on the groupware data that already exists |
 | Forms, sites, keep, vault, social | Vault, Connect | Forms, Sites, Keep, Vault | Separate products |
 
-## When the Zoho pass starts
+## When the client pass starts
 
-Map the hosted experience onto JMAP, CalDAV, CardDAV, and the directory that already exist. Documents, spreadsheets, slides, drive, chat, and meetings stay separate products that connect to this server. Do not start that map until shippin.cloud hosts the deployable image.
+Do not start this pass until shippin.cloud hosts the deployable image.
+
+The first clients are a web mailbox and the same client at phone width. Both use JMAP for mail, CalDAV for calendar, and CardDAV for contacts. Push uses the web-push and email-push capabilities that already exist. This is one client family, not a second mail server.
+
+The control plane is the directory, SCIM, and registry that already exist. It is available only for white-label and enterprise licensing. It is not a Go service, and it is not part of the open mailbox client. The license field stays `deciding` until the license phase. Do not invent a license checker that accepts keys.
+
+After that mail, calendar, and contacts functionality works, documents are a separate product that connects to this server. After documents, photos sync and phone backup are a client on the file nodes that already exist (`urn:ietf:params:jmap:filenode`). They are not a new store and not a drive product inside this phase.

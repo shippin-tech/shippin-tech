@@ -76,10 +76,31 @@
     },
     {
       "id": "zoho-client",
-      "statement": "Map mail, calendar, and contacts onto JMAP, CalDAV, CardDAV, and the directory. Documents, spreadsheets, slides, drive, chat, and meetings are separate products that connect to this server.",
+      "statement": "A web mailbox and the same client at phone width use JMAP, CalDAV, CardDAV, and the directory.",
       "status": "not_started",
-      "exit_proof": "A client uses the existing JMAP, CalDAV, CardDAV, and directory surfaces. No document editor, chat service, or second mail server is added in this repository.",
+      "exit_proof": "The same mailbox is read in a desktop-width browser and in a phone-width browser through JMAP. Calendar and contacts use CalDAV and CardDAV. No editor and no second mail server are added.",
       "depends_on": ["shippin-cloud"]
+    },
+    {
+      "id": "enterprise-control",
+      "statement": "The control plane is the existing directory, SCIM, and registry, and it is available only for white-label and enterprise licensing.",
+      "status": "not_started",
+      "exit_proof": "A white-label or enterprise deployment can manage tenants, domains, and accounts through the existing directory. The open mailbox client has no control plane. Cargo.toml license is no longer deciding, and LicenseKey::new still does not accept a forged key.",
+      "depends_on": ["license-choice"]
+    },
+    {
+      "id": "docs",
+      "statement": "Documents are a separate product that connects to this server after the mailbox client works.",
+      "status": "not_started",
+      "exit_proof": "A document product reads and writes through the existing store and HTTP surfaces. This repository does not gain a document editor.",
+      "depends_on": ["zoho-client"]
+    },
+    {
+      "id": "photos-phone",
+      "statement": "Photos sync and phone backup are a client on the file nodes that already exist.",
+      "status": "not_started",
+      "exit_proof": "A photo and a phone-backup blob stored through urn:ietf:params:jmap:filenode on one node are read back on the other node for the same tenant. No new store is added.",
+      "depends_on": ["docs"]
     },
     {
       "id": "license-choice",
