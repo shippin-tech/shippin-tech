@@ -1,6 +1,0 @@
-{
-  "id": "directory",
-  "a2ui": "Directory",
-  "variants": ["idle", "empty", "list", "error"],
-  "rust": "crates/directory"
-}

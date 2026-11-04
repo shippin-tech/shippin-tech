@@ -1,6 +1,0 @@
-{
-  "id": "scim",
-  "a2ui": "Scim",
-  "variants": ["idle", "loaded", "error"],
-  "rust": "crates/scim"
-}
