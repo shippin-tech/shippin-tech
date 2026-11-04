@@ -1,0 +1,6 @@
+{
+  "id": "file",
+  "a2ui": "File",
+  "variants": ["list"],
+  "rust": "crates/jmap/src/file"
+}

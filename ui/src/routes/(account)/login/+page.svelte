@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import { authBody, postAuth, type AuthFields, type OAuthQuery } from '$lib/adapter/auth';
 	import Login from '$lib/catalog/login/Login.svelte';
 	import type { LoginVariant } from '$lib/catalog/login/variants';
@@ -9,20 +10,12 @@
 	const missingRedirect = !device && !params.get('redirect_uri');
 
 	let variant = $state<LoginVariant>(device ? 'device' : 'password');
-	let title = $state(device ? 'Authorize device' : missingRedirect ? 'Sign in with an app' : 'Sign in');
+	let title = $state(device ? 'Authorize device' : 'Sign in');
 	let subtitle = $state(
-		device
-			? 'Sign in to approve this device.'
-			: missingRedirect
-				? 'This page is opened automatically by your mail, calendar or contacts app to authorize access to your account.'
-				: 'Enter your credentials to continue'
+		device ? 'Sign in to approve this device.' : 'Enter your credentials to continue'
 	);
-	let alert = $state(
-		missingRedirect
-			? 'This sign-in page cannot be used directly. Please start the sign-in from your app instead. (The required "redirect_uri" parameter is missing.)'
-			: ''
-	);
-	let alertKind = $state<'' | 'error' | 'success'>(missingRedirect ? 'error' : '');
+	let alert = $state('');
+	let alertKind = $state<'' | 'error' | 'success'>('');
 	let pending = $state(false);
 	let username = $state(params.get('login_hint') ?? '');
 	let deviceCode = $state(device ? (params.get('code') ?? '') : '');
@@ -37,7 +30,7 @@
 		codeChallengeMethod: params.get('code_challenge_method'),
 		resource: params.getAll('resource')
 	});
-	let closed = $state(missingRedirect);
+	let closed = $state(false);
 
 	const failure = 'Temporary server failure. If the problem persists, contact your administrator.';
 
@@ -56,6 +49,10 @@
 
 	async function onsubmit(fields: AuthFields) {
 		if (closed) return;
+		if (missingRedirect) {
+			await goto('/mail');
+			return;
+		}
 		if (variant === 'otp') {
 			if (!fields.otp || !last) {
 				variant = device ? 'device' : 'password';
@@ -117,4 +114,4 @@
 	}
 </script>
 
-<Login {variant} {title} {subtitle} {alert} {alertKind} {pending} {closed} bind:username bind:deviceCode {onsubmit} />
+<Login {variant} {title} {subtitle} {alert} {alertKind} {pending} {closed} submitLabel={missingRedirect ? 'Open mail' : 'Sign in'} bind:username bind:deviceCode {onsubmit} />

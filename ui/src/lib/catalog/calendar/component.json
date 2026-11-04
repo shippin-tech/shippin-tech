@@ -1,0 +1,6 @@
+{
+  "id": "calendar",
+  "a2ui": "Calendar",
+  "variants": ["week"],
+  "rust": "crates/jmap/src/calendar"
+}

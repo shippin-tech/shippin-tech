@@ -1,0 +1,6 @@
+{
+  "id": "contact",
+  "a2ui": "Contact",
+  "variants": ["list"],
+  "rust": "crates/jmap/src/contact"
+}

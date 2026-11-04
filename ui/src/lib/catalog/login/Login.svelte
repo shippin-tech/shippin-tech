@@ -16,6 +16,7 @@
 		alertKind: '' | 'error' | 'success';
 		pending: boolean;
 		closed?: boolean;
+		submitLabel?: string;
 		username?: string;
 		deviceCode?: string;
 		onsubmit: (fields: Fields) => void;
@@ -29,6 +30,7 @@
 		alertKind,
 		pending,
 		closed = false,
+		submitLabel = 'Sign in',
 		username = $bindable(''),
 		deviceCode = $bindable(''),
 		onsubmit
@@ -79,7 +81,7 @@
 			<input name="otp" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" value={otp} oninput={onOtp} />
 		</label>
 	{/if}
-	<button type="submit" disabled={pending}>{pending ? 'Signing in' : 'Sign in'}</button>
+	<button type="submit" disabled={pending}>{pending ? 'Signing in' : submitLabel}</button>
 	{/if}
 </form>
 

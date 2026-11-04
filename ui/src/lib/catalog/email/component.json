@@ -1,0 +1,6 @@
+{
+  "id": "email",
+  "a2ui": "Email",
+  "variants": ["reader"],
+  "rust": "crates/jmap/src/email"
+}

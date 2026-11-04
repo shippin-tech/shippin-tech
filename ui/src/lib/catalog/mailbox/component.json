@@ -1,0 +1,6 @@
+{
+  "id": "mailbox",
+  "a2ui": "Mailbox",
+  "variants": ["inbox"],
+  "rust": "crates/jmap/src/mailbox"
+}

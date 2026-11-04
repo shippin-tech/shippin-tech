@@ -1,1 +1,1 @@
-export const docsNodes = ['file'] as const;
+export const docsNodes = [{ id: 'file', href: '/docs' }] as const;
