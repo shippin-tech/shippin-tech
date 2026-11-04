@@ -3,7 +3,7 @@
 	import type { DirectoryVariant } from '$lib/catalog/directory/variants';
 	import { freeDiskQuota, registryGet, type RegistryRow } from '$lib/adapter/registry';
 	import { session } from '../../session.svelte';
-	let variant = $state<DirectoryVariant>('empty');
+	let variant = $state<DirectoryVariant>('idle');
 	let rows = $state<RegistryRow[]>([]);
 	let alert = $state('');
 	let pending = $state(false);

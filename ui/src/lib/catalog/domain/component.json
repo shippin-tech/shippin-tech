@@ -1,6 +1,6 @@
 {
   "id": "domain",
   "a2ui": "Domain",
-  "variants": ["empty", "list", "error"],
+  "variants": ["idle", "empty", "list", "error"],
   "rust": "crates/jmap/src/registry/mapping/domain.rs"
 }

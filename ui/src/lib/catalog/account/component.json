@@ -1,6 +1,6 @@
 {
   "id": "account",
   "a2ui": "Account",
-  "variants": ["empty", "list", "error"],
+  "variants": ["idle", "empty", "list", "error"],
   "rust": "crates/jmap/src/registry/mapping/account.rs"
 }

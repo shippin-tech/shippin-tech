@@ -3,7 +3,7 @@
 	import type { DomainVariant } from '$lib/catalog/domain/variants';
 	import { registryGet, type RegistryRow } from '$lib/adapter/registry';
 	import { session } from '../../session.svelte';
-	let variant = $state<DomainVariant>('empty');
+	let variant = $state<DomainVariant>('idle');
 	let rows = $state<RegistryRow[]>([]);
 	let alert = $state('');
 	let pending = $state(false);
