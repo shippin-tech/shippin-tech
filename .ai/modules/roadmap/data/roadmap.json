@@ -36,6 +36,11 @@
       "id": "scale-groundwork",
       "statement": "The scale image keeps FoundationDB, one S3 bucket, and NATS or Redis, and it still includes rocks for the one-node case. That is the layout a larger deployment grows on.",
       "source": "crates/main/Cargo.toml"
+    },
+    {
+      "id": "shippin-brand",
+      "statement": "Every original render carries the shippin.tech brand. Harbor and Kelp are the colors. The name on those renders is shippin. The license stays deciding.",
+      "source": "ui/src/lib/token/color.css"
     }
   ],
   "phases": [
@@ -58,6 +63,13 @@
       "statement": "Two nodes with different node ids share FoundationDB, one S3 bucket, and NATS or Redis. A mailbox written on one is read on the other. Rocks stays in the build for the one-node case.",
       "status": "done",
       "exit_proof": "The same message is fetched from the second node after it was appended on the first.",
+      "depends_on": ["one-node-mailbox"]
+    },
+    {
+      "id": "shippin-renders",
+      "statement": "Every original render in this tree is shippin-tech and uses the shippin brand. The renders are sign-in, calendar RSVP, the calendar invite message, and the calendar alarm message, including the minified bytes the engine serves. Harbor is the light brand and Kelp is the dark brand. The rose accent is gone. The license is still deciding.",
+      "status": "in_progress",
+      "exit_proof": "resources/html-templates/login.html, calendar-rsvp.html, calendar-invite.html, and calendar-alarm.html, plus login.html.min.gz and calendar-rsvp.html.min.gz and the invite and alarm .min files the binary embeds, use Harbor #0c6e67 as the brand color and do not contain #db2d54. The Svelte login and RSVP screens use the token variables.",
       "depends_on": ["one-node-mailbox"]
     },
     {
