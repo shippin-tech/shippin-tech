@@ -50,14 +50,16 @@
       "name": "svelte-check",
       "command": "npm run check",
       "proves": "The Svelte app, including the control plane routes, typechecks before the branch split.",
-      "expected": "exit 0 and 0 errors"
+      "expected": "exit 0 and 0 errors",
+      "result": "npm run check exited 0 with 0 errors while the control plane routes were present, and again on main after those files were removed."
     },
     {
       "name": "branch-split",
       "command": "git status --short && git log control-plane -1 --oneline && git branch -vv",
       "proves": "The control plane commit exists only on the local branch and main's working tree no longer has those files.",
-      "expected": "control-plane is local, not tracking a remote; admin routes are absent on main"
+      "expected": "control-plane is local, not tracking a remote; admin routes are absent on main",
+      "result": "Local main c704545 deletes the control plane paths. Branch control-plane e0d54c5 still has them and has no upstream. origin/main remains f30f333, which still contains those paths, because the deletion was not pushed."
     }
   ],
-  "status": "draft"
+  "status": "implemented"
 }

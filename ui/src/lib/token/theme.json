@@ -1,0 +1,18 @@
+{
+  "storageKey": "shippin-theme",
+  "themes": [
+    { "id": "harbor", "scheme": "light", "label": "Harbor" },
+    { "id": "kelp", "scheme": "dark", "label": "Kelp" }
+  ],
+  "pairs": [
+    ["--color-text", "--color-bg"],
+    ["--color-muted", "--color-bg"],
+    ["--color-text", "--color-card"],
+    ["--color-accent-fg", "--color-accent"],
+    ["--color-brand", "--color-bg"],
+    ["--color-danger", "--color-bg"],
+    ["--color-success", "--color-bg"],
+    ["--color-warning", "--color-bg"],
+    ["--color-info", "--color-bg"]
+  ]
+}

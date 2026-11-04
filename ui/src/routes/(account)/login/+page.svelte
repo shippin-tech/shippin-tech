@@ -1,64 +1,45 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import { authBody, postAuth, type AuthFields, type OAuthQuery } from '$lib/adapter/auth';
 	import Login from '$lib/catalog/login/Login.svelte';
 	import type { LoginVariant } from '$lib/catalog/login/variants';
 
-	let variant = $state<LoginVariant>('password');
-	let title = $state('Sign in');
-	let subtitle = $state('Enter your credentials to continue');
-	let alert = $state('');
-	let alertKind = $state<'' | 'error' | 'success'>('');
+	const params = page.url.searchParams;
+	const device = /\/device(\/|$)/.test(page.url.pathname);
+	const missingRedirect = !device && !params.get('redirect_uri');
+
+	let variant = $state<LoginVariant>(device ? 'device' : 'password');
+	let title = $state(device ? 'Authorize device' : missingRedirect ? 'Sign in with an app' : 'Sign in');
+	let subtitle = $state(
+		device
+			? 'Sign in to approve this device.'
+			: missingRedirect
+				? 'This page is opened automatically by your mail, calendar or contacts app to authorize access to your account.'
+				: 'Enter your credentials to continue'
+	);
+	let alert = $state(
+		missingRedirect
+			? 'This sign-in page cannot be used directly. Please start the sign-in from your app instead. (The required "redirect_uri" parameter is missing.)'
+			: ''
+	);
+	let alertKind = $state<'' | 'error' | 'success'>(missingRedirect ? 'error' : '');
 	let pending = $state(false);
-	let username = $state('');
-	let deviceCode = $state('');
+	let username = $state(params.get('login_hint') ?? '');
+	let deviceCode = $state(device ? (params.get('code') ?? '') : '');
 	let last = $state<AuthFields | null>(null);
 	let oauth = $state<OAuthQuery>({
-		clientId: '',
-		redirectUri: null,
-		scope: null,
-		state: null,
-		nonce: null,
-		codeChallenge: null,
-		codeChallengeMethod: null,
-		resource: []
+		clientId: params.get('client_id') || '',
+		redirectUri: params.get('redirect_uri'),
+		scope: params.get('scope'),
+		state: params.get('state'),
+		nonce: params.get('nonce'),
+		codeChallenge: params.get('code_challenge'),
+		codeChallengeMethod: params.get('code_challenge_method'),
+		resource: params.getAll('resource')
 	});
-	let device = $state(false);
-	let closed = $state(false);
+	let closed = $state(missingRedirect);
 
 	const failure = 'Temporary server failure. If the problem persists, contact your administrator.';
-
-	onMount(() => {
-		const url = new URL(window.location.href);
-		const params = url.searchParams;
-		device = /\/device(\/|$)/.test(url.pathname);
-		oauth = {
-			clientId: params.get('client_id') || '',
-			redirectUri: params.get('redirect_uri'),
-			scope: params.get('scope'),
-			state: params.get('state'),
-			nonce: params.get('nonce'),
-			codeChallenge: params.get('code_challenge'),
-			codeChallengeMethod: params.get('code_challenge_method'),
-			resource: params.getAll('resource')
-		};
-		const hint = params.get('login_hint');
-		if (hint) username = hint;
-		if (device) {
-			variant = 'device';
-			title = 'Authorize device';
-			subtitle = 'Sign in to approve this device.';
-			deviceCode = params.get('code') || '';
-			return;
-		}
-		if (!oauth.redirectUri) {
-			closed = true;
-			title = 'Sign in with an app';
-			subtitle = 'This page is opened automatically by your mail, calendar or contacts app to authorize access to your account.';
-			alertKind = 'error';
-			alert = 'This sign-in page cannot be used directly. Please start the sign-in from your app instead. (The required "redirect_uri" parameter is missing.)';
-		}
-	});
 
 	function redirect(code: string, issuer?: string) {
 		if (!oauth.redirectUri) {

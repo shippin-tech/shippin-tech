@@ -13,3 +13,32 @@ body {
 a {
 	color: var(--color-info);
 }
+
+:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: 2px;
+}
+
+button,
+input,
+textarea {
+	font: inherit;
+}
+
+button,
+input {
+	min-height: 2.75rem;
+}
+
+.skip {
+	position: absolute;
+	left: var(--space-3);
+	top: -5rem;
+	background: var(--color-accent);
+	color: var(--color-accent-fg);
+	padding: var(--space-2) var(--space-3);
+}
+
+.skip:focus {
+	top: var(--space-3);
+}

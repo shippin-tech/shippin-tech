@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import { postRsvp, type Attendee } from '$lib/adapter/calendar';
 	import CalendarRsvp from '$lib/catalog/calendar-rsvp/CalendarRsvp.svelte';
 	import { partStats, type PartStat, type RsvpVariant } from '$lib/catalog/calendar-rsvp/variants';
@@ -16,10 +17,10 @@
 	let attendees = $state<Attendee[]>([]);
 	let selected = $state<PartStat | ''>('');
 	let note = $state('');
-	let alert = $state('');
+	let alert = $state(page.url.searchParams.get('i') ? '' : 'This RSVP link is not valid.');
 	let pending = $state(false);
 	let recorded = $state('');
-	let token = '';
+	let token = page.url.searchParams.get('i') || '';
 
 	const failure = 'Temporary server failure. If the problem persists, contact your administrator.';
 
@@ -28,13 +29,8 @@
 	}
 
 	onMount(async () => {
-		const url = new URL(window.location.href);
-		token = url.searchParams.get('i') || '';
-		const preset = (url.searchParams.get('m') || '').toLowerCase();
-		if (!token) {
-			alert = 'This RSVP link is not valid.';
-			return;
-		}
+		const preset = (page.url.searchParams.get('m') || '').toLowerCase();
+		if (!token) return;
 		try {
 			const data = await postRsvp({ token });
 			if (data.type === 'error') {

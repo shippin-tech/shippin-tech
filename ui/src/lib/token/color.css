@@ -1,17 +1,24 @@
-:root {
-	--color-bg: #f5f5f4;
-	--color-card: #fff;
-	--color-border: #e5e5e3;
-	--color-text: #1a1a18;
-	--color-muted: #6b6b67;
-	--color-accent: #1a1a18;
-	--color-accent-fg: #fff;
-	--color-info: #185fa5;
-	--color-success: #0f7a3c;
-	--color-warning: #a15c07;
-	--color-danger: #a0192f;
-	--color-brand: #db2d54;
-	--color-input: #fafaf9;
+/* Themes are Harbor (light) and Kelp (dark). They are not white and black.
+   Change a color here. Components do not hold hex.
+   Pairs in theme.json are the ones that must stay WCAG AA (4.5:1). */
+
+:root,
+[data-theme='harbor'] {
+	color-scheme: light;
+	--color-bg: #e4efe9;
+	--color-card: #f3f7f4;
+	--color-border: #b7cdc3;
+	--color-text: #10241f;
+	--color-muted: #3e564e;
+	--color-accent: #0e3d36;
+	--color-accent-fg: #f3f7f4;
+	--color-info: #0e4d78;
+	--color-success: #0c6a3c;
+	--color-warning: #6e3b05;
+	--color-danger: #9a2340;
+	--color-brand: #0c6e67;
+	--color-input: #f7fbf8;
+	--color-focus: #0c6e67;
 	--radius: 10px;
 	--space-1: 4px;
 	--space-2: 8px;
@@ -20,15 +27,52 @@
 	--font: system-ui, sans-serif;
 }
 
+[data-theme='kelp'] {
+	color-scheme: dark;
+	--color-bg: #0e1c18;
+	--color-card: #17302a;
+	--color-border: #2c4a42;
+	--color-text: #e7f3ee;
+	--color-muted: #b4cdc3;
+	--color-accent: #c9ebe2;
+	--color-accent-fg: #10241f;
+	--color-info: #9ec9ef;
+	--color-success: #8ed4ae;
+	--color-warning: #f0c27a;
+	--color-danger: #ffb3c0;
+	--color-brand: #7dcec4;
+	--color-input: #122420;
+	--color-focus: #7dcec4;
+}
+
 @media (prefers-color-scheme: dark) {
-	:root {
-		--color-bg: #18181b;
-		--color-card: #1f1f23;
-		--color-border: #2e2e33;
-		--color-text: #f4f4f2;
-		--color-muted: #9b9b95;
-		--color-accent: #f4f4f2;
-		--color-accent-fg: #18181b;
-		--color-input: #18181b;
+	:root:not([data-theme='harbor']) {
+		color-scheme: dark;
+		--color-bg: #0e1c18;
+		--color-card: #17302a;
+		--color-border: #2c4a42;
+		--color-text: #e7f3ee;
+		--color-muted: #b4cdc3;
+		--color-accent: #c9ebe2;
+		--color-accent-fg: #10241f;
+		--color-info: #9ec9ef;
+		--color-success: #8ed4ae;
+		--color-warning: #f0c27a;
+		--color-danger: #ffb3c0;
+		--color-brand: #7dcec4;
+		--color-input: #122420;
+		--color-focus: #7dcec4;
+	}
+}
+
+@media (prefers-contrast: more) {
+	:root,
+	[data-theme='harbor'] {
+		--color-border: #10241f;
+		--color-muted: #10241f;
+	}
+	[data-theme='kelp'] {
+		--color-border: #e7f3ee;
+		--color-muted: #e7f3ee;
 	}
 }
