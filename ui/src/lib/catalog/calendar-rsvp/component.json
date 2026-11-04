@@ -1,0 +1,6 @@
+{
+  "id": "calendar-rsvp",
+  "a2ui": "CalendarRsvp",
+  "variants": ["invitation", "update", "cancel", "recorded"],
+  "rust": "crates/jmap/src/calendar"
+}

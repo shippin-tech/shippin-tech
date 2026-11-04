@@ -1,0 +1,6 @@
+{
+  "id": "calendar-alarm",
+  "kind": "mail-body",
+  "html": "resources/html-templates/calendar-alarm.html",
+  "rust": "crates/common/src/config/groupware.rs"
+}

@@ -1,4 +1,7 @@
 /target
+node_modules
+ui/.svelte-kit
+ui/build
 *.failed
 *_failed
 run.sh

@@ -122,6 +122,7 @@ impl GroupwareConfig {
             alarms_allow_external_recipients: alarm.allow_external_rcpts,
             alarms_from_name: alarm.from_name,
             alarms_from_email: alarm.from_email,
+            // Mail body stays HTML. Catalog note: ui/src/lib/catalog/calendar-alarm.
             alarms_template: Template::parse(include_str!(concat!(
                 env!("CARGO_MANIFEST_DIR"),
                 "/../../resources/html-templates/calendar-alarm.html.min"
@@ -151,6 +152,7 @@ impl GroupwareConfig {
             max_shares_per_item: share.max_shares as usize,
             allow_directory_query: share.allow_directory_queries,
             itip_http_rsvp_expiration: sched.http_rsvp_link_expiry.into_inner().as_secs(),
+            // Mail body stays HTML. Catalog note: ui/src/lib/catalog/calendar-invite.
             itip_template: Template::parse(include_str!(concat!(
                 env!("CARGO_MANIFEST_DIR"),
                 "/../../resources/html-templates/calendar-invite.html.min"

@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-03-naming-canon",
+  "title": "Name UI folders from the crates that already exist",
+  "costar": {
+    "context": "The maintainer wants file, folder, and naming rules for scale, grounded in this repository, with SvelteKit plug-in patterns.",
+    "objective": "Write the naming canon so every UI folder traces to one Rust crate or one jmap module, without renaming the engine.",
+    "style": "One naming section in the product rule and this plan.",
+    "tone": "Direct.",
+    "audience": "The next coding agent and the maintainer.",
+    "response": "Rust stays snake_case in crates/. The UI uses the same words in kebab-case. The adapter's map is the path switch in crates/http/src/request.rs."
+  },
+  "sources": [
+    {"kind": "code", "ref": "Cargo.toml"},
+    {"kind": "code", "ref": "crates/http/src/request.rs"},
+    {"kind": "code", "ref": "crates/jmap/src/lib.rs"},
+    {"kind": "code", "ref": "crates/jmap/src/file/mod.rs"},
+    {"kind": "code", "ref": "crates/directory/src/lib.rs"},
+    {"kind": "code", "ref": ".cursor/rules/product-boundaries.mdc"},
+    {"kind": "web", "ref": "https://a2ui.org/specification/v0.9.1-a2ui/"}
+  ],
+  "concerns": [
+    "Renaming calendar_event to a shorter Svelte name would split the canon.",
+    "Putting a SvelteKit app inside crates/ would mix the UI build into the mail workspace.",
+    "A catalog id that does not match a jmap folder cannot be traced during review."
+  ],
+  "context": "The workspace is 28 crates under crates/. HTTP dispatch is a match on the first path segment in crates/http/src/request.rs. JMAP features are folders of verb files such as email/get.rs and email/set.rs.",
+  "current_state": "Package folders are kebab-case. Rust modules are snake_case. The Kit layout names catalog and adapter folders but does not bind them to crates/jmap/src or to /jmap, /dav, /api, /scim, and /auth.",
+  "target_design": "UI route groups (mail), (calendar), (contacts), (files), (account), and (admin) call src/lib/adapter, which calls only those HTTP paths. Catalog folders use kebab-case of the Rust module: email, mailbox, thread, submission, sieve, vacation, calendar, calendar-event, contact, addressbook, file, quota, identity, principal. Admin features use the file stem under crates/jmap/src/registry/mapping plus crates/scim and crates/directory. component.json id equals the folder name. PascalCase is reserved for the Svelte filename. Proto crates (jmap-proto, dav-proto, http-proto, scim-proto, imap-proto) stay wire types and have no UI folder. maxDiskQuota remains the storage ceiling. The free preset is 2 GB when the UI tree is built. This pass does not create that tree.",
+  "changes": [
+    "Add the Naming section to .cursor/rules/product-boundaries.mdc with the crate map and the HTTP path map.",
+    "Leave every Rust file name unchanged."
+  ],
+  "boundaries": [
+    "Do not rename crates or Rust modules.",
+    "Do not scaffold SvelteKit inside crates/ or the workspace members.",
+    "Do not port Mox.",
+    "Do not add a license checker that accepts keys.",
+    "Do not mark deployable-product done."
+  ],
+  "verification": [
+    {
+      "name": "rule-binds-ui-names-to-crates",
+      "command": "python -c \"from pathlib import Path; t=Path(r'.cursor/rules/product-boundaries.mdc').read_text(encoding='utf-8'); keys=['calendar_event','calendar-event','crates/http/src/request.rs','/jmap','/dav','/scim','maxDiskQuota','jmap-proto']; missing=[k for k in keys if k not in t]; assert not missing, missing; print('ok')\"",
+      "proves": "The naming canon cites real Rust modules, HTTP paths, the quota field, and a proto crate, and the UI spelling of calendar-event.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "tree-matches-schemas",
+      "command": "python .ai/machine/organize.py --check",
+      "proves": "This plan and the other modules match their schemas. A missing crate binding fails the first check even if this one passes.",
+      "expected": "exit 0 and modules 6",
+      "result": "{\"modules\": 6, \"lines\": 572, \"documents\": 16, \"events\": 169, \"messages\": 64, \"tools\": 328, \"journal\": 11}"
+    }
+  ],
+  "status": "implemented"
+}

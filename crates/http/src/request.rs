@@ -53,6 +53,8 @@ use store::dispatch::lookup::KeyValue;
 use trc::SecurityEvent;
 use types::{blob::BlobId, id::Id};
 
+// Served bytes stay here until `ui/` emits a static build.
+// Canonical screens: ui/src/lib/catalog/login and ui/src/lib/catalog/calendar-rsvp.
 static RSVP_PAGE: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../resources/html-templates/calendar-rsvp.html.min.gz"

@@ -1,0 +1,19 @@
+{
+  "name": "@shippin/ui",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-static": "^3.0.8",
+    "@sveltejs/kit": "^2.21.0",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "svelte": "^5.28.0",
+    "svelte-check": "^4.1.6",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}

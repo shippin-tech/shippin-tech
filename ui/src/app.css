@@ -1,0 +1,15 @@
+@import './lib/token/color.css';
+@import './lib/token/motion.css';
+@import './lib/token/interaction.css';
+
+body {
+	margin: 0;
+	min-height: 100vh;
+	background: var(--color-bg);
+	color: var(--color-text);
+	font-family: var(--font);
+}
+
+a {
+	color: var(--color-info);
+}

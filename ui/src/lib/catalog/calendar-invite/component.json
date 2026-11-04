@@ -1,0 +1,6 @@
+{
+  "id": "calendar-invite",
+  "kind": "mail-body",
+  "html": "resources/html-templates/calendar-invite.html",
+  "rust": "crates/common/src/config/groupware.rs"
+}

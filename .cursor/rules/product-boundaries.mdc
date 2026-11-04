@@ -67,22 +67,54 @@ The same standards apply across the maintainer's products.
 File routes are the only pages, the way a Next.js app router is the only pages. A feature plugs in by adding a folder. Nothing is registered in a central list.
 
 ```text
-src/lib/catalog/<component>/   Component.svelte, variants.ts, component.json, instruction.md
-src/lib/token/                 color.css, motion.css, interaction.css
-src/lib/flow/<domain>/         Svelte Flow graph. Nodes render catalog ids.
-src/lib/adapter/               The only module that calls the Rust engine.
-src/lib/ai-runtime/
-src/lib/admin/ai/
-src/lib/admin/chat/
-src/routes/(mail|account|admin)/<feature>/+page.svelte
+ui/src/lib/catalog/<component>/   Component.svelte, variants.ts, component.json, instruction.md
+ui/src/lib/token/                 color.css, motion.css, interaction.css
+ui/src/lib/flow/<domain>/         Svelte Flow graph. Nodes render catalog ids.
+ui/src/lib/adapter/               The only module that calls the Rust engine.
+ui/src/lib/ai-runtime/<domain>/kernel/instruction.md
+ui/src/lib/ai-runtime/<domain>/threads/<feature>/instruction.md
+ui/src/lib/admin/ai/
+ui/src/lib/admin/chat/
+ui/src/routes/(mail|account|admin|calendar|contacts|files)/<feature>/+page.svelte
                                +page.server.ts, +layout.svelte, +error.svelte
 ```
+
+The application tree is `ui/`. It is not a Cargo workspace member.
+
+Domains that reserve a kernel are `mail`, `docs`, and `control-plane`. A sub-thread is a feature folder under `threads/` and uses the kebab-case Rust module name. An agent starts at that domain's `kernel/instruction.md`.
 
 Import direction is one way. `routes` and `ai-runtime` may call `adapter`. `flow` and `admin` may render `catalog`. `catalog` and `token` import neither `adapter`, nor routes, nor flow. `+page.server.ts` is the server boundary. A catalog component does not fetch.
 
 `component.json` names the A2UI type and the variants. A checker discovers those files. Adding a component does not edit a registry.
 
 Tauri wraps the SvelteKit build. A Go control plane may serve that build and set tenant ceilings. It does not contain a second component library.
+
+## Naming
+
+Rust names stay as they are. UI names are the same words, with a different case, so a folder can be traced to one crate.
+
+| Kind | Rust, already in the tree | UI folder |
+| --- | --- | --- |
+| Package | `crates/<name>`, kebab-case when the package has a hyphen (`jmap-proto`, `dav-proto`, `http-proto`, `scim-proto`, `imap-proto`) | no UI crate inside `crates/` |
+| Module | `snake_case` files: `calendar_event`, `share_notification`, `email/get.rs` | kebab-case: `calendar-event`, `share-notification` |
+| Component file | | PascalCase `CalendarEvent.svelte` |
+| Manifest | | `component.json` field `id` is the kebab-case folder name |
+| Route | `crates/http/src/request.rs` path segment | SvelteKit group |
+
+The HTTP switch in `crates/http/src/request.rs` is the adapter's map:
+
+| Path | Rust owner | UI route group |
+| --- | --- | --- |
+| `/jmap` | `crates/jmap` | `(mail)`, `(calendar)`, `(contacts)`, `(files)`, `(account)` |
+| `/dav` | `crates/dav` | calendar and contacts, CalDAV and CardDAV |
+| `/api` | `crates/http/src/api` and `crates/jmap/src/registry` | `(admin)` |
+| `/scim` | `crates/scim` | `(admin)` provisioning |
+| `/auth`, `/login` | `crates/http/src/auth` | `(account)` session |
+| `/mail/config-v1.1.xml` | autoconfig | no catalog component |
+
+JMAP domains that already have a folder under `crates/jmap/src` keep that name in the catalog: `email`, `mailbox`, `thread`, `submission`, `sieve`, `vacation`, `calendar`, `calendar-event`, `contact`, `addressbook`, `file` (file nodes), `quota`, `identity`, `principal`. Registry records under `crates/jmap/src/registry/mapping` are `(admin)` features: `domain`, `account`, `cluster`, and the other mapping files. `crates/directory` is the tenant and account directory the control plane writes. `maxDiskQuota` on the tenant and the account is the storage ceiling. The free preset is 2 GB on that field.
+
+A new UI word that does not match a crate or a `crates/jmap/src` folder is a new domain and needs its own folder on both sides. Do not rename a Rust module to match a Svelte preference.
 
 ## Folders
 
