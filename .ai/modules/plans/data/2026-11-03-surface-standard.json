@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-03-surface-standard",
+  "title": "Record the shared UI standard on this engine",
+  "costar": {
+    "context": "The maintainer kept this Rust engine after it served them and two customers. They want style tokens, shippin.tech visuals, A2UI, MCP Warp, and one folder standard across their products.",
+    "objective": "Write that standard into the product rule so the next UI build has a catalog, tokens, provenance, and a Rust adapter.",
+    "style": "One rule section. No new UI package in this repository.",
+    "tone": "Direct.",
+    "audience": "The next coding agent and the maintainer.",
+    "response": "The /admin and /account bundle is the UI to rebuild. A2UI v0.9.1 is the protocol. The client owns tokens and the catalog. Rust is reached only through an adapter."
+  },
+  "sources": [
+    {"kind": "code", "ref": ".cursor/rules/product-boundaries.mdc"},
+    {"kind": "code", "ref": "crates/common/src/manager/defaults.rs"},
+    {"kind": "code", "ref": "crates/common/src/manager/application.rs"},
+    {"kind": "web", "ref": "https://a2ui.org/specification/v0.9.1-a2ui/"},
+    {"kind": "web", "ref": "https://a2ui.org/"}
+  ],
+  "concerns": [
+    "The webui zip is not in this repository. Inventing a component library here would be a second UI, not a rebuild of /admin and /account.",
+    "A2UI v1.0 is a candidate. The production pin is v0.9.1.",
+    "Style token values are not invented in this pass. The rule names the token kinds. Brand values belong to the UI catalog."
+  ],
+  "context": "The engine is the two-year Rust mail server. The old UI did the job for two customers. The next UI has to carry shippin.tech branding and the same agent-facing patterns as the other products.",
+  "current_state": "The server unpacks a webui bundle onto /admin and /account. The pinned v1.0.11 zip was not found on boot. No style-token catalog exists in this tree.",
+  "target_design": "Agents speak A2UI v0.9.1 to a client-owned catalog styled with shippin.tech tokens. Folders are domain/feature with explicit provenance: ai-runtime, admin/ai, admin/chat, and adapter. The adapter is the only door into Rust. A later Go control plane sets tenant ceilings and does not become the mail engine.",
+  "changes": [
+    "Replace the client-pass section of .cursor/rules/product-boundaries.mdc with the surface standard."
+  ],
+  "boundaries": [
+    "Do not add a web UI package in this pass.",
+    "Do not invent brand hex values.",
+    "Do not mark deployable-product done.",
+    "Do not add a license checker that accepts keys."
+  ],
+  "verification": [
+    {
+      "name": "rule-names-the-standard",
+      "command": "python -c \"from pathlib import Path; t=Path(r'.cursor/rules/product-boundaries.mdc').read_text(encoding='utf-8'); keys=['A2UI','v0.9.1','ai-runtime/','admin/ai/','admin/chat/','adapter/','Style tokens']; missing=[k for k in keys if k not in t]; assert not missing, missing; print('ok')\"",
+      "proves": "The always-on product rule contains the protocol pin, the provenance folders, the adapter, and style tokens.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "tree-matches-schemas",
+      "command": "python .ai/machine/organize.py --check",
+      "proves": "The plan and the other modules still match their schemas.",
+      "expected": "exit 0 and modules 6",
+      "result": "{\"modules\": 6, \"lines\": 570, \"documents\": 14, \"events\": 169, \"messages\": 64, \"tools\": 328, \"journal\": 9}"
+    }
+  ],
+  "status": "implemented"
+}

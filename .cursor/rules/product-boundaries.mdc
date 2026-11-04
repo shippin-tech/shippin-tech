@@ -50,12 +50,49 @@ This engine already covers the mail, calendar, contacts, and directory row. Othe
 | Tasks | ToDo | Tasks | Later product on the groupware data that already exists |
 | Forms, sites, keep, vault, social | Vault, Connect | Forms, Sites, Keep, Vault | Separate products |
 
-## When the client pass starts
+## Surfaces
 
-Do not start this pass until shippin.cloud hosts the deployable image.
+This fork is the Rust engine kept after it served the maintainer and two customers. Mailcow is not the UI to copy. Mox is not the engine to switch to. The `/admin` and `/account` bundle is the UI to rebuild with shippin.tech style tokens and visuals.
 
-The first clients are a web mailbox and the same client at phone width. Both use JMAP for mail, CalDAV for calendar, and CardDAV for contacts. Push uses the web-push and email-push capabilities that already exist. This is one client family, not a second mail server.
+The same standards apply across the maintainer's products.
 
-The control plane is the directory, SCIM, and registry that already exist. It is available only for white-label and enterprise licensing. It is not a Go service, and it is not part of the open mailbox client. The license field stays `deciding` until the license phase. Do not invent a license checker that accepts keys.
+- **MCP Warp.** Each domain has one master. An agent reaches that master for canonical knowledge instead of keeping a private copy. The UI can show the discussion that produced a decision.
+- **A2UI.** Agent-driven UI uses the A2UI protocol, production v0.9.1 (`createSurface`, `updateComponents`, `updateDataModel`, `deleteSurface`). The client owns a trusted component catalog and the brand. The agent sends declarative messages, not executable UI code. https://a2ui.org/specification/v0.9.1-a2ui/
+- **Learning surface.** Linger, signals, and dynamic inputs open tooltips and modals from a shared library: a demo or an interactive explanation, passive until the person stays on that spot. Every component has a path and an instruction an agent can follow.
+- **Style tokens.** Color, type, space, and motion are tokens. shippin.tech branding is a token set on that catalog. Screens do not invent their own colors.
+- **SvelteKit and Svelte Flow.** The application UI is SvelteKit with Svelte 5. Svelte Flow graphs are a view over the catalog, used to witness a domain master or a discussion. The old `/admin` and `/account` HTML converts into this app. CSS variables and mail bodies stay CSS and HTML.
 
-After that mail, calendar, and contacts functionality works, documents are a separate product that connects to this server. After documents, photos sync and phone backup are a client on the file nodes that already exist (`urn:ietf:params:jmap:filenode`). They are not a new store and not a drive product inside this phase.
+## Kit layout
+
+File routes are the only pages, the way a Next.js app router is the only pages. A feature plugs in by adding a folder. Nothing is registered in a central list.
+
+```text
+src/lib/catalog/<component>/   Component.svelte, variants.ts, component.json, instruction.md
+src/lib/token/                 color.css, motion.css, interaction.css
+src/lib/flow/<domain>/         Svelte Flow graph. Nodes render catalog ids.
+src/lib/adapter/               The only module that calls the Rust engine.
+src/lib/ai-runtime/
+src/lib/admin/ai/
+src/lib/admin/chat/
+src/routes/(mail|account|admin)/<feature>/+page.svelte
+                               +page.server.ts, +layout.svelte, +error.svelte
+```
+
+Import direction is one way. `routes` and `ai-runtime` may call `adapter`. `flow` and `admin` may render `catalog`. `catalog` and `token` import neither `adapter`, nor routes, nor flow. `+page.server.ts` is the server boundary. A catalog component does not fetch.
+
+`component.json` names the A2UI type and the variants. A checker discovers those files. Adding a component does not edit a registry.
+
+Tauri wraps the SvelteKit build. A Go control plane may serve that build and set tenant ceilings. It does not contain a second component library.
+
+## Folders
+
+Layout is `domain/feature`, colocated and plug-in. A second copy is allowed only when the path states the provenance.
+
+- `ai-runtime/` is agent execution.
+- `admin/ai/` is the team-managed agent surface.
+- `admin/chat/` is the witnessed discussion.
+- `adapter/` is the only door into the Rust engine. The UI and a future control-plane service do not import mail crates as their own code.
+
+Rust stays the mail engine, with strict crate boundaries. The control plane that sets tenant ceilings may be a Go service later. It manages clients. Each client has a disk and object ceiling and, inside that ceiling, full mail, domain, and capability control. The license field stays `deciding` until the license phase. Do not invent a license checker that accepts keys.
+
+The web and phone mailbox, documents, and photos or phone backup still wait until shippin.cloud hosts the deployable image. The token names, the catalog, and these folders are the standard those screens must use.
