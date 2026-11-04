@@ -2,5 +2,5 @@
 
 Rust: `crates/scim`
 HTTP: `/scim`
-Catalog: none yet
+Route: `ui/src/routes/(admin)/admin/scim`
 Kernel: `../../kernel/instruction.md`

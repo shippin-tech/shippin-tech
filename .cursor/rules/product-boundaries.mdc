@@ -83,6 +83,8 @@ The application tree is `ui/`. It is not a Cargo workspace member.
 
 Domains that reserve a kernel are `mail`, `docs`, and `control-plane`. A sub-thread is a feature folder under `threads/` and uses the kebab-case Rust module name. An agent starts at that domain's `kernel/instruction.md`.
 
+The control plane is local git branch `control-plane`. That branch is not pushed. `main` does not carry `ui/src/routes/(admin)` or `ui/src/lib/ai-runtime/control-plane`. Check out `control-plane` to work on tenants, domains, accounts, and SCIM.
+
 Import direction is one way. `routes` and `ai-runtime` may call `adapter`. `flow` and `admin` may render `catalog`. `catalog` and `token` import neither `adapter`, nor routes, nor flow. `+page.server.ts` is the server boundary. A catalog component does not fetch.
 
 `component.json` names the A2UI type and the variants. A checker discovers those files. Adding a component does not edit a registry.

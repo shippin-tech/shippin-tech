@@ -12,5 +12,6 @@ Start here. Open one sub-thread. The control plane sets ceilings. A tenant keeps
 | scim | threads/scim/instruction.md |
 
 Rust owners: `crates/directory`, `crates/jmap/src/registry`, `crates/scim`.
-HTTP: `/api`, `/scim`, `/auth`.
-A Go service may set ceilings later. It does not own these folders and it does not contain components.
+HTTP: `/jmap` for `x:Tenant/get`, `x:Domain/get`, and `x:Account/get`. `/scim/ServiceProviderConfig` for provisioning.
+Routes: `/admin`, `/admin/directory`, `/admin/domain`, `/admin/account`, `/admin/scim`.
+This branch is local and is not pushed. The screens read. They do not send a quota write.

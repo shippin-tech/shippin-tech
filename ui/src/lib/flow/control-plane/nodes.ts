@@ -1,1 +1,1 @@
-export const controlPlaneNodes = ['login'] as const;
+export const controlPlaneNodes = ['directory', 'domain', 'account', 'scim'] as const;

@@ -77,7 +77,7 @@
 	{#if variant === 'recorded'}
 		<p>{recorded}</p>
 		<button type="button" onclick={onchange}>Change my response</button>
-	{:else if variant !== 'cancel'}
+	{:else if variant !== 'cancel' && (summary || !alert)}
 		<div role="radiogroup" aria-label="Response">
 			{#each partStats as value}
 				<button type="button" role="radio" aria-checked={selected === value} onclick={() => onselect(value)}>
