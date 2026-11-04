@@ -1,16 +1,28 @@
-<script lang="ts"></script>
+<script lang="ts">
+	type Event = { id: string; name: string; detail: string };
+	type Props = { events: Event[]; notice: string };
+	let { events, notice }: Props = $props();
+</script>
 
 <section class="cal">
 	<header>
 		<h1>Calendar</h1>
-		<p>November 2026</p>
+		<p>From the mail engine</p>
 	</header>
-	<ol>
-		{#each ['Mon 2', 'Tue 3', 'Wed 4', 'Thu 5', 'Fri 6', 'Sat 7', 'Sun 8'] as day}
-			<li>{day}</li>
-		{/each}
-	</ol>
-	<p class="empty">No events this week.</p>
+	{#if notice}
+		<p class="empty">{notice}</p>
+	{:else if events.length === 0}
+		<p class="empty">No events yet.</p>
+	{:else}
+		<ul>
+			{#each events as event (event.id)}
+				<li>
+					<strong>{event.name}</strong>
+					{#if event.detail}<span>{event.detail}</span>{/if}
+				</li>
+			{/each}
+		</ul>
+	{/if}
 </section>
 
 <style>
@@ -27,7 +39,7 @@
 	header { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
 	h1, p { margin: 0; }
 	h1 { color: var(--color-brand); }
-	ol { list-style: none; display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-2); padding: 0; margin: 0; }
-	li { padding: var(--space-3) var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-bg); }
-	.empty { color: var(--color-muted); }
+	ul { list-style: none; display: grid; gap: var(--space-2); padding: 0; margin: 0; }
+	li { display: grid; gap: var(--space-1); padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-bg); }
+	span, .empty { color: var(--color-muted); }
 </style>

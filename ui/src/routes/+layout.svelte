@@ -27,7 +27,7 @@
 
 <a class="skip" href="#content">Skip to content</a>
 <header>
-	<a class="mark" href="/mail">shippin</a>
+	<a class="mark" href="/">shippin</a>
 	<nav>
 		<a href="/mail" aria-current={page.url.pathname.startsWith('/mail') ? 'page' : undefined}>Mail</a>
 		<a href="/calendar" aria-current={page.url.pathname.startsWith('/calendar') ? 'page' : undefined}>Calendar</a>

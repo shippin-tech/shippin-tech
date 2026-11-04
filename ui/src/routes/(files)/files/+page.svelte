@@ -1,11 +1,25 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import File from '$lib/catalog/file/File.svelte';
 	import GraphMount from '$lib/flow/GraphMount.svelte';
 	import { mailNodes } from '$lib/flow/mail/nodes';
+	import { loadFiles, type Named } from '$lib/adapter/groupware';
+
+	let files = $state<Named[]>([]);
+	let notice = $state('Loading files.');
+
+	onMount(async () => {
+		try {
+			files = await loadFiles();
+			notice = '';
+		} catch (err) {
+			notice = err instanceof Error ? err.message : 'Files could not be loaded.';
+		}
+	});
 </script>
 
 <div class="split">
-	<File />
+	<File title="Files" {files} {notice} />
 	<section>
 		<h2>Mail graph</h2>
 		<GraphMount items={mailNodes} />

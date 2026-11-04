@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { authBody, postAuth, type AuthFields, type OAuthQuery } from '$lib/adapter/auth';
+	import { openSession } from '$lib/adapter/session';
 	import Login from '$lib/catalog/login/Login.svelte';
 	import type { LoginVariant } from '$lib/catalog/login/variants';
 
@@ -50,7 +51,24 @@
 	async function onsubmit(fields: AuthFields) {
 		if (closed) return;
 		if (missingRedirect) {
-			await goto('/mail');
+			if (!fields.username || !fields.password) {
+				alertKind = 'error';
+				alert = 'Please enter your username and password.';
+				return;
+			}
+			pending = true;
+			alert = '';
+			try {
+				await openSession(fields.username, fields.password);
+				await goto('/mail');
+			} catch (err) {
+				alertKind = 'error';
+				alert = err instanceof Error && err.message === 'invalid'
+					? 'Invalid username or password. Please try again.'
+					: failure;
+			} finally {
+				pending = false;
+			}
 			return;
 		}
 		if (variant === 'otp') {
@@ -114,4 +132,4 @@
 	}
 </script>
 
-<Login {variant} {title} {subtitle} {alert} {alertKind} {pending} {closed} submitLabel={missingRedirect ? 'Open mail' : 'Sign in'} bind:username bind:deviceCode {onsubmit} />
+<Login {variant} {title} {subtitle} {alert} {alertKind} {pending} {closed} bind:username bind:deviceCode {onsubmit} />
