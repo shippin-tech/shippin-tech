@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-04-fluid-tokens",
+  "title": "One typed fluid viewport, no width breakpoints",
+  "costar": {
+    "context": "The maintainer rejected hardcoded theme values and width breakpoints. The viewport has to be a fluid clamp system, with the tools installed, and images sized from those tokens.",
+    "objective": "Make ui/src/lib/token the only place that names the viewport, the type scale, the space scale, and the image sizes. Utopia calculates the clamps. Screens consume the variables.",
+    "style": "One typed viewport module, generated custom properties, and layout that wraps without a width query.",
+    "tone": "Direct.",
+    "audience": "The maintainer and the next coding agent.",
+    "response": "utopia-core owns the math. The viewport is 320 to 1240. Type, space, and image sizes are clamp tokens. Width breakpoints come out. Color is declared once with light-dark()."
+  },
+  "sources": [
+    {"kind": "code", "ref": "ui/src/lib/token/color.css"},
+    {"kind": "code", "ref": "ui/src/lib/token/tokens.ts"},
+    {"kind": "code", "ref": "ui/package.json"},
+    {"kind": "code", "ref": "ui/src/routes/(mail)/mail/+page.svelte"},
+    {"kind": "code", "ref": "ui/src/lib/catalog/mailbox/Mailbox.svelte"},
+    {"kind": "web", "ref": "https://utopia.fyi/"},
+    {"kind": "web", "ref": "https://www.npmjs.com/package/utopia-core"},
+    {"kind": "web", "ref": "https://utopia.fyi/clamp/calculator/"}
+  ],
+  "concerns": [
+    "A type step that fails WCAG 1.4.4 at 200% zoom cannot ship. calculateTypeScale reports that as wcagViolation.",
+    "Space in px would ignore browser text zoom. The clamps stay in rem.",
+    "prefers-color-scheme, prefers-reduced-motion, and prefers-contrast are user preferences. Removing them would break the theme and the motion cut.",
+    "light-dark() follows color-scheme. An explicit data-theme has to set color-scheme or the forced theme is ignored.",
+    "Image files are not resized in this pass. The layout only reserves the fluid slot."
+  ],
+  "context": "Style tokens already live in ui/src/lib/token. The cyber palette was copied into three CSS blocks, and the screens stack with max-width queries at 900px and 700px.",
+  "current_state": "color.css repeats the palette for :root, .dark, and the dark color-scheme query. --space-1 through --space-4 are fixed rem. Six route splits and the mailbox use a width media query. utopia-core is not installed. No image size token exists.",
+  "target_design": "viewport.ts is the typed range, 320 to 1240. utopia-core calculates the type scale, the space scale, and the image clamps. A Vite plugin serves those custom properties. --space-1 through --space-4 alias the fluid steps. Columns use repeat(auto-fit, minmax(min(100%, var(--measure)), 1fr)). Each color is one light-dark() value. Images use max-inline-size: 100% and the --img-* clamps.",
+  "changes": [
+    "Add utopia-core and record the viewport in ui/src/lib/token/viewport.ts.",
+    "Generate --step-*, --space-*, and --img-* clamps from that module. Fail the build if a type step reports wcagViolation.",
+    "Point the existing space aliases and the heading sizes at those tokens.",
+    "Declare each color once with light-dark(). Set color-scheme from data-theme.",
+    "Remove the width media queries. Let the grid wrap on the fluid measure.",
+    "Reserve image slots with the fluid clamps. Do not export or recompress image files in this pass."
+  ],
+  "boundaries": [
+    "The cyber colors stay #39ff14, #ffb000, and #ff2bd6.",
+    "Inter, Plus Jakarta Sans, and JetBrains Mono stay.",
+    "Do not add a width breakpoint.",
+    "Do not resize or recompress the portal font or image files in this pass.",
+    "The portal screen conversion stays on 2026-11-04-portal-to-svelte and stays draft."
+  ],
+  "verification": [
+    {
+      "name": "no-width-breakpoints-and-fluid-clamps",
+      "command": "python -c \"from pathlib import Path; root=Path('ui/src'); texts=[p.read_text(encoding='utf-8') for p in root.rglob('*') if p.suffix in {'.css','.svelte','.ts'}]; blob='\\n'.join(texts); assert 'max-width:' not in blob, 'width breakpoint remains'; assert 'clamp(' in blob or 'virtual:shippin-fluid' in blob; assert 'light-dark(' in blob; assert '#39ff14' in blob; print('ok')\"",
+      "proves": "Screens and tokens have no width breakpoint, color is a light-dark token, the neon primary remains, and the fluid clamp source is present. A leftover 900px query fails this.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "tree-matches-schemas",
+      "command": "python .ai/machine/organize.py --check",
+      "proves": "The plan matches the plans schema and the other modules still match theirs.",
+      "expected": "exit 0",
+      "result": "{\"modules\": 6, \"lines\": 582, \"documents\": 20, \"events\": 169, \"messages\": 64, \"tools\": 328, \"journal\": 21}"
+    }
+  ],
+  "status": "implemented"
+}

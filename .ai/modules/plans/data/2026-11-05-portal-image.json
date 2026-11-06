@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-image",
+  "title": "Install the portal in the hosting images",
+  "costar": {
+    "context": "The Windows debug exe was a local check. Hosting is the Linux image: Dockerfile, Dockerfile.fdb, and the runtime stages in Dockerfile.build. The process workdir in those images is /var/lib/shippin.tech.",
+    "objective": "Build the Svelte portal inside those images and serve it from /usr/share/shippin.tech/portal.",
+    "style": "One plan, then the image path.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "The hosted process reads the portal installed in the image. A set directory overrides that path."
+  },
+  "sources": [
+    {"kind": "code", "ref": "Dockerfile"},
+    {"kind": "code", "ref": "Dockerfile.fdb"},
+    {"kind": "code", "ref": "Dockerfile.build"},
+    {"kind": "code", "ref": "crates/http/src/portal.rs"},
+    {"kind": "code", "ref": "ui/package.json"},
+    {"kind": "code", "ref": "ui/scripts/emit-portal.ts"}
+  ],
+  "concerns": [
+    "ui/build is relative to the process working directory. The image working directory is /var/lib/shippin.tech, so that relative path is empty.",
+    "The catalog build reads resources/schema/schema.json.gz from beside ui/.",
+    "A VERSION file must not be added to the portal directory."
+  ],
+  "context": "The runtime images already set shippin.tech_HEALTHCHECK_URL and run /usr/local/bin/shippin.tech as user shippin.tech. The portal lookup uses shippin.tech_PORTAL_DIR when that directory contains 200.html.",
+  "current_state": "The runtime images build the Svelte portal and set shippin.tech_PORTAL_DIR to /usr/share/shippin.tech/portal. The lookup uses that install path when no override directory contains 200.html.",
+  "target_design": "A node stage runs npm run build with the schema file beside ui/. Each runtime image copies that build to /usr/share/shippin.tech/portal and sets shippin.tech_PORTAL_DIR. The lookup uses a set directory, then the install path, then ui/build.",
+  "changes": [
+    "Add the portal build stage and the install path to the three Dockerfiles.",
+    "Choose the first candidate directory that contains 200.html."
+  ],
+  "boundaries": [
+    "Do not add a VERSION file.",
+    "Do not restart the running one-node process.",
+    "Do not post a set, a live delivery, or a live action."
+  ],
+  "verification": [
+    {
+      "name": "portal-install-path",
+      "command": "cargo test -p http@0.16.27 portal_file --lib --config \"build.rustc-wrapper=''\"",
+      "proves": "A set directory wins, the install path is next, ui/build is last, and the runtime Dockerfiles install the portal there.",
+      "expected": "portal_file tests pass",
+      "result": "2 passed: portal_file_serves_pages_and_assets and portal_file_prefers_the_image_install."
+    },
+    {
+      "name": "image-portal-stage",
+      "command": "docker build --target portal -f Dockerfile .",
+      "proves": "The Linux image stage builds the Svelte portal.",
+      "expected": "the portal stage finishes",
+      "result": "docker is not installed on this machine, so the stage was not built here. Dockerfile, Dockerfile.fdb, and Dockerfile.build each contain the portal stage, npm run build, the copy to /usr/share/shippin.tech/portal, and shippin.tech_PORTAL_DIR."
+    }
+  ],
+  "status": "implemented"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "portal",
+  "a2ui": "Portal",
+  "variants": ["management", "settings", "account"],
+  "rust": "resources/schema/schema.json.gz"
+}

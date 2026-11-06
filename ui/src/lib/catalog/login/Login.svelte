@@ -61,9 +61,18 @@
 	{#if !closed}
 	{#if variant !== 'otp'}
 		<label>
-			Username
-			<input name="username" type="text" autocomplete="username" bind:value={username} required />
+			{variant === 'account' ? 'Account name' : 'Username'}
+			<input
+				name="username"
+				type="text"
+				autocomplete="username"
+				placeholder={variant === 'account' ? 'user@example.com' : undefined}
+				bind:value={username}
+				required
+			/>
 		</label>
+	{/if}
+	{#if variant === 'password' || variant === 'device'}
 		<label>
 			Password
 			<input name="password" type="password" autocomplete="current-password" bind:value={password} required />

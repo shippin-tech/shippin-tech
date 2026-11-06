@@ -28,7 +28,10 @@ export async function jmap(using: string[], calls: MethodCall[]): Promise<Method
 	const body = (await res.json()) as { methodResponses?: MethodResponse[] };
 	const responses = body.methodResponses ?? [];
 	for (const [name, payload] of responses) {
-		if (name === 'error') throw new Error(String(payload.type ?? 'jmap error'));
+		if (name === 'error') {
+			const detail = payload.description ?? payload.type ?? 'jmap error';
+			throw new Error(String(detail));
+		}
 	}
 	return responses;
 }

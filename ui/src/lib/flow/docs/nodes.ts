@@ -1,1 +1,3 @@
-export const docsNodes = [{ id: 'file', href: '/docs' }] as const;
+export const docsNodes = [
+	{ id: 'file', label: 'File Storage', href: '/portal/x:FileStorage' }
+] as const;

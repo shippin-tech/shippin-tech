@@ -3,11 +3,15 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="oauth-client-id" content="" />
+		<meta name="oauth-scopes" content="" />
 		<meta name="referrer" content="no-referrer" />
 		<script>
 			try {
 				var theme = localStorage.getItem('shippin-theme');
-				if (theme === 'harbor' || theme === 'kelp') document.documentElement.dataset.theme = theme;
+				var dark = theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+				if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+				if (dark) document.documentElement.classList.add('dark');
 			} catch (e) {}
 		</script>
 		%sveltekit.head%

@@ -1,0 +1,101 @@
+<script lang="ts">
+	import { reduceTraceStream, requestLiveTracing } from '$lib/adapter/trace';
+	import { account } from '$lib/adapter/session';
+	import LiveTracingPanel from '$lib/catalog/portal/LiveTracingPanel.svelte';
+	import {
+		appendTrace,
+		parseTracePayload,
+		tracingStreamUrl,
+		type TraceBuffer,
+		type TraceEvent,
+		type TraceFilter
+	} from '$lib/portal/trace';
+	import type { StreamState } from '$lib/adapter/metrics';
+
+	let phase = $state<'signed-out' | 'idle' | 'connecting' | 'rejected' | 'failed' | 'open' | 'disconnected'>('idle');
+	let events = $state<TraceEvent[]>([]);
+	let dropped = $state(0);
+	let source: EventSource | null = null;
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	let token = '';
+	let keywords = '';
+	let filters: TraceFilter[] = [];
+	let stream: StreamState = { kind: 'idle' };
+
+	function halt() {
+		source?.close();
+		source = null;
+		if (timer) clearTimeout(timer);
+	}
+
+	function listen(url: string) {
+		halt();
+		source = new EventSource(url);
+		source.addEventListener('trace', (event) => {
+			try {
+				const next = parseTracePayload(String((event as MessageEvent).data));
+				const buffer: TraceBuffer = appendTrace({ events, dropped, anchor: events[0]?.timestamp ?? null }, next);
+				events = buffer.events;
+				dropped = buffer.dropped;
+				stream = reduceTraceStream(stream, { type: 'opened' });
+				phase = 'open';
+			} catch {
+				fail(true, 'retries');
+			}
+		});
+		source.onerror = () => fail(true, 'retries');
+	}
+
+	function fail(retryable: boolean, reason: 'token' | 'rejected' | 'retries') {
+		source?.close();
+		source = null;
+		stream = reduceTraceStream(stream, { type: 'error', retryable, reason });
+		if (stream.kind === 'failed') {
+			phase = reason === 'rejected' ? 'rejected' : reason === 'token' ? 'failed' : 'disconnected';
+			return;
+		}
+		if (stream.kind !== 'reconnecting') return;
+		const wait = stream.delayMs;
+		timer = setTimeout(() => {
+			stream = reduceTraceStream(stream, { type: 'retry' });
+			const url = tracingStreamUrl(token, keywords, filters);
+			if (url) listen(url);
+		}, wait);
+	}
+
+	function start(nextKeywords: string, nextFilters: TraceFilter[]) {
+		halt();
+		events = [];
+		dropped = 0;
+		keywords = nextKeywords;
+		filters = nextFilters;
+		stream = { kind: 'idle' };
+		if (!account()) {
+			phase = 'signed-out';
+			return;
+		}
+		phase = 'connecting';
+		requestLiveTracing().then((next) => {
+			if (next.status !== 'ready') {
+				phase = next.status === 'signed-out' ? 'signed-out' : next.status === 'rejected' ? 'rejected' : 'failed';
+				return;
+			}
+			token = next.token;
+			const url = tracingStreamUrl(token, keywords, filters);
+			if (!url) {
+				phase = 'failed';
+				return;
+			}
+			stream = reduceTraceStream(stream, { type: 'connect' });
+			listen(url);
+		});
+	}
+
+	function stop() {
+		halt();
+		token = '';
+		phase = 'idle';
+	}
+</script>
+
+<LiveTracingPanel {phase} {events} {dropped} onstart={start} onstop={stop} />

@@ -1,6 +1,6 @@
 {
   "id": "login",
   "a2ui": "Login",
-  "variants": ["password", "device", "otp"],
+  "variants": ["account", "password", "device", "otp"],
   "rust": "crates/http/src/auth"
 }

@@ -2,6 +2,9 @@
 node_modules
 ui/.svelte-kit
 ui/build
+ui/test-results
+ui/playwright-report
+ui/blob-report
 *.failed
 *_failed
 run.sh

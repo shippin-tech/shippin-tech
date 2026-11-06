@@ -24,12 +24,13 @@ Do not add, in this phase:
 - a webmail, calendar, or contacts client
 - a document, spreadsheet, or slide editor
 - chat, meetings, or a drive product
-- an admin UI
 - a Go control plane
 - a second mail server, including Mox, Postfix, or Dovecot
 - a collaborative Docs editor (Google Docs / Zoho Writer style)
 
 Mox is a product reference only. Do not port it or run it beside this server.
+
+The UI work is the full transition of `assets/webui` into the SvelteKit app: sign-in, bootstrap, dashboard, delivery trace, actions, Sievepad, and the schema-driven admin. The Astro landing page comes after that transition. It is a static public site. The HTML states who shippin.tech is and what the server does. `robots.txt`, a sitemap, schema.org, and `llms.txt` make that page readable to public crawlers. The landing does not host the password form.
 
 ## Suite map
 

@@ -1,18 +1,21 @@
 {
   "storageKey": "shippin-theme",
   "themes": [
-    { "id": "harbor", "scheme": "light", "label": "Harbor" },
-    { "id": "kelp", "scheme": "dark", "label": "Kelp" }
+    { "id": "light", "scheme": "light", "label": "Light" },
+    { "id": "dark", "scheme": "dark", "label": "Dark", "className": "dark" }
   ],
+  "source": "assets/webui",
   "pairs": [
-    ["--color-text", "--color-bg"],
-    ["--color-muted", "--color-bg"],
-    ["--color-text", "--color-card"],
-    ["--color-accent-fg", "--color-accent"],
-    ["--color-brand", "--color-bg"],
-    ["--color-danger", "--color-bg"],
-    ["--color-success", "--color-bg"],
-    ["--color-warning", "--color-bg"],
-    ["--color-info", "--color-bg"]
+    ["--foreground", "--background"],
+    ["--muted-foreground", "--background"],
+    ["--foreground", "--card"],
+    ["--primary-foreground", "--primary"],
+    ["--brand-text", "--background"],
+    ["--gold-text", "--background"],
+    ["--pink-text", "--background"],
+    ["--destructive", "--background"],
+    ["--success", "--background"],
+    ["--warning-text", "--background"],
+    ["--info", "--background"]
   ]
 }

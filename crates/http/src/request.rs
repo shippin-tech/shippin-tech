@@ -678,12 +678,22 @@ impl ParseHttp for Server {
                 }
             }
             "login" | "device" => {
+                if req.method() == Method::GET
+                    && let Some(response) = crate::portal::portal_response(req.uri().path()).await
+                {
+                    return Ok(response);
+                }
                 return Ok(HttpResponse::new(StatusCode::OK)
                     .with_content_type("text/html; charset=utf-8")
                     .with_header(CONTENT_ENCODING, "gzip")
                     .with_binary_body(LOGIN_PAGE));
             }
             external => {
+                if req.method() == Method::GET
+                    && let Some(response) = crate::portal::portal_response(req.uri().path()).await
+                {
+                    return Ok(response);
+                }
                 if path.next().is_none() {
                     if !external.is_empty() {
                         return Ok(HttpResponse::redirect(format!("/{external}/")));

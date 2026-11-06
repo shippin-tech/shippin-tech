@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-serve",
+  "title": "Serve the built portal from the HTTP server",
+  "costar": {
+    "context": "Action execute does not post. The remaining portal step is the engine serving the Svelte app. The unpacker refuses a VERSION file whose major is above 1, so a 2.0.4 zip is not the way to serve this UI.",
+    "objective": "Serve the built Svelte portal from the HTTP server when ui/build contains 200.html, without a VERSION file and without restarting the running server.",
+    "style": "One plan, then the file resolver.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "A page path resolves to 200.html. An asset path resolves to its file. API, /admin, and /account stay on the existing handlers."
+  },
+  "sources": [
+    {"kind": "code", "ref": "crates/http/src/request.rs"},
+    {"kind": "code", "ref": "crates/common/src/manager/application.rs"},
+    {"kind": "code", "ref": "crates/common/src/manager/defaults.rs"},
+    {"kind": "code", "ref": "ui/svelte.config.js"}
+  ],
+  "concerns": [
+    "A VERSION file of 2.0.4 makes unsupported_bundle_version refuse the zip.",
+    "The running process still has the old binary. This change is in the next process.",
+    "Falling back every extensionless path to 200.html would hide /admin, /account, and the API."
+  ],
+  "context": "adapter-static writes ui/build/200.html. The HTTP server matches the first path segment, then serves an unpacked zip at /admin and /account. shippin.tech_PORTAL_DIR overrides the default ui/build directory.",
+  "current_state": "The running server on port 8080 returns the Svelte page at /portal and the hashed script. /healthz/live stays problem+json. /admin stays the unpacked app.",
+  "target_design": "resolve_portal maps a safe relative path to a file, and maps an extensionless page to 200.html. GET requests use that file when the directory contains 200.html. API prefixes, /admin, and /account do not.",
+  "changes": [
+    "Add the path resolver and the GET response.",
+    "Call it for login and for paths that are not already an API or zip prefix.",
+    "Build ui/build so the directory exists for the next process."
+  ],
+  "boundaries": [
+    "Do not add a VERSION file.",
+    "Do not restart the running server.",
+    "Do not post a set, a live delivery, or a live action."
+  ],
+  "verification": [
+    {
+      "name": "portal-files",
+      "command": "cargo test -p http portal_file --lib --config \"build.rustc-wrapper=''\"",
+      "proves": "A page resolves to 200.html, an asset resolves to its file, a parent path is rejected, and an API path is not served.",
+      "expected": "portal_file tests pass",
+      "result": "test portal::portal_file::portal_file_serves_pages_and_assets ... ok. 1 passed; 0 failed."
+    },
+    {
+      "name": "ui-build",
+      "command": "npm run build",
+      "proves": "The Svelte app builds to ui/build/200.html.",
+      "expected": "ui/build/200.html exists",
+      "result": "adapter-static wrote ui/build, including 200.html."
+    }
+  ],
+  "status": "implemented"
+}

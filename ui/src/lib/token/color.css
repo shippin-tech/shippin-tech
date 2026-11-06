@@ -1,78 +1,147 @@
-/* Themes are Harbor (light) and Kelp (dark). They are not white and black.
-   Change a color here. Components do not hold hex.
-   Pairs in theme.json are the ones that must stay WCAG AA (4.5:1). */
+/* Color tokens. Each brand color is declared once.
+   Light and dark are the two arguments of light-dark(), driven by color-scheme.
+   Type, space, and image size live in fluid.css. */
 
-:root,
-[data-theme='harbor'] {
+@font-face {
+	font-family: 'Inter Variable';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('../../../../assets/webui/assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2') format('woff2');
+	unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+	font-family: 'Inter Variable';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('../../../../assets/webui/assets/inter-latin-wght-normal-Dx4kXJAl.woff2') format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: 'Plus Jakarta Sans Variable';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('../../../../assets/webui/assets/plus-jakarta-sans-latin-ext-wght-normal-DmpS2jIq.woff2') format('woff2');
+	unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+	font-family: 'Plus Jakarta Sans Variable';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('../../../../assets/webui/assets/plus-jakarta-sans-latin-wght-normal-eXO_dkmS.woff2') format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: 'JetBrains Mono Variable';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('../../../../assets/webui/assets/jetbrains-mono-latin-ext-wght-normal-DBQx-q_a.woff2') format('woff2');
+	unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+	font-family: 'JetBrains Mono Variable';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('../../../../assets/webui/assets/jetbrains-mono-latin-wght-normal-B9CIFXIH.woff2') format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+	color-scheme: light dark;
+	--green: #39ff14;
+	--green-deep: #0b6b32;
+	--green-hover: #00e676;
+	--gold: #ffb000;
+	--gold-deep: #7a4e00;
+	--pink: #ff2bd6;
+	--pink-deep: #b0006a;
+	--ink: #04140c;
+	--paper: #eef3f0;
+	--night: #070908;
+	--field-light: #f7fbf8;
+	--field-dark: #0d1210;
+	--card-light: #f7fbf8;
+	--card-dark: #121816;
+	--muted-light: #e1ebe4;
+	--muted-dark: #15201b;
+	--muted-text-light: #3e4f48;
+	--muted-text-dark: #9eb0a6;
+	--danger-light: #c2410c;
+	--danger-dark: #ff6b4a;
+	--info-light: #0e7490;
+	--info-dark: #7ee7ff;
+	--background: light-dark(var(--paper), var(--night));
+	--foreground: light-dark(var(--ink), #e7f6ee);
+	--card: light-dark(var(--card-light), var(--card-dark));
+	--card-foreground: var(--foreground);
+	--popover: var(--card);
+	--popover-foreground: var(--foreground);
+	--field: light-dark(var(--field-light), var(--field-dark));
+	--primary: var(--green);
+	--primary-hover: var(--green-hover);
+	--primary-foreground: var(--ink);
+	--brand-text: light-dark(var(--green-deep), var(--green));
+	--gold-text: light-dark(var(--gold-deep), var(--gold));
+	--pink-text: light-dark(var(--pink-deep), var(--pink));
+	--secondary: light-dark(var(--muted-light), var(--muted-dark));
+	--secondary-foreground: var(--foreground);
+	--muted: var(--secondary);
+	--muted-strong: light-dark(#d3e0d8, #1c2b24);
+	--muted-foreground: light-dark(var(--muted-text-light), var(--muted-text-dark));
+	--dim: light-dark(#4d5e56, #7d9188);
+	--accent: var(--secondary);
+	--accent-foreground: var(--foreground);
+	--highlight: light-dark(#ffe4f6, #2a1224);
+	--highlight-strong: light-dark(#ffd0ef, #3a1830);
+	--highlight-foreground: var(--pink-text);
+	--destructive: light-dark(var(--danger-light), var(--danger-dark));
+	--destructive-hover: light-dark(#a8380a, #ff8566);
+	--destructive-foreground: light-dark(#fff, var(--ink));
+	--success: var(--green);
+	--warning: var(--gold);
+	--warning-text: var(--gold-text);
+	--info: light-dark(var(--info-light), var(--info-dark));
+	--border: light-dark(#04140c24, #39ff1426);
+	--input: light-dark(#04140c29, #39ff1433);
+	--ring: var(--brand-text);
+	--radius: 0.75rem;
+	--font: 'Inter Variable', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	--font-display: 'Plus Jakarta Sans Variable', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+	--font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+	--color-bg: var(--background);
+	--color-card: var(--card);
+	--color-border: var(--border);
+	--color-text: var(--foreground);
+	--color-muted: var(--muted-foreground);
+	--color-accent: var(--primary);
+	--color-accent-fg: var(--primary-foreground);
+	--color-info: var(--info);
+	--color-success: var(--success);
+	--color-warning: var(--warning-text);
+	--color-danger: var(--destructive);
+	--color-brand: var(--brand-text);
+	--color-input: var(--field);
+	--color-focus: var(--ring);
+}
+
+[data-theme='light'] {
 	color-scheme: light;
-	--color-bg: #e4efe9;
-	--color-card: #f3f7f4;
-	--color-border: #b7cdc3;
-	--color-text: #10241f;
-	--color-muted: #3e564e;
-	--color-accent: #0e3d36;
-	--color-accent-fg: #f3f7f4;
-	--color-info: #0e4d78;
-	--color-success: #0c6a3c;
-	--color-warning: #6e3b05;
-	--color-danger: #9a2340;
-	--color-brand: #0c6e67;
-	--color-input: #f7fbf8;
-	--color-focus: #0c6e67;
-	--radius: 10px;
-	--space-1: 4px;
-	--space-2: 8px;
-	--space-3: 16px;
-	--space-4: 24px;
-	--font: system-ui, sans-serif;
 }
 
-[data-theme='kelp'] {
+[data-theme='dark'] {
 	color-scheme: dark;
-	--color-bg: #0e1c18;
-	--color-card: #17302a;
-	--color-border: #2c4a42;
-	--color-text: #e7f3ee;
-	--color-muted: #b4cdc3;
-	--color-accent: #c9ebe2;
-	--color-accent-fg: #10241f;
-	--color-info: #9ec9ef;
-	--color-success: #8ed4ae;
-	--color-warning: #f0c27a;
-	--color-danger: #ffb3c0;
-	--color-brand: #7dcec4;
-	--color-input: #122420;
-	--color-focus: #7dcec4;
-}
-
-@media (prefers-color-scheme: dark) {
-	:root:not([data-theme='harbor']) {
-		color-scheme: dark;
-		--color-bg: #0e1c18;
-		--color-card: #17302a;
-		--color-border: #2c4a42;
-		--color-text: #e7f3ee;
-		--color-muted: #b4cdc3;
-		--color-accent: #c9ebe2;
-		--color-accent-fg: #10241f;
-		--color-info: #9ec9ef;
-		--color-success: #8ed4ae;
-		--color-warning: #f0c27a;
-		--color-danger: #ffb3c0;
-		--color-brand: #7dcec4;
-		--color-input: #122420;
-		--color-focus: #7dcec4;
-	}
 }
 
 @media (prefers-contrast: more) {
-	:root,
-	[data-theme='harbor'] {
-		--color-border: #10241f;
-		--color-muted: #10241f;
-	}
-	[data-theme='kelp'] {
-		--color-border: #e7f3ee;
-		--color-muted: #e7f3ee;
+	:root {
+		--muted-foreground: var(--foreground);
+		--border: var(--foreground);
+		--color-muted: var(--foreground);
+		--color-border: var(--foreground);
 	}
 }

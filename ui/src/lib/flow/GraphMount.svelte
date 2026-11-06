@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { Component } from 'svelte';
+	import type { GraphItem } from './item';
 
-	type Item = { id: string; href: string };
-	let { items }: { items: readonly Item[] } = $props();
-	let Graph = $state<Component<{ items: readonly Item[] }> | null>(null);
+	let { items }: { items: readonly GraphItem[] } = $props();
+	let Graph = $state<Component<{ items: readonly GraphItem[] }> | null>(null);
 
 	onMount(async () => {
 		Graph = (await import('./Graph.svelte')).default;
@@ -18,5 +18,7 @@
 {/if}
 
 <style>
-	.wait { color: var(--color-muted); }
+	.wait {
+		color: var(--color-muted);
+	}
 </style>

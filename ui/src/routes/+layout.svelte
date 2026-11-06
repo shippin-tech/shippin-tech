@@ -10,30 +10,34 @@
 
 	onMount(() => {
 		const saved = localStorage.getItem('shippin-theme');
-		if (saved === 'harbor' || saved === 'kelp') choice = saved;
+		if (saved === 'light' || saved === 'dark') choice = saved;
 	});
+
+	function apply(next: ThemeChoice) {
+		const root = document.documentElement;
+		if (next === 'system') {
+			delete root.dataset.theme;
+			localStorage.removeItem('shippin-theme');
+			root.classList.toggle('dark', matchMedia('(prefers-color-scheme: dark)').matches);
+			return;
+		}
+		root.dataset.theme = next;
+		root.classList.toggle('dark', next === 'dark');
+		localStorage.setItem('shippin-theme', next);
+	}
 
 	function onchange(next: ThemeChoice) {
 		choice = next;
-		if (next === 'system') {
-			delete document.documentElement.dataset.theme;
-			localStorage.removeItem('shippin-theme');
-			return;
-		}
-		document.documentElement.dataset.theme = next;
-		localStorage.setItem('shippin-theme', next);
+		apply(next);
 	}
 </script>
 
 <a class="skip" href="#content">Skip to content</a>
 <header>
-	<a class="mark" href="/">shippin</a>
+	<a class="mark" href="/portal">shippin</a>
 	<nav>
-		<a href="/mail" aria-current={page.url.pathname.startsWith('/mail') ? 'page' : undefined}>Mail</a>
-		<a href="/calendar" aria-current={page.url.pathname.startsWith('/calendar') ? 'page' : undefined}>Calendar</a>
-		<a href="/contacts" aria-current={page.url.pathname.startsWith('/contacts') ? 'page' : undefined}>Contacts</a>
-		<a href="/files" aria-current={page.url.pathname.startsWith('/files') ? 'page' : undefined}>Files</a>
-		<a href="/docs" aria-current={page.url.pathname.startsWith('/docs') ? 'page' : undefined}>Docs</a>
+		<a href="/portal" aria-current={page.url.pathname.startsWith('/portal') ? 'page' : undefined}>Portal</a>
+		<a href="/login" aria-current={page.url.pathname.startsWith('/login') ? 'page' : undefined}>Sign in</a>
 	</nav>
 	<Theme value={choice} {onchange} />
 </header>

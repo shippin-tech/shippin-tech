@@ -3,7 +3,11 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [sveltekit()],
+	ssr: {
+		noExternal: ['bits-ui']
+	},
 	server: {
+		fs: { allow: ['.', '..'] },
 		proxy: {
 			'/api': 'http://127.0.0.1:8080',
 			'/jmap': 'http://127.0.0.1:8080',

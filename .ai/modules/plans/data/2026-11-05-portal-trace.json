@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-trace",
+  "title": "Add the trace timeline without opening the stream",
+  "costar": {
+    "context": "The delivery runner does not open a live stream. Trace timeline and detail are the next remaining portal surface. This server refuses the tracing token because it is not the enterprise build.",
+    "objective": "Render the trace timeline and detail from a parsed frame, and start live tracing only when a token exists.",
+    "style": "One plan, then the timeline.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "Live Tracing shows the filter, the timeline, and the detail summary. An empty token builds no stream URL."
+  },
+  "sources": [
+    {"kind": "code", "ref": "crates/http/src/api/telemetry.rs"},
+    {"kind": "code", "ref": "crates/common/src/telemetry/tracers/mod.rs"},
+    {"kind": "code", "ref": "assets/webui/assets/TraceTimeline-D-kokpJu.js"},
+    {"kind": "code", "ref": "assets/webui/assets/TraceDetailView-MajjBv1N.js"},
+    {"kind": "code", "ref": "assets/webui/assets/LiveTracingPage-BbeVPf9D.js"}
+  ],
+  "concerns": [
+    "GET /api/token/tracing is an enterprise refusal on this build. Opening /api/live/tracing subscribes to server events.",
+    "A trace frame is event trace and a JSON array of event, timestamp, and keyValues.",
+    "An empty token must not build a stream URL. A signed-out start must not fetch."
+  ],
+  "context": "The page copies are Live Tracing, Start tracing, No trace events to display, Span Type, Date, Duration, Events, Failed to load trace, Trace not found, and Could not resolve object. The stream path is /api/live/tracing. The buffer keeps 1000 events.",
+  "current_state": "Live Tracing shows the keyword filter, Start tracing, the empty timeline, and the detail sentences. A signed-out start does not fetch. The stream URL stays empty without a token.",
+  "target_design": "TraceTimeline and TraceDetail render parsed events. tracingStreamUrl returns empty without a token. Start tracing fetches the token only when a session exists, and opens EventSource only when the token is ready.",
+  "changes": [
+    "Parse a trace frame and summarize the first and last timestamps.",
+    "Render the timeline, the detail summary, and the live tracing controls.",
+    "Keep a signed-out start from fetching and an empty token from opening the stream."
+  ],
+  "boundaries": [
+    "Do not open /api/live/tracing against this server.",
+    "Do not post a set, a live delivery, or an action.",
+    "The catalog does not fetch."
+  ],
+  "verification": [
+    {
+      "name": "trace-frame",
+      "command": "node --experimental-strip-types scripts/prove-portal-trace.ts",
+      "proves": "A trace frame becomes a timeline summary, an empty token builds no URL, and a signed-out page does not fetch the stream.",
+      "expected": "ok",
+      "result": "ok. Browser: signed-out Start tracing shows Sign in and does not request /api/token/tracing or /api/live/tracing."
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The timeline, the detail, and the live tracing route typecheck.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-discover",
+  "title": "Ask the portal discover endpoint before the password",
+  "costar": {
+    "context": "The portal index is done. Direct sign-in reaches the portal with a JMAP session and never calls GET /api/discover. The maintainer said resume.",
+    "objective": "After the account name, call GET /api/discover/:email and follow the document the way the portal does.",
+    "style": "One plan, then the adapter and the sign-in step.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "Continue calls discover. This server returns a local /login endpoint and no client id, so the password step stays. A document with a client id redirects to its authorization endpoint."
+  },
+  "sources": [
+    {"kind": "code", "ref": "crates/http/src/api/mod.rs"},
+    {"kind": "code", "ref": "crates/http/src/auth/oauth/auth.rs"},
+    {"kind": "code", "ref": "crates/http/src/auth/oauth/openid.rs"},
+    {"kind": "code", "ref": "assets/webui/assets/index-7cDRjdpB.js"},
+    {"kind": "code", "ref": "assets/webui/index.html"},
+    {"kind": "code", "ref": "ui/src/routes/(account)/login/+page.svelte"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/auth.ts"}
+  ],
+  "concerns": [
+    "This running server returns authorization_endpoint /login and does not set client_id_metadata_document_supported. The portal would stop with the unconfigured sentence because oauth-client-id is empty. Stopping there removes the sign-in that already works. A local login endpoint with no client id continues to the password step.",
+    "A document that names a client id, or sets client_id_metadata_document_supported, redirects. /oauth/callback does not exist yet, so this slice must not send this server down that path.",
+    "The bundle stores the OAuth values under stalwart-oauth-. New storage uses shippin-oauth-.",
+    "Discovery failure uses the portal sentence, including the status and status text."
+  ],
+  "context": "The portal function Ou fetches /api/discover, resolves a client id, builds a PKCE authorization URL, and redirects. The local OpenID document from handle_oidc_metadata has a relative /login authorization endpoint and no client metadata flag.",
+  "current_state": "The account step checks for @ and then shows the password. The password step calls openSession. Nothing calls /api/discover.",
+  "target_design": "A pure classifier reads the discovery document. No client id and a local /login endpoint means the password step. No client id and any other endpoint means the portal unconfigured sentence. A client id means the authorization redirect. The login route calls the adapter and does not put that decision in the catalog.",
+  "changes": [
+    "Record this slice.",
+    "Add the discover classifier and the GET /api/discover call.",
+    "Call it from the account step before the password step."
+  ],
+  "boundaries": [
+    "Do not remove the password step for this server's local document.",
+    "Do not add the token exchange page.",
+    "Do not call a set method.",
+    "Do not build the Astro site.",
+    "The catalog login component does not fetch."
+  ],
+  "verification": [
+    {
+      "name": "discover-follows-the-document",
+      "command": "node --experimental-strip-types scripts/prove-portal-discover.ts",
+      "proves": "The live local document continues to the password. A client-metadata document redirects with the portal query. An external document without a client id uses the portal unconfigured sentence. The login route calls discover and the catalog does not.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The sign-in route and the discover adapter typecheck together.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

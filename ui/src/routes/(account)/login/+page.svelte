@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { goto } from '$app/navigation';
 	import { authBody, postAuth, type AuthFields, type OAuthQuery } from '$lib/adapter/auth';
-	import { openSession } from '$lib/adapter/session';
+	import { requestDiscover } from '$lib/adapter/discover';
 	import Login from '$lib/catalog/login/Login.svelte';
 	import type { LoginVariant } from '$lib/catalog/login/variants';
 
@@ -10,10 +9,14 @@
 	const device = /\/device(\/|$)/.test(page.url.pathname);
 	const missingRedirect = !device && !params.get('redirect_uri');
 
-	let variant = $state<LoginVariant>(device ? 'device' : 'password');
+	let variant = $state<LoginVariant>(device ? 'device' : missingRedirect ? 'account' : 'password');
 	let title = $state(device ? 'Authorize device' : 'Sign in');
 	let subtitle = $state(
-		device ? 'Sign in to approve this device.' : 'Enter your credentials to continue'
+		device
+			? 'Sign in to approve this device.'
+			: missingRedirect
+				? 'Enter your account name to continue'
+				: 'Enter your credentials to continue'
 	);
 	let alert = $state('');
 	let alertKind = $state<'' | 'error' | 'success'>('');
@@ -51,25 +54,34 @@
 	async function onsubmit(fields: AuthFields) {
 		if (closed) return;
 		if (missingRedirect) {
-			if (!fields.username || !fields.password) {
-				alertKind = 'error';
-				alert = 'Please enter your username and password.';
+			if (variant === 'account') {
+				if (!fields.username.includes('@')) {
+					alertKind = 'error';
+					alert = 'Enter your account name to continue';
+					return;
+				}
+				pending = true;
+				alert = '';
+				try {
+					const next = await requestDiscover(fields.username);
+					if (next.step !== 'redirect') {
+						alertKind = 'error';
+						alert = next.step === 'unconfigured' ? next.message : 'Sign-in could not be completed.';
+						return;
+					}
+					for (const [key, value] of Object.entries(next.store)) {
+						sessionStorage.setItem(key, value);
+					}
+					window.location.assign(next.url);
+					return;
+				} catch (err) {
+					alertKind = 'error';
+					alert = err instanceof Error ? err.message : 'Discovery failed';
+				} finally {
+					pending = false;
+				}
 				return;
 			}
-			pending = true;
-			alert = '';
-			try {
-				await openSession(fields.username, fields.password);
-				await goto('/mail');
-			} catch (err) {
-				alertKind = 'error';
-				alert = err instanceof Error && err.message === 'invalid'
-					? 'Invalid username or password. Please try again.'
-					: failure;
-			} finally {
-				pending = false;
-			}
-			return;
 		}
 		if (variant === 'otp') {
 			if (!fields.otp || !last) {
@@ -132,4 +144,16 @@
 	}
 </script>
 
-<Login {variant} {title} {subtitle} {alert} {alertKind} {pending} {closed} bind:username bind:deviceCode {onsubmit} />
+<Login
+	{variant}
+	{title}
+	{subtitle}
+	{alert}
+	{alertKind}
+	{pending}
+	{closed}
+	submitLabel={variant === 'account' ? 'Continue' : 'Sign in'}
+	bind:username
+	bind:deviceCode
+	{onsubmit}
+/>

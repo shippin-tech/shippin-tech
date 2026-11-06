@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-writes",
+  "title": "Add schema write controls without posting set",
+  "costar": {
+    "context": "Dashboard metrics parse a real frame and do not invent numbers. Schema writes are the next remaining portal surface. The maintainer's goal forbids posting a set against this server.",
+    "objective": "Add create, save, and delete confirmation from the portal sentences, build the registry set call, and do not send it.",
+    "style": "One plan, then the write controls.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "Delete asks for confirmation with the portal sentence. Save reports no changes. Nothing posts x:Object/set."
+  },
+  "sources": [
+    {"kind": "code", "ref": "assets/webui/assets/AdminPanel-DhmcW4yN.js"},
+    {"kind": "code", "ref": "crates/jmap/src/registry/set.rs"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/portal-call.ts"},
+    {"kind": "code", "ref": "ui/src/lib/catalog/portal/PortalView.svelte"},
+    {"kind": "code", "ref": "ui/src/routes/(portal)/portal/[...view]/+page.svelte"},
+    {"kind": "code", "ref": "ui/node_modules/bits-ui/dist/bits/alert-dialog/exports.d.ts"}
+  ],
+  "concerns": [
+    "A set response confirms a change through created, updated, or destroyed. An empty response is not a confirmation.",
+    "Singletons cannot be destroyed. The delete control stays off those views.",
+    "The form is still readonly, so Save has no edits to send."
+  ],
+  "context": "The list says Create {{name}}, Delete {{name}}?, and Are you sure you want to delete {{label}}? This action cannot be undone. The form says This action cannot be undone. This will permanently delete this {{name}}. Save, Cancel, No changes to save, and The server did not confirm the change. Registry set takes create, update, and destroy.",
+  "current_state": "Create, Save, and the delete confirmation render from the portal sentences. registrySet builds create, update, and destroy. The route does not post it. Save says there are no changes.",
+  "target_design": "WriteActions uses bits-ui AlertDialog for delete. A pure registrySet builds the method call. The route does not call it. Save says there are no changes. Confirming delete says the server did not confirm the change.",
+  "changes": [
+    "Add the write sentences and the set call shape.",
+    "Render create, save, and the delete confirmation.",
+    "Keep the route from posting set."
+  ],
+  "boundaries": [
+    "Do not post a set, a delivery, or an action.",
+    "Do not turn the readonly input into a typed widget.",
+    "The catalog does not fetch."
+  ],
+  "verification": [
+    {
+      "name": "writes-do-not-post",
+      "command": "node --experimental-strip-types scripts/prove-portal-writes.ts",
+      "proves": "The set call matches create, update, and destroy. An empty response is not confirmed. The confirmation sentences render, and the route does not post set.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The write controls and the alert dialog typecheck.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

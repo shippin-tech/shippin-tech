@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-records",
+  "title": "Load portal lists from the registry get method",
+  "costar": {
+    "context": "The Svelte portal already renders Management, Settings, and Account from the schema. Lists still say No results found and forms are blank because nothing calls the engine. The user asked to plan the next slice and then implement it.",
+    "objective": "Fill each schema view from the same get method the server already accepts, and keep an unsigned view from claiming the list was empty.",
+    "style": "One plan, then the adapter and the view that the plan names.",
+    "tone": "Direct.",
+    "audience": "The maintainer and the next coding agent.",
+    "response": "A signed-in view loads x:Object/get or the standard get for Mailbox, Calendar, AddressBook, and SieveScript. A signed-out view links to sign-in. An empty reply says No results found."
+  },
+  "sources": [
+    {"kind": "code", "ref": "crates/jmap-proto/src/request/method.rs"},
+    {"kind": "code", "ref": "crates/jmap-proto/src/method/get.rs"},
+    {"kind": "code", "ref": "crates/jmap/src/registry/get.rs"},
+    {"kind": "code", "ref": "crates/jmap/src/api/request.rs"},
+    {"kind": "code", "ref": "crates/jmap-proto/src/request/capability.rs"},
+    {"kind": "code", "ref": "crates/jmap-proto/src/error/method.rs"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/jmap.ts"},
+    {"kind": "code", "ref": "ui/src/lib/catalog/portal/PortalView.svelte"},
+    {"kind": "code", "ref": "ui/src/routes/(portal)/portal/[...view]/+page.svelte"},
+    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-04-portal-to-svelte.json"}
+  ],
+  "concerns": [
+    "Registry get with ids omitted returns every object of that type up to the server maximum. A query call is a different method and is not this slice.",
+    "MethodObject::Registry uses Capability::ShippinTech, and request.rs skips the using check for that capability. Standard objects such as Mailbox still require their capability in using.",
+    "A singleton query is rejected by method.rs. Singletons are loaded with get, which get.rs already allows when ids is omitted.",
+    "Enterprise objects Metric, Trace, MaskedEmail, and ArchivedItem return forbidden. The screen shows the portal sentence and does not add a license form.",
+    "Bootstrap mode rejects every object except Bootstrap. x:Bootstrap is not in the navigation catalog, so this slice shows the server sentence and does not build the wizard.",
+    "The one-node process may be down. The browser can prove the signed-out state. A live row proof waits until that process is running."
+  ],
+  "context": "The portal conversion already mounted the schema navigation. The records behind those views are JMAP get calls. The catalog stores the object name, including x:Account for the Accounts view.",
+  "current_state": "PortalView always renders one row, No results found, and empty readonly inputs. The route does not call the adapter. jmap.ts drops the method error description.",
+  "target_design": "The view route calls the adapter. The adapter builds object/get with the session account id. Registry names keep the x: prefix. Mailbox, Calendar, AddressBook, ContactCard, SieveScript, VacationResponse, Identity, and FileNode send the capability urn from capability.rs. The catalog component receives rows and does not fetch. Choosing a row fills the form. A singleton fills the form from its one record.",
+  "changes": [
+    "Record this slice in the plans module.",
+    "Add registryGet, usingFor, cell, and loadRegistry in ui/src/lib/adapter/portal.ts.",
+    "Keep the JMAP error description on the thrown Error so Enterprise and bootstrap mode can be recognized.",
+    "Pass rows into PortalView. Signed out links to /login. An empty list says No results found. A forbidden Enterprise reply uses the portal sentence.",
+    "Leave the dashboard, delivery trace, action runner, Sievepad, bootstrap wizard, and Astro landing for later slices."
+  ],
+  "boundaries": [
+    "Do not call a set method.",
+    "Do not restart the one-node server for this proof.",
+    "Do not build the Astro site.",
+    "Do not add a license checker.",
+    "Do not paste the minified portal bundle into ui/.",
+    "Catalog components still do not fetch."
+  ],
+  "verification": [
+    {
+      "name": "get-call-and-view-agree",
+      "command": "node --experimental-strip-types scripts/prove-portal-records.ts",
+      "proves": "The adapter asks for x:Domain/get and Mailbox/get with the mail capability, and the view distinguishes sign-in, an empty list, and the enterprise sentence. A view that always says No results found fails.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The route, the catalog view, and the adapter typecheck together.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

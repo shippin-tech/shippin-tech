@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-sign-in",
+  "title": "Finish direct sign-in as the portal authorization-code flow",
+  "costar": {
+    "context": "Direct sign-in called GET /api/discover and then opened a JMAP Basic session when the local document had no client id. The maintainer said fix it.",
+    "objective": "A local /login document with no client id registers a public client, redirects with PKCE, posts the password to /api/auth, exchanges the code, and keeps a Bearer session.",
+    "style": "One plan, then the adapter, the callback route, and the sign-in screen.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "Continue registers the client and returns to /login with the authorization query. The password completes the code flow. The portal session is Bearer."
+  },
+  "sources": [
+    {"kind": "code", "ref": "crates/http/src/auth/oauth/registration.rs"},
+    {"kind": "code", "ref": "crates/common/src/auth/oauth/client_id.rs"},
+    {"kind": "code", "ref": "crates/http/src/auth/authenticate.rs"},
+    {"kind": "code", "ref": "assets/webui/assets/index-7cDRjdpB.js"},
+    {"kind": "code", "ref": "ui/src/app.html"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/discover-call.ts"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/discover.ts"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/oauth.ts"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/session.ts"},
+    {"kind": "code", "ref": "ui/src/routes/(account)/login/+page.svelte"},
+    {"kind": "code", "ref": "ui/src/routes/(account)/oauth/callback/+page.svelte"}
+  ],
+  "concerns": [
+    "Anonymous public registration is the schema default. A server with it turned off cannot mint a client id and the account step shows the unconfigured sentence.",
+    "The registered redirect URI is the loopback callback for this origin. A cached client id belongs to that exact URI.",
+    "The device and OAuth query password path stays. This slice does not call a set method and does not build the Astro site."
+  ],
+  "context": "The portal always resolves a client id, stores PKCE under its OAuth prefix, and redirects to the authorization endpoint. This server's discovery document is relative /login with no client id and no client-metadata flag. POST /auth/register with token_endpoint_auth_method none issues a stateless swc1 client id for a loopback redirect.",
+  "current_state": "The account step treated a local document without a client id as a password step that called openSession.",
+  "target_design": "That document returns a register step. The adapter posts /auth/register, caches the client id, and redirects to /login with the code challenge. The existing password form posts /api/auth. /oauth/callback exchanges the code and openBearer stores the access token. authorization() sends Bearer when that token is present.",
+  "changes": [
+    "Replace the local password shortcut with public client registration and the authorization redirect.",
+    "Exchange the code on /oauth/callback and store a Bearer session.",
+    "Keep the device and query-string password path."
+  ],
+  "boundaries": [
+    "openSession stays available for other callers and is not the direct sign-in path.",
+    "Do not echo the account secret.",
+    "Do not call a set method.",
+    "Do not build the Astro site.",
+    "The catalog login component does not fetch."
+  ],
+  "verification": [
+    {
+      "name": "discover-registers-then-redirects",
+      "command": "node --experimental-strip-types scripts/prove-portal-discover.ts",
+      "proves": "A local document with no client id asks for registration. After a client id it redirects to /login with the callback and S256. An external document without a client id stays unconfigured. The login route calls discover and does not call openSession. The catalog does not fetch.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The sign-in route, the callback, and the Bearer session typecheck together.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

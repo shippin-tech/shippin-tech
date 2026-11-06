@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-copy",
+  "title": "Copy a portal value, with a manual fallback",
+  "costar": {
+    "context": "Search is on the portal shell. Copy is the next remaining surface. The maintainer said get this fully done.",
+    "objective": "Copy a form value, say Copied, and when the clipboard is blocked tell the person to select the value and copy it manually.",
+    "style": "One slice, then the control beside the readonly field.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "A value has a Copy button named for that field. Success says Copied for a short time. Failure shows the portal sentences."
+  },
+  "sources": [
+    {"kind": "code", "ref": "assets/webui/assets/AdminPanel-DhmcW4yN.js"},
+    {"kind": "code", "ref": "assets/webui/assets/BootstrapWizard-DqwPyluo.js"},
+    {"kind": "code", "ref": "assets/webui/assets/OtpAuthField-DmxMF0QG.js"},
+    {"kind": "code", "ref": "ui/src/lib/catalog/portal/PortalView.svelte"}
+  ],
+  "concerns": [
+    "127.0.0.1 may refuse navigator.clipboard. The fallback uses execCommand, and a second failure shows the manual sentence.",
+    "Empty fields have nothing to copy, so they do not get the button.",
+    "The catalog does not fetch."
+  ],
+  "context": "AdminPanel writes text with navigator.clipboard when the page is a secure context. A throw or an insecure context uses a hidden textarea and document.execCommand('copy'). Failure shows Copy failed and Your browser blocked clipboard access. Select the value and copy it manually. The button name is Copy, or Copy plus the field name, and Copied for 1500ms after success.",
+  "current_state": "Readonly inputs show the value and have no copy control.",
+  "target_design": "A pure writer tries the clipboard and then the manual command. The catalog button sits beside a non-empty field value and does not fetch.",
+  "changes": [
+    "Add the clipboard writer and the fallback.",
+    "Render it beside a non-empty form value."
+  ],
+  "boundaries": [
+    "Do not add the bootstrap wizard in this slice.",
+    "Do not call a set method.",
+    "The catalog does not fetch."
+  ],
+  "verification": [
+    {
+      "name": "copy-falls-back",
+      "command": "node --experimental-strip-types scripts/prove-portal-copy.ts",
+      "proves": "A successful clipboard write is copied. A rejected write uses the manual command. An insecure context that cannot exec-copy is blocked. The form uses the control and the catalog does not fetch.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The copy control and the form typecheck together.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

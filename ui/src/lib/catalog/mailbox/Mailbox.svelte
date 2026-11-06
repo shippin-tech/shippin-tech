@@ -53,20 +53,20 @@
 <style>
 	.mail {
 		display: grid;
-		grid-template-columns: 12rem 1fr;
-		min-height: 22rem;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--aside)), 1fr));
+		gap: var(--x-3xs);
+		min-block-size: var(--y-3xl);
 		background: var(--color-card);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius);
 		overflow: hidden;
 	}
 	aside {
-		padding: var(--space-3);
-		border-right: 1px solid var(--color-border);
+		padding: var(--y-s) var(--x-s);
 		background: var(--color-bg);
 	}
 	h1, h2, p { margin: 0; }
-	h1 { color: var(--color-brand); font-size: 1.1rem; }
+	h1 { color: var(--color-brand); }
 	ul { list-style: none; padding: 0; margin: var(--space-3) 0 0; display: grid; gap: var(--space-1); }
 	button, a {
 		width: 100%;
@@ -84,8 +84,4 @@
 	p, small, span { color: var(--color-muted); }
 	.messages a { display: grid; gap: var(--space-1); border: 1px solid var(--color-border); background: var(--color-bg); }
 	.messages strong { color: var(--color-text); }
-	@media (max-width: 700px) {
-		.mail { grid-template-columns: 1fr; }
-		aside { border-right: 0; border-bottom: 1px solid var(--color-border); }
-	}
 </style>

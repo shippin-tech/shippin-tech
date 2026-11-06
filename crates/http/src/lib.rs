@@ -5,6 +5,7 @@
 pub mod api;
 pub mod auth;
 pub mod form;
+pub mod portal;
 pub mod request;
 
 use common::Inner;

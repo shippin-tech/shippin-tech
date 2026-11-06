@@ -1,8 +1,8 @@
 {
-  "context": "The maintainer said the deployable product should be multi-tenant, able to connect to other products, and have the groundwork to scale. Zoho and Google Docs capabilities were not written down.",
-  "objective": "Record the suite map and make the next image proof two isolated tenants with JMAP, CalDAV, and CardDAV up.",
-  "style": "A short map in the product rule and three roadmap objectives.",
+  "context": "The Windows debug exe was a local check. Hosting is the Linux image: Dockerfile, Dockerfile.fdb, and the runtime stages in Dockerfile.build. The process workdir in those images is /var/lib/shippin.tech.",
+  "objective": "Build the Svelte portal inside those images and serve it from /usr/share/shippin.tech/portal.",
+  "style": "One plan, then the image path.",
   "tone": "Direct.",
-  "audience": "The next coding agent and the maintainer.",
-  "response": "Mail, calendar, contacts, and tenants stay in this engine. Docs, sheets, slides, drive, chat, and meetings are later products that connect."
+  "audience": "The maintainer.",
+  "response": "The hosted process reads the portal installed in the image. A set directory overrides that path."
 }

@@ -9,8 +9,8 @@
 
 	const labels: Record<ThemeChoice, string> = {
 		system: 'System',
-		harbor: 'Harbor',
-		kelp: 'Kelp'
+		light: 'Light',
+		dark: 'Dark'
 	};
 </script>
 

@@ -1,9 +1,13 @@
 # tokens
 
-Color, type, space, and motion live in this folder. A component does not invent a color.
+Color, type, space, and motion live in this folder. A component does not invent a color, a font size, or a space.
 
-Harbor is the light theme. Kelp is the dark theme. Neither is white or black. `color.css` holds both. `theme.json` names them and lists the pairs that must stay at WCAG AA (4.5:1).
+`viewport.ts` is the only viewport: 320 to 1240. `scripts/emit-fluid.ts` runs `utopia-core` and writes `fluid.css`. `--x-*` clamps on the inline axis (`vi`). `--y-*` clamps on the block axis (`vb`). `--step-*` is the type scale. `--img-s`, `--img-m`, and `--img-l` are the image slots. `--measure` and `--aside` are the grid minimums. `--space-1` through `--space-4` alias the inline steps.
 
-To add or change a theme, edit `color.css` and `theme.json` together. Set `data-theme` on the document to `harbor` or `kelp`. Leave the attribute off to follow the system. The key in local storage is `shippin-theme`.
+Columns wrap with `repeat(auto-fit, minmax(min(100%, var(--measure)), 1fr))`. There is no width breakpoint.
 
-`prefers-reduced-motion` zeros the motion tokens. `prefers-contrast: more` strengthens border and muted text. Focus uses `--color-focus`.
+Each brand color is declared once in `color.css`. Light and dark are `light-dark()`. `color-scheme` follows the system unless `data-theme` is `light` or `dark`. Primary is `--green` (`#39ff14`). Gold is `--gold` (`#ffb000`). Cyber pink is `--pink` (`#ff2bd6`). Body text on the light page uses the deep shades.
+
+`tokens.ts` is the typed list of color variable names. `ThemeChoice` is `system | light | dark`.
+
+`prefers-reduced-motion` zeros the motion tokens. `prefers-contrast: more` sets muted text and the border to the foreground. Focus uses `--ring`. Those are preferences, not viewport breakpoints.

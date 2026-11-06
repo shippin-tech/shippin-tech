@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-04-astro-landing",
+  "title": "Public Astro landing after the portal transition",
+  "costar": {
+    "context": "The maintainer wants the web UI fully transitioned from assets/webui, and only then a landing page. That page is Astro, readable by people, search engines, and public crawlers, and it says who shippin.tech is and what the server does.",
+    "objective": "Record the landing as a later static site with HTML, robots.txt, a sitemap, schema.org, and llms.txt. Do not build it before the portal transition.",
+    "style": "One plan that names the public files and the sentences the HTML must contain.",
+    "tone": "Direct.",
+    "audience": "The maintainer and the next coding agent.",
+    "response": "Finish the Svelte portal first. The landing is then an Astro site whose first HTML says shippin.tech is the mail server for a domain. Crawlers are allowed onto that page and kept off the mailbox API."
+  },
+  "sources": [
+    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-04-portal-to-svelte.json"},
+    {"kind": "code", "ref": ".cursor/rules/product-boundaries.mdc"},
+    {"kind": "code", "ref": "assets/webui/shippintech-app.json"},
+    {"kind": "web", "ref": "https://llmstxt.org/"},
+    {"kind": "web", "ref": "https://www.rfc-editor.org/rfc/rfc9309.html"},
+    {"kind": "web", "ref": "https://schema.org/SoftwareApplication"}
+  ],
+  "concerns": [
+    "llms.txt is a curated map, not access control. Major crawlers are not documented to fetch it. The HTML, robots.txt, and the sitemap are what a public crawler actually reads.",
+    "A password form on the marketing origin would put the session on the public site. Sign-in stays a link to the app.",
+    "robots.txt on the marketing deploy must allow the public pages and disallow the mailbox API paths. Disallowing the whole host would hide who shippin.tech is.",
+    "This plan does not scrape anyone else's site. It publishes this site so a public crawler can read it.",
+    "Starting site/ before 2026-11-04-portal-to-svelte is implemented would ship a landing page in front of the empty shells."
+  ],
+  "context": "shippin.tech is the brand and the Rust mail server: SMTP, IMAP, JMAP, POP3, ManageSieve, CalDAV, and CardDAV. It was built to host and manage mail for a domain. The portal in assets/webui is the app for that job. The public page comes after that app is the Svelte UI.",
+  "current_state": "There is no Astro project. The portal transition plan is draft. ui/ is the Svelte app. The public sentences are not yet in a static page.",
+  "target_design": "site/ is an Astro project that builds static HTML. The home page text says shippin.tech is the mail server for a domain and names SMTP, IMAP, JMAP, POP3, ManageSieve, CalDAV, and CardDAV. The same sentences are in the document title, the meta description, a SoftwareApplication JSON-LD block, sitemap.xml, and llms.txt. robots.txt allows / and disallows /api, /jmap, /admin, and /account. Sign in is a link to the app login. The page uses the cyber color tokens and the 320 to 1240 fluid clamps. No width breakpoint.",
+  "changes": [
+    "Wait until 2026-11-04-portal-to-svelte has status implemented.",
+    "Add site/ as an Astro static build, separate from ui/ and from the Rust workspace.",
+    "Write the home page so the first HTML response contains the who and what sentences without running client script.",
+    "Add robots.txt per RFC 9309, sitemap.xml, schema.org SoftwareApplication JSON-LD, and llms.txt with an H1 and a blockquote summary per https://llmstxt.org/.",
+    "Link Sign in to the app login. Do not post the password from the landing origin."
+  ],
+  "boundaries": [
+    "Do not build site/ while 2026-11-04-portal-to-svelte is draft.",
+    "Do not scrape third-party sites.",
+    "Do not put the mailbox, the admin, or the password form on the public page.",
+    "Do not add a license choice, shippin.cloud hosting, or a Go control plane.",
+    "Do not mark deployable-product done."
+  ],
+  "verification": [
+    {
+      "name": "public-html-says-who-and-what",
+      "command": "python -c \"from pathlib import Path; html=Path('site/dist/index.html').read_text(encoding='utf-8'); keys=['shippin.tech','SMTP','IMAP','JMAP','POP3','ManageSieve','CalDAV','CardDAV']; missing=[k for k in keys if k not in html]; assert not missing, missing; robots=Path('site/dist/robots.txt').read_text(encoding='utf-8'); assert 'Disallow: /api' in robots; llms=Path('site/dist/llms.txt').read_text(encoding='utf-8'); assert llms.startswith('# '); print('ok')\"",
+      "proves": "The built landing HTML names shippin.tech and the seven protocols without a browser. robots.txt keeps crawlers off /api. llms.txt has the required H1. A page that only renders that copy in client script fails.",
+      "expected": "ok"
+    },
+    {
+      "name": "portal-transition-is-finished-first",
+      "command": "python -c \"import json; from pathlib import Path; p=json.loads(Path(r'.ai/modules/plans/data/2026-11-04-portal-to-svelte.json').read_text(encoding='utf-8')); assert p['status']=='implemented', p['status']; print('ok')\"",
+      "proves": "The landing proof is not accepted while the portal transition plan is still draft.",
+      "expected": "ok"
+    }
+  ],
+  "status": "draft"
+}

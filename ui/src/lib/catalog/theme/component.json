@@ -1,5 +1,5 @@
 {
   "id": "theme",
   "a2ui": "Theme",
-  "variants": ["system", "harbor", "kelp"]
+  "variants": ["system", "light", "dark"]
 }

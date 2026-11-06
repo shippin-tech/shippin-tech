@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-actions",
+  "title": "Add action execute without posting the set",
+  "costar": {
+    "context": "Trace timeline does not open the live stream. Action execute is the next remaining portal surface. Creating an x:Action runs the action on the server.",
+    "objective": "Show the action list and the run confirmation, and do not post x:Action/set.",
+    "style": "One plan, then the action page.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "Actions lists the schema variants and asks before running. Execute does not post the set."
+  },
+  "sources": [
+    {"kind": "code", "ref": "crates/jmap/src/registry/mapping/action.rs"},
+    {"kind": "code", "ref": "assets/webui/assets/ActionPage-x2HeLrph.js"},
+    {"kind": "code", "ref": "resources/schema/schema.json.gz"},
+    {"kind": "code", "ref": "ui/src/lib/portal/catalog.ts"}
+  ],
+  "concerns": [
+    "x:Action/set create runs the action. Reload, cache, and queue actions change the running server.",
+    "TroubleshootDmarc and ClassifySpam need a nested object. An empty submit is not a valid action.",
+    "The route must not import the set call."
+  ],
+  "context": "The schema lists 11 action variants. The page copies are Actions, Run this action?, Execute, Action failed, Action failed., and This field is required. A successful create is created[id]. notCreated is a failure.",
+  "current_state": "Actions lists the 11 schema variants. Execute shows Action failed and does not post x:Action/set. A variant that needs a nested object says the field is required.",
+  "target_design": "ActionPanel lists the generated variants. A simple action opens Run this action? and Execute records Action failed without a request. A variant with a schema says the field is required. actionSet builds the create call for the proof only.",
+  "changes": [
+    "Emit the 11 action variants into the catalog.",
+    "Render the grouped list and the confirmation dialog.",
+    "Keep the route from posting x:Action/set."
+  ],
+  "boundaries": [
+    "Do not post a set, a live delivery, or a live action.",
+    "The catalog does not fetch."
+  ],
+  "verification": [
+    {
+      "name": "action-does-not-post",
+      "command": "node --experimental-strip-types scripts/prove-portal-actions.ts",
+      "proves": "The catalog lists the action variants, the create call has the right shape, and the page does not post it.",
+      "expected": "ok",
+      "result": "ok. Browser: Execute on Reload settings shows Action failed, DMARC shows This field is required, and no POST contained x:Action/set."
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The action panel and the route typecheck.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

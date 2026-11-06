@@ -27,7 +27,6 @@
 </div>
 
 <style>
-	.split { display: grid; grid-template-columns: 1.3fr 1fr; gap: var(--space-3); padding: 0 var(--space-3) var(--space-4); }
-	h2 { margin: 0 0 var(--space-2); color: var(--color-brand); font-size: 1rem; }
-	@media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+	.split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--measure)), 1fr)); gap: var(--x-s); padding-block-end: var(--y-m); }
+	h2 { margin: 0 0 var(--space-2); color: var(--color-brand); }
 </style>
