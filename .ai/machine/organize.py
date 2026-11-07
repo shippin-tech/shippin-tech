@@ -115,6 +115,11 @@ def module_dirs() -> list[Path]:
     return sorted(path for path in MODULES.iterdir() if path.is_dir())
 
 
+def index_source_path(source: str) -> Path:
+    path = Path(source)
+    return path if path.is_absolute() else ROOT / path
+
+
 def check_tree() -> dict[str, int]:
     errors: list[str] = []
     counts = {"modules": 0, "lines": 0, "documents": 0}
@@ -174,7 +179,7 @@ def check_tree() -> dict[str, int]:
                         errors.append(f"{index}: no sources")
                     else:
                         for source, meta in sources.items():
-                            if not Path(source).is_file():
+                            if not index_source_path(source).is_file():
                                 errors.append(f"index source missing: {source}")
                             if not isinstance(meta, dict) or "offset" not in meta or "session_key" not in meta:
                                 errors.append(f"index source incomplete: {source}")

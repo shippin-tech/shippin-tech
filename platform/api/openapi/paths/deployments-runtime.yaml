@@ -1,0 +1,216 @@
+deployableServices:
+  x-implementation-status: registered
+  parameters: [{ $ref: ../components/parameters.yaml#/TenantId }]
+  get:
+    tags: [deployments]
+    operationId: listDeployableServices
+    summary: List active deployable catalog services
+    description: Tenant-safe definitions include a validated provider/runtime compatibility declaration and omit source credentials and secret-reference defaults. A declaration is not evidence of a working executor or deployed service.
+    responses:
+      "200": { description: Configurable service definitions., content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeployableServiceList } } } }
+      "401": { $ref: ../components/responses.yaml#/Problem401 }
+      "404": { $ref: ../components/responses.yaml#/Problem404 }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }
+deploymentTargets:
+  x-implementation-status: registered
+  parameters: [{ $ref: ../components/parameters.yaml#/TenantId }]
+  get:
+    tags: [deployments]
+    operationId: listDeploymentTargets
+    summary: List assigned Incus and Proxmox targets
+    description: Only targets assigned to this tenant are returned; can_request reflects the server authorization check for mutations.
+    responses:
+      "200": { description: Available assigned targets., content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentTargetList } } } }
+      "401": { $ref: ../components/responses.yaml#/Problem401 }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }
+deploymentTargetStorage:
+  x-implementation-status: registered
+  parameters:
+    - { $ref: ../components/parameters.yaml#/TenantId }
+    - name: systemId
+      in: path
+      required: true
+      schema: { $ref: ../schemas/common.yaml#/Uuid }
+  get:
+    tags: [deployments]
+    operationId: listDeploymentTargetStorage
+    summary: List live storage pools for an assigned Incus deployment target
+    description: Read-only inventory is returned only for an active Incus server assigned to the tenant. The chosen pool is stored in immutable deployment target configuration; this endpoint does not create a volume or enable provider execution.
+    responses:
+      "200": { description: Live provider storage pool inventory., content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentTargetStorageList } } } }
+      "401": { $ref: ../components/responses.yaml#/Problem401 }
+      "404": { $ref: ../components/responses.yaml#/Problem404 }
+      "409": { $ref: ../components/responses.yaml#/Problem409 }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }
+deploymentTargetNetworks:
+  x-implementation-status: registered
+  parameters:
+    - { $ref: ../components/parameters.yaml#/TenantId }
+    - name: systemId
+      in: path
+      required: true
+      schema: { $ref: ../schemas/common.yaml#/Uuid }
+  get:
+    tags: [deployments]
+    operationId: listDeploymentTargetNetworks
+    summary: List live managed networks for an assigned Incus deployment target
+    description: Read-only inventory is returned only for an active Incus server assigned to the tenant and contains bridge or OVN networks. The selected network is stored in immutable deployment target configuration; this endpoint does not create a network, enable edge ingress, or execute workloads.
+    responses:
+      "200": { description: Live managed provider network inventory., content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentTargetNetworkList } } } }
+      "401": { $ref: ../components/responses.yaml#/Problem401 }
+      "404": { $ref: ../components/responses.yaml#/Problem404 }
+      "409": { $ref: ../components/responses.yaml#/Problem409 }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }
+deployments:
+  x-implementation-status: registered
+  parameters: [{ $ref: ../components/parameters.yaml#/TenantId }]
+  get:
+    tags: [deployments]
+    operationId: listDeployments
+    summary: List tenant deployments
+    parameters: [{ name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 100 } }]
+    responses:
+      "200": { description: Current desired generations., content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentList } } } }
+      "401": { $ref: ../components/responses.yaml#/Problem401 }
+      "404": { $ref: ../components/responses.yaml#/Problem404 }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }
+  post:
+    tags: [deployments]
+    operationId: createDeployment
+    summary: Record an initial deployment request
+    description: Stores desired state and a pinned catalog snapshot. Any selected Incus storage pool and private managed network are revalidated against the active tenant-assigned target's live inventory before the generation is accepted. This does not execute a provider operation; configured AgentHub review and a reconciler remain required.
+    parameters: [{ $ref: ../components/parameters.yaml#/IdempotencyKey }]
+    requestBody:
+      required: true
+      content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentCreate } } }
+    responses:
+      "201": { description: Initial desired generation recorded., headers: { ETag: { schema: { type: string } } }, content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/Deployment } } } }
+      "409": { $ref: ../components/responses.yaml#/Problem409 }
+      "422": { $ref: ../components/responses.yaml#/ProblemDefault }
+      "401": { $ref: ../components/responses.yaml#/Problem401 }
+      "403": { $ref: ../components/responses.yaml#/Problem403 }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }
+deployment:
+  x-implementation-status: registered
+  parameters:
+    - { $ref: ../components/parameters.yaml#/TenantId }
+    - name: deploymentId
+      in: path
+      required: true
+      schema: { $ref: ../schemas/common.yaml#/Uuid }
+  get:
+    tags: [deployments]
+    operationId: getDeployment
+    summary: Read current deployment intent
+    responses:
+      "200": { description: Current generation., headers: { ETag: { schema: { type: string } } }, content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/Deployment } } } }
+      "404": { $ref: ../components/responses.yaml#/Problem404 }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }
+  patch:
+    tags: [deployments]
+    operationId: updateDeployment
+    summary: Append a desired generation
+    description: Requires the current ETag. The request records intent; no provider call is made by this endpoint.
+    parameters:
+      - { $ref: ../components/parameters.yaml#/IdempotencyKey }
+      - { $ref: ../components/parameters.yaml#/IfMatch }
+    requestBody:
+      required: true
+      content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentUpdate } } }
+    responses:
+      "200": { description: New desired generation., headers: { ETag: { schema: { type: string } } }, content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/Deployment } } } }
+      "412": { $ref: ../components/responses.yaml#/Problem412 }
+      "422": { $ref: ../components/responses.yaml#/ProblemDefault }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }
+  delete:
+    tags: [deployments]
+    operationId: requestDeploymentRemoval
+    summary: Record desired absence
+    description: Appends an absent generation. This does not claim that the provider resource has been removed.
+    parameters:
+      - { $ref: ../components/parameters.yaml#/IdempotencyKey }
+      - { $ref: ../components/parameters.yaml#/IfMatch }
+    responses:
+      "200": { description: Desired absence recorded., headers: { ETag: { schema: { type: string } } }, content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/Deployment } } } }
+      "412": { $ref: ../components/responses.yaml#/Problem412 }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }
+deploymentEvents:
+  x-implementation-status: registered
+  parameters:
+    - { $ref: ../components/parameters.yaml#/TenantId }
+    - name: deploymentId
+      in: path
+      required: true
+      schema: { $ref: ../schemas/common.yaml#/Uuid }
+  get:
+    tags: [deployments]
+    operationId: listDeploymentEvents
+    summary: Read deployment generation history
+    parameters: [{ name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 500, default: 100 } }]
+    responses:
+      "200": { description: Append-only deployment event history., content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentEventList } } } }
+      "404": { $ref: ../components/responses.yaml#/Problem404 }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }
+deploymentReview:
+  x-implementation-status: registered
+  parameters:
+    - { $ref: ../components/parameters.yaml#/TenantId }
+    - name: deploymentId
+      in: path
+      required: true
+      schema: { $ref: ../schemas/common.yaml#/Uuid }
+  get:
+    tags: [deployments]
+    operationId: getDeploymentReview
+    summary: Read Shippin's AgentHub ticket correlation and current ticket state
+    description: Reads safe ticket metadata from AgentHub; reviewer identities and review text remain in AgentHub.
+    responses:
+      "200": { description: Current review state or not-requested state., content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentReviewStatus } } } }
+      "404": { $ref: ../components/responses.yaml#/Problem404 }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }
+  post:
+    tags: [deployments]
+    operationId: prepareDeploymentReview
+    summary: Create and submit an action-bound AgentHub review ticket
+    description: Persists a stable Shippin correlation, sends a bounded redacted snapshot to the configured AgentHub service credential, and submits the ticket. This does not authorize or execute a provider operation.
+    parameters: [{ $ref: ../components/parameters.yaml#/IdempotencyKey }]
+    requestBody:
+      required: true
+      content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentReviewRequest } } }
+    responses:
+      "202": { description: Ticket submitted to AgentHub review queue., content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentReviewStatus } } } }
+      "400": { $ref: ../components/responses.yaml#/Problem400 }
+      "401": { $ref: ../components/responses.yaml#/Problem401 }
+      "403": { $ref: ../components/responses.yaml#/Problem403 }
+      "404": { $ref: ../components/responses.yaml#/Problem404 }
+      "409": { $ref: ../components/responses.yaml#/Problem409 }
+      "412": { $ref: ../components/responses.yaml#/Problem412 }
+      "502": { description: AgentHub ticket lifecycle failed; the same generation can retry against the same ticket., content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentReviewStatus } } } }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }
+deploymentReviewAuthorization:
+  x-implementation-status: registered
+  parameters:
+    - { $ref: ../components/parameters.yaml#/TenantId }
+    - name: deploymentId
+      in: path
+      required: true
+      schema: { $ref: ../schemas/common.yaml#/Uuid }
+  post:
+    tags: [deployments]
+    operationId: recordDeploymentReviewAuthorization
+    summary: Check and persist current AgentHub authorization provenance
+    description: Revalidates the exact current action, mapped system, ticket, policy and human quorum with AgentHub, then appends safe provenance. It does not execute a provider operation; a future reconciler must reauthorize immediately before each side effect.
+    parameters: [{ $ref: ../components/parameters.yaml#/IdempotencyKey }]
+    requestBody:
+      required: true
+      content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentReviewAuthorizationRequest } } }
+    responses:
+      "200": { description: Authorization provenance appended to deployment event history., content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentReviewAuthorizationResult } } } }
+      "400": { $ref: ../components/responses.yaml#/Problem400 }
+      "401": { $ref: ../components/responses.yaml#/Problem401 }
+      "403": { $ref: ../components/responses.yaml#/Problem403 }
+      "404": { $ref: ../components/responses.yaml#/Problem404 }
+      "409": { $ref: ../components/responses.yaml#/Problem409 }
+      "412": { $ref: ../components/responses.yaml#/Problem412 }
+      "502": { description: AgentHub authorization is unavailable., content: { application/json: { schema: { $ref: ../schemas/deployments.yaml#/DeploymentReviewAuthorizationResult } } } }
+      default: { $ref: ../components/responses.yaml#/ProblemDefault }

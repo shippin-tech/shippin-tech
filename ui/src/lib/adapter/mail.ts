@@ -18,6 +18,8 @@ export type Message = {
 	receivedAt: string;
 };
 
+export type MessageDetail = Message & { body: string | null; truncated: boolean };
+
 type MailboxRow = {
 	id?: string;
 	name?: string;
@@ -35,6 +37,8 @@ type EmailRow = {
 	preview?: string | null;
 	from?: Address[] | null;
 	receivedAt?: string | null;
+	textBody?: { partId?: string | null }[] | null;
+	bodyValues?: Record<string, { value?: string; isTruncated?: boolean }> | null;
 };
 
 const mailboxProperties = ['id', 'name', 'role', 'sortOrder', 'totalEmails', 'unreadEmails'];
@@ -103,11 +107,25 @@ export async function loadMessages(mailboxId: string): Promise<Message[]> {
 	return ids.map((id) => byId.get(id)).filter((row): row is Message => Boolean(row));
 }
 
-export async function loadMessage(id: string): Promise<Message | null> {
+export async function loadMessage(id: string): Promise<MessageDetail | null> {
 	const fetched = await jmap(
 		[MAIL],
-		[['Email/get', { accountId: accountId(), ids: [id], properties: emailProperties }, 'e0']]
+		[['Email/get', {
+			accountId: accountId(), ids: [id],
+			properties: [...emailProperties, 'textBody', 'bodyValues'],
+			fetchTextBodyValues: true,
+			maxBodyValueBytes: 1_000_000
+		}, 'e0']]
 	);
 	const row = listOf<EmailRow>(fetched, 'Email/get')[0];
-	return row ? message(row) : null;
+	if (!row) return null;
+	const parts = (row.textBody ?? []).flatMap((part) => {
+		const value = part.partId ? row.bodyValues?.[part.partId] : undefined;
+		return value && typeof value.value === 'string' ? [value] : [];
+	});
+	return {
+		...message(row),
+		body: parts.length ? parts.map((part) => part.value).join('\n\n') : null,
+		truncated: parts.some((part) => part.isTruncated === true)
+	};
 }

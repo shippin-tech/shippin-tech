@@ -12,6 +12,7 @@
 	} from '$lib/adapter/metrics';
 	import { account } from '$lib/adapter/session';
 	import PortalView from '$lib/catalog/portal/PortalView.svelte';
+	import ControlPlanPanel from '$lib/catalog/portal/ControlPlanPanel.svelte';
 	import GraphMount from '$lib/flow/GraphMount.svelte';
 	import { layoutGraph } from '$lib/flow/portal/nodes';
 
@@ -98,6 +99,7 @@
 </script>
 
 <PortalView view="CustomComponent/Dashboard" {period} {metrics} {counts} {points} onperiod={(next) => (period = next)} />
+<ControlPlanPanel />
 
 {#each maps as name}
 	<section class="map" aria-label="{name} graph">

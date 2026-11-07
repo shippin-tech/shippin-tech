@@ -1,0 +1,8 @@
+{
+  "id": "2026-11-07-platform-baseline",
+  "source": "D:/localdev/shippin-platform at 013b8944ca4c5bbecc0ba4c6e5dee934be8aa501",
+  "behavior": "Self-hosted infrastructure control plane, API contracts, host agents, panel and deployment tooling.",
+  "owner": "platform/ for the Go module and its temporary React source; ui/ remains the target Svelte application.",
+  "spec": "Import the maintained tracked platform baseline preserving module paths and provenance; exclude the historical third-party Warden reference and local/generated state. Verify builds and source coverage before claiming integration or replacing the Svelte app.",
+  "decision": "write-here"
+}

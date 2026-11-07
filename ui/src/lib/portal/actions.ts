@@ -11,8 +11,11 @@ export const ANOTHER = 'Execute another action';
 export const BACK = 'Back to actions';
 export const REQUIRED = 'This field is required.';
 export const OTHER = 'Other';
+export const RUNNING = 'Running action...';
+export const SIGN_IN_REQUIRED = 'Sign in to run actions.';
 
 export type ActionItem = { name: string; label: string; schema: string };
+export type ActionResult = 'saved' | 'rejected' | 'missing';
 
 export function actionGroups(items: readonly ActionItem[]): { label: string; actions: ActionItem[] }[] {
 	const groups = new Map<string, ActionItem[]>();
@@ -22,4 +25,10 @@ export function actionGroups(items: readonly ActionItem[]): { label: string; act
 		groups.set(label, [...(groups.get(label) ?? []), item]);
 	}
 	return [...groups].map(([label, actions]) => ({ label, actions }));
+}
+
+export function actionNotice(result: ActionResult, label: string): string {
+	if (result === 'saved') return `${label}: ${SUCCESS}`;
+	if (result === 'rejected') return `${label}: ${FAILED}`;
+	return `${label}: ${NO_DATA}`;
 }

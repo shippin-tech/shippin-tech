@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-07-chat-index-relocation",
+  "title": "Keep filed chat index references valid after repository relocation",
+  "costar": {
+    "context": "The operating-tree checker fails because four indexed filed event files reference a previous checkout path, although the same session files exist here.",
+    "objective": "Repair the existing references and make repository-local index paths portable without changing external transcript offsets or filed chats.",
+    "style": "A small path-resolution change with a regression test and whole-tree proof.",
+    "tone": "Direct.",
+    "audience": "Repository maintainers and agents.",
+    "response": "The checker resolves relative index entries against the repository root and the existing entries use relative paths."
+  },
+  "sources": [
+    {"kind": "code", "ref": ".ai/PROTOCOL.md"},
+    {"kind": "code", "ref": ".ai/modules/plans/SKILL.md"},
+    {"kind": "code", "ref": ".ai/modules/chats/SKILL.md"},
+    {"kind": "code", "ref": ".ai/modules/chats/module.json"},
+    {"kind": "code", "ref": ".ai/modules/chats/data/index.json"},
+    {"kind": "code", "ref": ".ai/machine/organize.py"},
+    {"kind": "code", "ref": ".ai/machine/copy_chats.py"}
+  ],
+  "concerns": [
+    "Index offsets belong to sources and must not be changed or transferred to unrelated Cursor transcripts.",
+    "Cursor sync identifies external transcripts using resolved absolute paths; the existing four entries name filed event files, not Cursor transcript inputs.",
+    "Changing the current working directory must not change how relative index paths are resolved.",
+    "Missing external absolute sources must still be reported by the checker."
+  ],
+  "context": "Existing session files and byte index metadata are retained; only the paths to the four filed files are made relative to the repository.",
+  "current_state": "The checker calls Path(source).is_file and the four entries contain a stale absolute checkout prefix.",
+  "target_design": "The checker interprets relative references against ROOT, preserves absolute source paths, and still rejects missing sources.",
+  "changes": [
+    "Add root-relative source resolution to the checker and rekey the four existing entries without modifying metadata.",
+    "Test resolution from another working directory, missing paths and absolute paths, then run the entire operating-tree checker."
+  ],
+  "boundaries": [
+    "Do not alter or refile chat events, messages, tools, seen hashes, offsets or session metadata.",
+    "Do not run a transcript sync as a substitute for relocating the filed-file references."
+  ],
+  "verification": [
+    {"name": "path-resolution-regression", "command": "py -3.11 -m unittest discover -s .ai/machine/tests -p test_index_paths.py", "proves": "Relative and absolute references are resolved correctly independent of working directory and missing files remain missing.", "expected": "all tests pass", "result": "2 tests passed on Windows."},
+    {"name": "whole-tree", "command": "py -3.11 .ai/machine/organize.py --check", "proves": "The complete operating tree including all filed chat lines and plans validates with the repaired index.", "expected": "exit 0", "result": "Exit 0: 6 modules, 605 lines, 42 documents, 169 events, 64 messages, 328 tools, 44 journal entries."}
+  ],
+  "status": "implemented"
+}

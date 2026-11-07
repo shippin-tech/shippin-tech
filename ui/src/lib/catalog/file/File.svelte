@@ -6,7 +6,9 @@
 
 <section class="files">
 	<h1>{title}</h1>
-	{#if notice}
+	{#if notice === 'sign-in required'}
+		<p><a href="/login">Sign in</a> to see your files.</p>
+	{:else if notice}
 		<p>{notice}</p>
 	{:else if files.length === 0}
 		<p>No files yet.</p>

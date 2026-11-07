@@ -9,7 +9,9 @@
 		<h1>Calendar</h1>
 		<p>From the mail engine</p>
 	</header>
-	{#if notice}
+	{#if notice === 'sign-in required'}
+		<p><a href="/login">Sign in</a> to see your calendar.</p>
+	{:else if notice}
 		<p class="empty">{notice}</p>
 	{:else if events.length === 0}
 		<p class="empty">No events yet.</p>

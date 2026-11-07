@@ -1,21 +1,26 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Mailbox from '$lib/catalog/mailbox/Mailbox.svelte';
-	import GraphMount from '$lib/flow/GraphMount.svelte';
-	import { mailNodes } from '$lib/flow/mail/nodes';
 	import { loadFolders, loadMessages, type Folder, type Message } from '$lib/adapter/mail';
 
 	let folders = $state<Folder[]>([]);
 	let messages = $state<Message[]>([]);
 	let selectedId = $state('');
 	let notice = $state('Loading mail from the engine.');
+	let request = 0;
 
 	async function select(id: string) {
+		const current = ++request;
 		selectedId = id;
-		notice = '';
+		messages = [];
+		notice = 'Loading messages.';
 		try {
-			messages = await loadMessages(id);
+			const loaded = await loadMessages(id);
+			if (current !== request) return;
+			messages = loaded;
+			notice = '';
 		} catch (err) {
+			if (current !== request) return;
 			messages = [];
 			notice = err instanceof Error ? err.message : 'Mail could not be loaded.';
 		}
@@ -36,15 +41,4 @@
 	});
 </script>
 
-<div class="split">
-	<Mailbox {folders} {messages} {selectedId} {notice} onselect={select} />
-	<section>
-		<h2>Mail graph</h2>
-		<GraphMount items={mailNodes} />
-	</section>
-</div>
-
-<style>
-	.split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--measure)), 1fr)); gap: var(--x-s); padding-block-end: var(--y-m); }
-	h2 { margin: 0 0 var(--space-2); color: var(--color-brand); }
-</style>
+<Mailbox {folders} {messages} {selectedId} {notice} onselect={select} />

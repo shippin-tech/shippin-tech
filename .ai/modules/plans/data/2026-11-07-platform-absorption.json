@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-07-platform-absorption",
+  "title": "Absorb shippin-platform into shippintech before workspace expansion",
+  "costar": {
+    "context": "The user directs that the neighboring shippin-platform project be absorbed into the current shippintech repository before continuing the broader workspace work.",
+    "objective": "Account for all tracked platform source and capabilities, establish ownership and compatibility, and deliver a verified integrated platform and Svelte UI.",
+    "style": "A source baseline, ownership map and dependency-ordered implementation packets with behavioral gates.",
+    "tone": "Direct and explicit about provenance and unfinished work.",
+    "audience": "The maintainer and implementers.",
+    "response": "The detailed plan and source manifest are in the neighboring Markdown and text files."
+  },
+  "sources": [
+    {"kind": "code", "ref": "D:/localdev/shippin-platform/AGENTS.md"},
+    {"kind": "code", "ref": "D:/localdev/shippin-platform/README.md"},
+    {"kind": "code", "ref": "D:/localdev/shippin-platform/docs/source-of-truth.md"},
+    {"kind": "code", "ref": "D:/localdev/shippin-platform/docs/panel-variants.md"},
+    {"kind": "code", "ref": "D:/localdev/shippin-platform/docs/service-contexts.md"},
+    {"kind": "code", "ref": "D:/localdev/shippin-platform/docs/roadmap.md"},
+    {"kind": "code", "ref": "D:/localdev/shippin-platform/go.mod"},
+    {"kind": "code", "ref": "D:/localdev/shippin-platform/web/package.json"},
+    {"kind": "code", "ref": "D:/localdev/shippin-platform/web/src/app/router.tsx"},
+    {"kind": "code", "ref": "D:/localdev/shippin-platform/Dockerfile"},
+    {"kind": "code", "ref": "D:/localdev/shippin-platform/compose.yaml"},
+    {"kind": "code", "ref": ".ai/PROTOCOL.md"},
+    {"kind": "code", "ref": ".ai/modules/plans/SKILL.md"},
+    {"kind": "code", "ref": ".ai/modules/canon/SKILL.md"},
+    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-07-ui-workspace-plan.md"},
+    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-07-platform-source-manifest.txt"},
+    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-07-platform-disposition.csv"}
+  ],
+  "concerns": [
+    "Source main was clean at commit 013b8944ca4c5bbecc0ba4c6e5dee934be8aa501; the manifest covers tracked paths, not ignored data or other checkouts.",
+    "The source reports no chosen license; authorship and third-party rights must be reviewed for each imported group.",
+    "The source includes a React panel, Go control plane and agents, platform database migrations, deployment assets and reference-only Warden code. A blind copy creates conflicting owners and does not establish parity.",
+    "The destination contains user changes, an existing Svelte application and a distinct Rust mail engine. Identity, tenant, route, storage and process boundaries require explicit integration.",
+    "Source documents report that live provider, AgentHub and other operational acceptance remains incomplete; source reports are not new test results.",
+    "The destination product rule defers a Go control plane and clients; the current user direction changes the requested priority and must be reconciled."
+  ],
+  "context": "This plan supersedes the workspace-first sequence for the immediate work without deleting prior evidence. The destination is the current repository, and the original source checkout is preserved.",
+  "current_state": "A 1,849-row source ledger records 1,661 baseline files imported under platform/ and 188 pending Warden reference files. The console and host agent build, selected provider tests and diagnostic tests pass. The React panel remains a source reference; service integration and the Svelte port remain incomplete.",
+  "target_design": "A single repository owns the reviewed platform control plane and host agents, existing Rust mail engine, and one SvelteKit application, with explicit service, identity, tenant and persistence contracts and migration/rollback proof.",
+  "changes": [
+    "Classify every tracked path and feature, review provenance and reconcile overlap with destination code and operating rules.",
+    "Define Go module placement, cross-service boundaries, authentication, storage and existing-install compatibility.",
+    "Adopt reviewed platform code, contracts, tests and operational assets, then port the existing panel's behavior into the Svelte UI.",
+    "Verify integrations, live provider operations where available, installation, upgrade and rollback before cutover.",
+    "Resume the connected mail, drive and docs workspace plan after the agreed platform absorption gate."
+  ],
+  "boundaries": [
+    "Do not overwrite user work, remove the source checkout, import ignored local state, or claim that a copied file is a verified capability.",
+    "Treat the third-party Warden tree as reference-only until its provenance and rights are resolved.",
+    "Retain independent Rust mail and Go platform authorities; do not assume shared identities, tenant IDs or databases.",
+    "Use disposable services and infrastructure for mutation proofs and record missing dependencies as unverified.",
+    "Preserve repository restrictions against maintainers' issues, pull requests and LLM-generated security reports."
+  ],
+  "verification": [
+    {
+      "name": "source-baseline",
+      "command": "git -c safe.directory=D:/localdev/shippin-platform -C D:/localdev/shippin-platform rev-parse HEAD; git -c safe.directory=D:/localdev/shippin-platform -C D:/localdev/shippin-platform status --short; git -c safe.directory=D:/localdev/shippin-platform -C D:/localdev/shippin-platform ls-files -s",
+      "proves": "The recorded source revision and tracked file identities can be compared with the captured manifest before implementation.",
+      "expected": "Recorded commit and clean non-ignored status; manifest matches every tracked entry.",
+      "result": "Commit 013b8944ca4c5bbecc0ba4c6e5dee934be8aa501; no short status entries; tracked entries captured in 2026-11-07-platform-source-manifest.txt."
+    },
+    {
+      "name": "complete-absorption",
+      "command": "Build the source-disposition and route coverage checks in packet 1; execute them with clean Go and Svelte builds, contract and authorization suites, and disposable installation, provider, upgrade and rollback tests in packets 3 through 7.",
+      "proves": "Every tracked source path and platform capability is accounted for and agreed runtime and UI behavior works end to end with preserved security and operational boundaries.",
+      "expected": "No unclassified source paths or unproven required capabilities; all checks pass with environment, source revision and results recorded."
+    }
+  ],
+  "status": "draft"
+}

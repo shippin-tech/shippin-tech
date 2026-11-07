@@ -1,32 +1,23 @@
-<script lang="ts">
-	import { onMount } from 'svelte';
-	import File from '$lib/catalog/file/File.svelte';
-	import GraphMount from '$lib/flow/GraphMount.svelte';
-	import { docsNodes } from '$lib/flow/docs/nodes';
-	import { loadFiles, type Named } from '$lib/adapter/groupware';
-
-	let files = $state<Named[]>([]);
-	let notice = $state('Loading documents.');
-
-	onMount(async () => {
-		try {
-			files = await loadFiles();
-			notice = '';
-		} catch (err) {
-			notice = err instanceof Error ? err.message : 'Documents could not be loaded.';
-		}
-	});
-</script>
-
-<div class="split">
-	<File title="Docs" {files} {notice} />
-	<section>
-		<h2>Docs graph</h2>
-		<GraphMount items={docsNodes} />
-	</section>
-</div>
+<section class="docs">
+	<p class="eyebrow">Workspace</p>
+	<h1>Docs</h1>
+	<p>Document editing is not available yet. Your account's files are available in Drive.</p>
+	<a href="/files">Open Drive <span aria-hidden="true">→</span></a>
+</section>
 
 <style>
-	.split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--measure)), 1fr)); gap: var(--x-s); padding-block-end: var(--y-m); }
-	h2 { margin: 0 0 var(--space-2); color: var(--color-brand); }
+	.docs {
+		min-height: 22rem;
+		padding: var(--space-4);
+		display: grid;
+		gap: var(--space-3);
+		align-content: start;
+		background: var(--color-card);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+	}
+	h1, p { margin: 0; }
+	.eyebrow { color: var(--color-brand); font-weight: 650; }
+	p { color: var(--color-muted); }
+	a { width: fit-content; font-weight: 650; }
 </style>

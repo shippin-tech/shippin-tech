@@ -1,0 +1,231 @@
+Deployment:
+  type: object
+  required: [id, service_id, target_system_id, target_provider, generation, desired_state, observed_state, definition_sha256, config_schema, source, config, target_config, created_at, updated_at]
+  properties:
+    id: { $ref: common.yaml#/Uuid }
+    service_id: { type: string }
+    target_system_id: { $ref: common.yaml#/Uuid }
+    target_provider: { type: string, enum: [incus, proxmox] }
+    target_provider_label: { type: string, description: Installation-configured display label for the target provider. }
+    generation: { type: integer, minimum: 1 }
+    desired_state: { type: string, enum: [present, absent] }
+    observed_state: { type: string, enum: [unknown, pending, provisioning, ready, degraded, failed, absent] }
+    definition_sha256: { type: string, pattern: '^[a-f0-9]{64}$' }
+    config_schema: { type: object, description: Schema from the pinned catalog revision with secret references redacted. }
+    source:
+      type: object
+      required: [kind, reference]
+      properties:
+        kind: { type: string, enum: [github, git, oci] }
+        reference: { type: string }
+        commit: { type: string }
+        context_path: { type: string }
+      additionalProperties: false
+    config: { type: object, description: Values are schema-validated; secret fields contain Vaultix or SOPS references only. }
+    target_config: { $ref: '#/DeploymentTargetConfig' }
+    created_by: { type: string }
+    created_at: { $ref: common.yaml#/Timestamp }
+    updated_by: { type: string }
+    updated_at: { $ref: common.yaml#/Timestamp }
+DeployableService:
+  type: object
+  required: [id, label, kind, config_schema, default_config, deployment_source, runtime_contract]
+  properties:
+    id: { type: string }
+    label: { type: string }
+    description: { type: string }
+    kind: { type: string }
+    docs_url: { type: string }
+    config_schema: { type: object }
+    default_config: { type: object, description: Secret-reference defaults are removed; customers supply their own references. }
+    deployment_source:
+      type: object
+      required: [kind, reference]
+      properties:
+        kind: { type: string, enum: [github, git, oci] }
+        reference: { type: string }
+        commit: { type: string }
+        context_path: { type: string }
+      additionalProperties: false
+    runtime_contract:
+      $ref: catalog.yaml#/RuntimeContract
+DeploymentTarget:
+  type: object
+  required: [id, label, site, provider, state]
+  properties:
+    id: { $ref: common.yaml#/Uuid }
+    label: { type: string }
+    site: { type: string }
+    provider: { type: string, enum: [incus, proxmox] }
+    provider_label: { type: string, description: Installation-configured display label for the provider. }
+    state: { type: string, enum: [planned, pending, active, stale, revoked] }
+DeploymentTargetList:
+  type: object
+  required: [items, can_request]
+  properties:
+    items: { type: array, items: { $ref: '#/DeploymentTarget' } }
+    can_request: { type: boolean, description: Tenant authorization result for deployment mutations. }
+DeploymentTargetStorageList:
+  type: object
+  required: [items]
+  properties:
+    items:
+      type: array
+      items:
+        type: object
+        required: [name, type]
+        properties:
+          name: { type: string }
+          type: { type: string, description: Incus storage backend driver. }
+          used_bytes: { type: integer, minimum: 0 }
+          total_bytes: { type: integer, minimum: 0 }
+DeploymentTargetNetworkList:
+  type: object
+  required: [items]
+  properties:
+    items:
+      type: array
+      items:
+        type: object
+        required: [name, type]
+        properties:
+          name: { type: string }
+          type: { type: string, enum: [bridge, ovn] }
+DeploymentTargetConfig:
+  type: object
+  properties:
+    storage:
+      type: object
+      required: [pool]
+      properties:
+        pool: { type: string, minLength: 1, maxLength: 63, description: Target-specific live Incus pool selection, immutable after creation until storage migration is supported. }
+      additionalProperties: false
+    network:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 63, description: Target-specific live private Incus bridge or OVN network selection, immutable after creation until network migration is supported. }
+      additionalProperties: false
+  additionalProperties: false
+DeployableServiceList:
+  type: object
+  required: [items]
+  properties:
+    items: { type: array, items: { $ref: '#/DeployableService' } }
+DeploymentCreate:
+  type: object
+  required: [service_id, target_system_id, desired_state, config]
+  properties:
+    service_id: { type: string, pattern: '^[a-z][a-z0-9_-]{1,39}$' }
+    target_system_id: { $ref: common.yaml#/Uuid }
+    desired_state: { type: string, const: present }
+    config: { type: object, description: Validated against the selected service definition. Secret values must be references. }
+    target_config: { $ref: '#/DeploymentTargetConfig' }
+  additionalProperties: false
+DeploymentUpdate:
+  type: object
+  required: [desired_state]
+  properties:
+    desired_state: { type: string, enum: [present, absent] }
+    config: { type: object, description: When omitted the prior generation configuration is retained. }
+    target_config: { $ref: '#/DeploymentTargetConfig', description: When supplied, it must match the existing target placement; storage pool and network migration are not supported. }
+  additionalProperties: false
+DeploymentList:
+  type: object
+  required: [items, page]
+  properties:
+    items: { type: array, items: { $ref: '#/Deployment' } }
+    page:
+      type: object
+      required: [next_page_token, total_estimate]
+      properties:
+        next_page_token: { type: [string, 'null'] }
+        total_estimate: { type: integer }
+DeploymentEvent:
+  type: object
+  required: [id, deployment_id, tenant_id, generation, event_type, actor, recorded_at]
+  properties:
+    id: { $ref: common.yaml#/Uuid }
+    deployment_id: { $ref: common.yaml#/Uuid }
+    tenant_id: { $ref: common.yaml#/Uuid }
+    generation: { type: integer, minimum: 1 }
+    event_type: { type: string, enum: [requested, review_allowed, review_denied, operation_started, provider_observed, health_observed, operation_failed, operation_cancelled] }
+    observed_state: { type: string }
+    provider_operation_id: { type: string }
+    health_status: { type: string, enum: [unknown, passing, failing] }
+    health_duration_ms: { type: integer, minimum: 0, maximum: 3600000 }
+    failure_code: { type: string }
+    review_provenance: { $ref: '#/DeploymentReviewProvenance' }
+    actor: { type: string }
+    recorded_at: { $ref: common.yaml#/Timestamp }
+DeploymentEventList:
+  type: object
+  required: [items, page]
+  properties:
+    items: { type: array, items: { $ref: '#/DeploymentEvent' } }
+    page:
+      type: object
+      required: [next_page_token, total_estimate]
+      properties:
+        next_page_token: { type: [string, 'null'] }
+        total_estimate: { type: integer }
+DeploymentReviewRequest:
+  type: object
+  required: [generation]
+  properties:
+    generation: { type: integer, minimum: 1 }
+  additionalProperties: false
+DeploymentReviewAuthorizationRequest:
+  type: object
+  required: [generation]
+  properties:
+    generation: { type: integer, minimum: 1 }
+  additionalProperties: false
+DeploymentReviewProvenance:
+  type: object
+  required: [decision_id, tenant_id, machine_id, ticket_id, ticket_sha256, policy_sha256, policy_version, matched_rules, action_sha256]
+  properties:
+    decision_id: { type: string, minLength: 1, maxLength: 128 }
+    tenant_id: { type: string, minLength: 1, maxLength: 128, description: AgentHub tenant identifier. }
+    machine_id: { type: string, minLength: 1, maxLength: 128 }
+    ticket_id: { type: string, minLength: 4, maxLength: 64 }
+    ticket_sha256: { type: string, pattern: '^[a-f0-9]{64}$' }
+    policy_sha256: { type: string, pattern: '^[a-f0-9]{64}$' }
+    policy_version: { type: integer, minimum: 1 }
+    matched_rules: { type: array, minItems: 1, maxItems: 64, items: { type: string, minLength: 1, maxLength: 128 } }
+    action_sha256: { type: string, pattern: '^[a-f0-9]{64}$' }
+  additionalProperties: false
+DeploymentReviewAuthorizationResult:
+  type: object
+  required: [event, message]
+  properties:
+    event: { $ref: '#/DeploymentEvent' }
+    authorization: { $ref: '#/DeploymentReviewProvenance' }
+    message: { type: string }
+  additionalProperties: false
+DeploymentReview:
+  type: object
+  required: [id, deployment_id, tenant_id, generation, action_sha256, agenthub_ticket_id, state, created_by, created_at, updated_at]
+  properties:
+    id: { $ref: common.yaml#/Uuid }
+    deployment_id: { $ref: common.yaml#/Uuid }
+    tenant_id: { $ref: common.yaml#/Uuid }
+    generation: { type: integer, minimum: 1 }
+    action_sha256: { type: string, pattern: '^[a-f0-9]{64}$' }
+    agenthub_ticket_id: { type: string, minLength: 3, maxLength: 64 }
+    state: { type: string, enum: [preparing, pending_review, failed] }
+    ticket_sha256: { type: string, pattern: '^[a-f0-9]{64}$' }
+    failure_code: { type: string, pattern: '^[a-z][a-z0-9_.-]{0,79}$' }
+    created_by: { type: string }
+    created_at: { $ref: common.yaml#/Timestamp }
+    updated_at: { $ref: common.yaml#/Timestamp }
+DeploymentReviewStatus:
+  type: object
+  properties:
+    review: { $ref: '#/DeploymentReview' }
+    state: { type: string, enum: [not_requested] }
+    generation: { type: integer, minimum: 1 }
+    agenthub_status: { type: string, enum: [not_submitted, unavailable, draft, pending_review, findings, blocked, passed, ran] }
+    agenthub_ticket_sha256: { type: string, pattern: '^[a-f0-9]{64}$' }
+    message: { type: string }
+  additionalProperties: false

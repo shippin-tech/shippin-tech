@@ -50,7 +50,7 @@ jobs:
           cache-from: type=gha,scope=scale-amd64
           cache-to: type=gha,mode=max,scope=scale-amd64
       - name: Package server bundle
-        run: tar -czf server-bundle.tar.gz -C deploy compose.yaml server.env.example config.json update.sh README.md
+        run: tar -czf server-bundle.tar.gz -C deploy compose.yaml server.env.example config.json update.sh README.md control-plan.template.json
       - uses: actions/upload-artifact@v4
         with:
           name: server-bundle

@@ -1,27 +1,14 @@
-<script lang="ts">
-	let email = $state('');
-	let sent = $state(false);
-
-	function submit(event: SubmitEvent) {
-		event.preventDefault();
-		if (!email.includes('@')) return;
-		sent = true;
-	}
-</script>
-
 <section class="hero">
 	<p class="brand">shippin.tech</p>
-	<h1>Mail, calendar, and contacts on your own server.</h1>
-	<p class="lede">The engine is Rust. This screen is Svelte. Early access is a note of intent. Remotion comes after the product is further along.</p>
-	<form onsubmit={submit}>
-		<label>
-			Email
-			<input name="email" type="email" autocomplete="email" bind:value={email} required />
-		</label>
-		<button type="submit">Request early access</button>
-		{#if sent}<p role="status">Intent recorded for {email}. There is no list behind this yet.</p>{/if}
-	</form>
-	<p><a href="/login">Sign in</a> to the mailbox on this server.</p>
+	<h1>Enterprise mail, calendar, contacts, and client control.</h1>
+	<p class="lede">Operate client lanes from one control workflow: dedicated, shared, or hybrid.</p>
+	<div class="actions">
+		<a href="/portal">Open Portal</a>
+		<a href="/login">Sign in</a>
+		<a href="/mail">Mail</a>
+		<a href="/calendar">Calendar</a>
+		<a href="/contacts">Contacts</a>
+	</div>
 </section>
 
 <style>
@@ -35,22 +22,22 @@
 	.brand { margin: 0; color: var(--color-brand); font-weight: 700; }
 	h1, p { margin: 0; }
 	.lede { color: var(--color-muted); }
-	form { display: grid; gap: var(--space-2); }
-	label { display: grid; gap: var(--space-1); }
-	input, button {
-		font: inherit;
+	.actions {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+		gap: var(--space-2);
+	}
+	.actions a {
+		min-height: 2.75rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0 var(--space-3);
 		border-radius: var(--radius);
-	}
-	input {
-		padding: var(--space-2);
 		border: 1px solid var(--color-border);
-		background: var(--color-input);
-		color: var(--color-text);
-	}
-	button {
-		padding: var(--space-2) var(--space-3);
-		border: 0;
-		background: var(--color-accent);
+		background: var(--color-card);
 		color: var(--color-accent-fg);
+		text-decoration: none;
 	}
+	.actions a:hover { border-color: var(--color-accent); }
 </style>

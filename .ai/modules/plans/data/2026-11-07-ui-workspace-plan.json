@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-07-ui-workspace-plan",
+  "title": "Finish the Svelte portal and plan the connected workspace",
+  "costar": {
+    "context": "The user wants the existing webui fully established in Svelte and a modern hosted mail, drive, and docs experience connected to their wider network. Existing plans and context folders overlap and some completed plans describe deliberate placeholders.",
+    "objective": "Establish one evidence-based coordination plan, domain ownership, dependencies, overlap decisions, and end-to-end completion gates.",
+    "style": "A nested folder map, evidence matrix, sequenced work packages, and verification gates.",
+    "tone": "Direct and explicit about uncertainty.",
+    "audience": "The maintainer and future implementers.",
+    "response": "The detailed plan is .ai/modules/plans/data/2026-11-07-ui-workspace-plan.md; this record indexes it without marking the implementation complete."
+  },
+  "sources": [
+    {"kind": "code", "ref": ".ai/PROTOCOL.md"},
+    {"kind": "code", "ref": ".ai/modules/plans/SKILL.md"},
+    {"kind": "code", "ref": ".ai/modules/plans/schema/plan.schema.json"},
+    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-04-portal-to-svelte.json"},
+    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-04-ui-file-map.json"},
+    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-05-portal-remaining.json"},
+    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-05-portal-bootstrap.json"},
+    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-05-portal-writes.json"},
+    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-05-portal-delivery.json"},
+    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-05-portal-actions.json"},
+    {"kind": "code", "ref": ".cursor/rules/product-boundaries.mdc"},
+    {"kind": "code", "ref": "ui/src/lib/ai-runtime/mail/kernel/instruction.md"},
+    {"kind": "code", "ref": "ui/src/lib/ai-runtime/docs/kernel/instruction.md"},
+    {"kind": "code", "ref": "ui/src/lib/catalog/portal/PortalView.svelte"},
+    {"kind": "code", "ref": "ui/src/lib/catalog/portal/RecordForm.svelte"},
+    {"kind": "code", "ref": "ui/src/lib/catalog/portal/WriteActions.svelte"},
+    {"kind": "code", "ref": "ui/src/routes/(portal)/portal/+layout.svelte"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/mail.ts"},
+    {"kind": "code", "ref": "crates/http/src/portal.rs"},
+    {"kind": "code", "ref": "crates/http/src/request.rs"},
+    {"kind": "code", "ref": "crates/common/src/manager/defaults.rs"},
+    {"kind": "code", "ref": "Dockerfile.fdb"},
+    {"kind": "code", "ref": "ui/package.json"}
+  ],
+  "concerns": [
+    "Historical implemented records prove only their stated scope; some deliberately leave setup, writes, and delivery nonfunctional.",
+    "The current product rule defers workspace clients and document editing, while the user now requests their evolution; reconcile it explicitly.",
+    "The original bundle is compiled, not source; parity requires an inventory and behavior proof rather than one-to-one chunk conversion.",
+    "The wider network, tenant identity authority, editor service, and their contracts have not been established by the inspected repository evidence.",
+    "The Svelte root build is already installed by runtime Dockerfiles; /admin and /account remain separately reserved legacy mounts.",
+    "The workspace contains uncommitted changes that must be preserved."
+  ],
+  "context": "Existing Svelte routes, adapters, catalog, context kernels and historical plans should become a single maintainable source of truth, with the portal migration and the connected workspace distinguished by actual dependencies and proofs.",
+  "current_state": "The Svelte root build and several portal and workspace surfaces exist. Portal registry forms are readonly, setup finish and delivery execution are incomplete, the legacy mount remains separate, and Docs has no editor. Current proof includes mock-based tests and does not establish complete deployed behavior.",
+  "target_design": "One SvelteKit UI, one domain context owner per feature, one shared session and transport boundary, reusable presentation catalog and tokens, a behavior-traced portal migration, and workspace integrations proven against actual owned services. The accompanying Markdown records the proposed tree and eight gated packages.",
+  "changes": [
+    "Inventory the original portal and current implementation, then reconcile conflicting scope and historical plans.",
+    "Establish canonical nested domain kernels, feature threads, adapter ownership and import checks without duplicating existing implementations.",
+    "Prove identity and legacy route compatibility, then finish typed administration, bootstrap, actions, traces and Sievepad against disposable services.",
+    "Complete mail and groupware, then implement drive and documents only against verified service contracts and ownership.",
+    "Inventory the wider network, prove tenant isolation and operations, and perform a tested versioned cutover with rollback."
+  ],
+  "boundaries": [
+    "This is a draft coordination plan; proposed folders do not assert current paths or authorize deleting existing contexts.",
+    "Preserve user changes, existing historical plans, the Rust mail engine and original portal until a verified cutover.",
+    "Do not invent editor, network, identity or deployment contracts; retain honest unavailable states until established.",
+    "Tests that mutate data use a disposable server and scoped test accounts, not a live deployment.",
+    "Follow repository instructions prohibiting issues, pull requests and LLM-generated security reports to maintainers."
+  ],
+  "verification": [
+    {
+      "name": "operating-tree-schema",
+      "command": "py -3.11 .ai/machine/organize.py --check",
+      "proves": "The new record and all existing operating modules conform to their schemas.",
+      "expected": "exit 0",
+      "result": "Failed: four existing chat index entries reference missing sessions under D:/localdev/mail-shippin/shippin-tech. No plan schema error was reported."
+    },
+    {
+      "name": "whole-migration-release-gate",
+      "command": "Complete the capability-matrix and context/import checkers in packages 1 and 2; run them with npm run check, npm test, npm run build, npm run test:browser and the disposable-server and image upgrade/rollback suites described in the companion plan.",
+      "proves": "All original portal capabilities have owners and behavioral proofs, context links and imports are coherent, and agreed workspace and hosted journeys work against actual services.",
+      "expected": "All checks pass with recorded revisions, environments and outcomes; no unowned or unproven original capability remains."
+    }
+  ],
+  "status": "draft"
+}

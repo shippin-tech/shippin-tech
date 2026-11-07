@@ -35,8 +35,13 @@
 <a class="skip" href="#content">Skip to content</a>
 <header>
 	<a class="mark" href="/portal">shippin</a>
-	<nav>
+	<nav aria-label="Main navigation">
 		<a href="/portal" aria-current={page.url.pathname.startsWith('/portal') ? 'page' : undefined}>Portal</a>
+		<a href="/mail" aria-current={page.url.pathname.startsWith('/mail') ? 'page' : undefined}>Mail</a>
+		<a href="/files" aria-current={page.url.pathname.startsWith('/files') ? 'page' : undefined}>Drive</a>
+		<a href="/docs" aria-current={page.url.pathname.startsWith('/docs') ? 'page' : undefined}>Docs</a>
+		<a href="/calendar" aria-current={page.url.pathname.startsWith('/calendar') ? 'page' : undefined}>Calendar</a>
+		<a href="/contacts" aria-current={page.url.pathname.startsWith('/contacts') ? 'page' : undefined}>Contacts</a>
 		<a href="/login" aria-current={page.url.pathname.startsWith('/login') ? 'page' : undefined}>Sign in</a>
 	</nav>
 	<Theme value={choice} {onchange} />

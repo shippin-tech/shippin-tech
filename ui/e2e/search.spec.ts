@@ -58,7 +58,7 @@ test('live tracing does not open the stream', async ({ page }) => {
 	expect(live).toEqual([]);
 });
 
-test('an action confirmation does not post', async ({ page }) => {
+test('a signed-out action confirmation requests sign-in and does not post', async ({ page }) => {
 	const posts: string[] = [];
 	page.on('request', (request) => {
 		if (request.method() === 'POST') posts.push(request.postData() ?? request.url());
@@ -72,7 +72,7 @@ test('an action confirmation does not post', async ({ page }) => {
 		await expect(dialog.getByText('Run this action?')).toBeVisible({ timeout: 1000 });
 	}).toPass();
 	await dialog.getByRole('button', { name: 'Execute' }).click();
-	await expect(page.getByText('Action failed.')).toBeVisible();
+	await expect(page.getByText('Sign in to run actions.')).toBeVisible();
 	await page.getByRole('button', { name: 'DMARC: Troubleshooting' }).click();
 	await expect(page.getByText('This field is required.')).toBeVisible();
 	expect(posts.filter((body) => body.includes('/set') || body.includes('x:Action'))).toEqual([]);

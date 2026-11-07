@@ -14,7 +14,9 @@ util-linux (`flock`). Each server runs one mail node from a prebuilt image.
    Do not use `resources/scale/docker-compose.yml` for persistent servers:
    it stores FoundationDB and MinIO data in temporary memory-backed storage.
 3. Copy `server.env.example` to `server.env`. Set real endpoints/credentials
-   and a unique, stable `MAIL_HOSTNAME` on each host. Nodes in one cluster
+   and a unique, stable `MAIL_HOSTNAME` on each host. Set a unique
+   `COMPOSE_PROJECT_NAME` per instance to isolate containers/networks/volumes.
+   Nodes in one cluster
    share FoundationDB, S3 and NATS. Separate test clusters need separate data.
    S3/NATS environment variables seed empty registry singletons on first
    boot; editing them later does not overwrite existing registry settings.
@@ -46,6 +48,47 @@ update command when ready. Keep 8080 private. Configure domain DNS, firewall,
 certificates and mail delivery settings separately. Health checks measure
 process liveness; verify actual mail delivery, shared mailbox access and
 tenant isolation before promoting a build.
+
+## Control plan for per-instance operation
+
+Use one deployment directory per node instance. For each instance:
+
+1. Copy the bundle into an instance directory (example:
+   `/srv/shippin-tech/node-a`, `/srv/shippin-tech/node-b`).
+2. Set a unique `COMPOSE_PROJECT_NAME` in each `server.env`.
+3. Set a unique `MAIL_HOSTNAME` for each node.
+4. If multiple instances share one host/IP, set unique host ports in
+   `server.env` (`HTTP_HOST_PORT`, `SMTP_HOST_PORT`, `SMTPS_HOST_PORT`,
+   `SUBMISSION_HOST_PORT`, `IMAPS_HOST_PORT`, `HTTPS_HOST_PORT`).
+5. Keep the same `SHIPPIN_IMAGE` digest across all instances in one rollout.
+
+Recommended rollout controls:
+
+- **Canary first:** run `bash update.sh <digest>` on one instance and validate
+  login, send/receive and shared data access before touching the rest.
+- **One-at-a-time updates:** update instances sequentially to reduce blast
+  radius and keep other nodes serving.
+- **Immutable release target:** pin exact digest; never deploy `latest`.
+- **Change log:** keep `deployments.log` and `server.env.previous` for each
+  instance; they are your fast recovery references.
+- **Recovery action:** redeploy a known-good digest explicitly with
+  `bash update.sh <digest>` from that instance directory.
+
+## Enterprise client lanes
+
+For client-by-client enterprise offers, support all lanes with one standard:
+
+- **Dedicated stack per client:** strongest isolation, best for regulated or
+  contract-sensitive tenants.
+- **Shared cluster multi-tenant:** cost-efficient default when policy
+  isolation is acceptable.
+- **Hybrid:** shared by default with dedicated upgrades for premium or
+  compliance clients.
+
+Use [control-plan.template.json](./control-plan.template.json) as the source
+for lane metadata and scripted event IDs (`bootstrap.instance`,
+`promote.canary`, `promote.wave`, `rollback.digest`, `drill.recovery`) so
+automation and UI stay aligned.
 
 ## Updates and recovery
 

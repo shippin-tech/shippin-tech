@@ -13,6 +13,13 @@ run.sh
 !.gitattributes
 !.github
 !.cargo
+!/platform/.agents/
+!/platform/.agents/**
+!/platform/.dockerignore
+!/platform/.gitleaks.toml
+!/platform/governance/journal/.gitkeep
+!/platform/governance/plans/.gitkeep
+!/platform/scripts/vaultix-demo/run.sh
 !.ai/
 !.ai/**
 .ai/**/__pycache__/

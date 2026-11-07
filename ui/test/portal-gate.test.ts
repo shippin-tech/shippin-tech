@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { nextAfterDiscover } from '../src/lib/adapter/discover-call';
 import { classifyMetrics } from '../src/lib/adapter/metrics-call';
+import { actionNotice } from '../src/lib/portal/actions';
 import { cell, registryGet, usingFor } from '../src/lib/adapter/portal-call';
 import { COPY_BLOCKED, copyLabel, writeClipboard } from '../src/lib/portal/copy';
+import { deploymentLanes, scriptedEvents } from '../src/lib/portal/control-plan';
 import { views } from '../src/lib/portal/catalog';
 import { buildSearchIndex, querySearch, searchLabel } from '../src/lib/portal/search';
 
@@ -77,5 +79,19 @@ describe('discover', () => {
 			apiOrigin: 'http://127.0.0.1:5175'
 		});
 		expect(next.step).toBe('register');
+	});
+});
+
+describe('enterprise control plan', () => {
+	it('offers all deployment lanes and scripted events', () => {
+		expect(deploymentLanes.map((lane) => lane.id)).toEqual([
+			'dedicated_stack_per_client',
+			'shared_cluster_multi_tenant',
+			'hybrid'
+		]);
+		expect(scriptedEvents.some((event) => event.id === 'promote.canary')).toBe(true);
+		expect(scriptedEvents.some((event) => event.id === 'rollback.digest')).toBe(true);
+		expect(scriptedEvents.every((event) => event.actionName.length > 0)).toBe(true);
+		expect(actionNotice('saved', 'Promote Canary')).toContain('Action executed successfully.');
 	});
 });

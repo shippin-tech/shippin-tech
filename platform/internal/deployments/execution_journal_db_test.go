@@ -1,0 +1,252 @@
+package deployments
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"strings"
+	"testing"
+
+	"github.com/google/uuid"
+)
+
+func TestExecutionStepIntentIsApprovedLeaseFencedAndNeverRedispatched(t *testing.T) {
+	store, tenantID, serverID := deploymentTestStore(t)
+	ctx := context.Background()
+	if _, err := store.pool.Exec(ctx, `UPDATE catalog_services SET runtime_contract=$1::jsonb WHERE id='postgres'`,
+		`{"version":3,"kind":"incus_oci_container","providers":["incus"],"resources":{"cpu_cores":2,"memory_mib":2048},"storage":{"size_gib":20,"mount_path":"/var/lib/postgresql/data"},"network":{"exposure":"private","ports":[{"name":"postgres","protocol":"tcp","container_port":5432}]},"health":{"kind":"tcp","port":5432,"interval_seconds":30,"timeout_seconds":5,"failure_threshold":3},"environment":[{"name":"POSTGRES_PASSWORD","config_path":"/password"}]}`); err != nil {
+		t.Fatal(err)
+	}
+	deployment, _, err := store.Create(ctx, tenantID, "operator@example.test", CreateInput{
+		ServiceID: "postgres", TargetSystemID: serverID, DesiredState: DesiredPresent,
+		IdempotencyKey: uuid.NewString(), Config: json.RawMessage(`{"port":5432,"password":"vaultix://production/services/postgres/password"}`),
+		TargetConfig: json.RawMessage(`{"storage":{"pool":"tenant-pool"},"network":{"name":"tenant-net"}}`),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	plan, err := BuildExecutionPlan(tenantID, deployment)
+	if err != nil || plan.UnsupportedReason != "" || len(plan.Steps) == 0 {
+		t.Fatalf("plan=%+v err=%v", plan, err)
+	}
+	planSHA, err := plan.Fingerprint()
+	if err != nil {
+		t.Fatal(err)
+	}
+	step := plan.Steps[0]
+	jobID, owner := uuid.NewString(), "worker-a"
+	if _, err := store.pool.Exec(ctx, `INSERT INTO jobs(id,tenant_id,kind,target_type,target_id,status,attempts,max_attempts,
+		created_by,lease_owner,lease_until) VALUES($1,$2,'deployment.reconcile','deployment_generation',$3,'running',1,3,'test',$4,now()+interval '1 minute')`,
+		jobID, tenantID, deployment.ID+":1", owner); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := store.BeginExecutionStepWithLease(ctx, tenantID, deployment.ID, 1, jobID, owner, planSHA, step); !errors.Is(err, ErrReviewConflict) {
+		t.Fatalf("unapproved intent accepted: %v", err)
+	}
+	reviewID := uuid.NewString()
+	ticketID := "shp-" + strings.ReplaceAll(reviewID, "-", "")
+	actionSHA := strings.Repeat("a", 64)
+	if _, _, err := store.ReserveReview(ctx, tenantID, deployment.ID, 1, "operator@example.test", uuid.NewString(), reviewID, ticketID,
+		plan.Version, planSHA, actionSHA); err != nil {
+		t.Fatal(err)
+	}
+	ticketSHA := strings.Repeat("c", 64)
+	if _, err := store.SetReviewState(ctx, reviewID, "operator@example.test", "pending_review", ticketSHA, ""); err != nil {
+		t.Fatal(err)
+	}
+	provenance := ReviewDecisionProvenance{DecisionID: "decision-step", TenantID: "agenthub-tenant", MachineID: "machine-1", TicketID: ticketID,
+		TicketSHA256: ticketSHA, PolicySHA256: strings.Repeat("b", 64), PolicyVersion: 1, MatchedRules: []string{"deployment-review"}, ActionSHA256: actionSHA}
+	if _, err := store.RecordReviewDecision(ctx, tenantID, deployment.ID, 1, "operator@example.test", uuid.NewString(), true, provenance, ""); err != nil {
+		t.Fatal(err)
+	}
+
+	intent, started, err := store.BeginExecutionStepWithLease(ctx, tenantID, deployment.ID, 1, jobID, owner, planSHA, step)
+	if err != nil || !started || intent.State != "intent" || intent.Attempt != 1 {
+		t.Fatalf("intent=%+v started=%t err=%v", intent, started, err)
+	}
+	if err := store.ClaimExecutionStepDispatchWithLease(ctx, tenantID, deployment.ID, 1, jobID, owner, planSHA, step); !errors.Is(err, ErrReviewAuthorizationConflict) {
+		t.Fatalf("step dispatched without a current worker decision: %v", err)
+	}
+	workerProvenance := provenance
+	workerProvenance.DecisionID = "worker-decision"
+	if _, err := store.RecordReviewDecisionWithLease(ctx, tenantID, deployment.ID, 1,
+		"operator@example.test", jobID, jobID, owner, true, workerProvenance, ""); err != nil {
+		t.Fatal(err)
+	}
+	executionSnapshot, err := store.ExecutionSnapshotWithLease(ctx, tenantID, deployment.ID, 1,
+		jobID, owner, planSHA)
+	if err != nil || executionSnapshot.PlanSHA256 != planSHA || executionSnapshot.Definition.Runtime.Kind != "incus_oci_container" ||
+		executionSnapshot.Deployment.TargetConfig.Storage == nil || executionSnapshot.Deployment.TargetConfig.Storage.Pool != "tenant-pool" {
+		t.Fatalf("lease-fenced execution snapshot=%+v err=%v", executionSnapshot, err)
+	}
+	if _, err := store.ExecutionSnapshotWithLease(ctx, tenantID, deployment.ID, 1,
+		jobID, owner, strings.Repeat("f", 64)); !errors.Is(err, ErrReviewConflict) {
+		t.Fatalf("stale plan loaded execution snapshot: %v", err)
+	}
+	if _, err := store.pool.Exec(ctx, `CREATE OR REPLACE FUNCTION shippin_test_reject_dispatch_claim() RETURNS trigger
+		LANGUAGE plpgsql AS $$ BEGIN IF NEW.event_type='dispatch_claimed' THEN
+		RAISE EXCEPTION 'injected dispatch audit failure'; END IF; RETURN NEW; END $$`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.pool.Exec(ctx, `CREATE TRIGGER shippin_test_reject_dispatch_claim
+		BEFORE INSERT ON shippin_deployment_execution_step_events FOR EACH ROW
+		EXECUTE FUNCTION shippin_test_reject_dispatch_claim()`); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_, _ = store.pool.Exec(context.Background(), `DROP TRIGGER IF EXISTS shippin_test_reject_dispatch_claim ON shippin_deployment_execution_step_events`)
+		_, _ = store.pool.Exec(context.Background(), `DROP FUNCTION IF EXISTS shippin_test_reject_dispatch_claim()`)
+	})
+	if err := store.ClaimExecutionStepDispatchWithLease(ctx, tenantID, deployment.ID, 1,
+		jobID, owner, planSHA, step); err == nil {
+		t.Fatal("dispatch proceeded when append-only audit insertion failed")
+	}
+	var claimRolledBack bool
+	if err := store.pool.QueryRow(ctx, `SELECT dispatch_claimed_at IS NULL FROM shippin_deployment_execution_steps
+		WHERE tenant_id=$1 AND deployment_id=$2 AND generation=1 AND idempotency_key=$3`,
+		tenantID, deployment.ID, step.IdempotencyKey).Scan(&claimRolledBack); err != nil || !claimRolledBack {
+		t.Fatalf("dispatch claim persisted after audit failure: rolled_back=%t err=%v", claimRolledBack, err)
+	}
+	if _, err := store.pool.Exec(ctx, `DROP TRIGGER shippin_test_reject_dispatch_claim ON shippin_deployment_execution_step_events`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.pool.Exec(ctx, `DROP FUNCTION shippin_test_reject_dispatch_claim()`); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.ClaimExecutionStepDispatchWithLease(ctx, tenantID, deployment.ID, 1,
+		jobID, owner, strings.Repeat("f", 64), step); !errors.Is(err, ErrReviewConflict) {
+		t.Fatalf("altered plan passed dispatch claim: %v", err)
+	}
+	alteredStep := step
+	alteredStep.Operation = "other_operation"
+	if err := store.ClaimExecutionStepDispatchWithLease(ctx, tenantID, deployment.ID, 1,
+		jobID, owner, planSHA, alteredStep); !errors.Is(err, ErrReviewConflict) {
+		t.Fatalf("altered step passed dispatch claim: %v", err)
+	}
+	prerequisiteBlocked := plan.Steps[1]
+	if _, started, err := store.BeginExecutionStepWithLease(ctx, tenantID, deployment.ID, 1,
+		jobID, owner, planSHA, prerequisiteBlocked); err != nil || !started {
+		t.Fatalf("persist next-step test intent started=%t err=%v", started, err)
+	}
+	if err := store.ClaimExecutionStepDispatchWithLease(ctx, tenantID, deployment.ID, 1,
+		jobID, owner, planSHA, prerequisiteBlocked); !errors.Is(err, ErrExecutionStepConflict) {
+		t.Fatalf("step with unfinished prerequisite passed dispatch claim: %v", err)
+	}
+	if _, err := store.RecordExecutionStepOutcomeWithLease(ctx, tenantID, deployment.ID, 1,
+		jobID, owner, planSHA, prerequisiteBlocked.IdempotencyKey, "failed", "", "precondition_test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.ClaimExecutionStepDispatchWithLease(ctx, tenantID, deployment.ID, 1, jobID, owner, planSHA, step); err != nil {
+		t.Fatalf("current approved step dispatch rejected: %v", err)
+	}
+	if err := store.ClaimExecutionStepDispatchWithLease(ctx, tenantID, deployment.ID, 1, jobID, owner, planSHA, step); !errors.Is(err, ErrExecutionStepConflict) {
+		t.Fatalf("replayed provider dispatch permit accepted: %v", err)
+	}
+	unresolvedPlan, unresolvedDigest, unresolved, err := store.UnresolvedExecutionStepsWithLease(ctx, tenantID,
+		deployment.ID, 1, jobID, owner)
+	if err != nil || unresolvedDigest != planSHA || unresolvedPlan.Version != plan.Version || len(unresolved) != 1 || unresolved[0].IdempotencyKey != step.IdempotencyKey {
+		t.Fatalf("unresolved steps plan=%+v digest=%s steps=%+v err=%v", unresolvedPlan, unresolvedDigest, unresolved, err)
+	}
+	replayed, started, err := store.BeginExecutionStepWithLease(ctx, tenantID, deployment.ID, 1, jobID, owner, planSHA, step)
+	if err != nil || started || replayed.IdempotencyKey != intent.IdempotencyKey {
+		t.Fatalf("replay=%+v started=%t err=%v", replayed, started, err)
+	}
+	if _, err := store.pool.Exec(ctx, `UPDATE jobs SET status='failed',lease_owner=NULL,lease_until=NULL WHERE id=$1`, jobID); err != nil {
+		t.Fatal(err)
+	}
+	recoveryJobID, recoveryOwner := uuid.NewString(), "worker-recovery"
+	if _, err := store.pool.Exec(ctx, `INSERT INTO jobs(id,tenant_id,kind,target_type,target_id,status,attempts,max_attempts,
+		created_by,lease_owner,lease_until) VALUES($1,$2,'deployment.reconcile','deployment_generation',$3,'running',1,3,'test',$4,now()+interval '1 minute')`,
+		recoveryJobID, tenantID, deployment.ID+":1", recoveryOwner); err != nil {
+		t.Fatal(err)
+	}
+	claimed, didClaim, err := store.ClaimExecutionStepRecoveryWithLease(ctx, tenantID, deployment.ID, 1,
+		recoveryJobID, recoveryOwner, planSHA, step)
+	if err != nil || !didClaim || claimed.State != "intent" {
+		t.Fatalf("recovery claim=%+v didClaim=%t err=%v", claimed, didClaim, err)
+	}
+	if err := store.ClaimExecutionStepDispatchWithLease(ctx, tenantID, deployment.ID, 1,
+		recoveryJobID, recoveryOwner, planSHA, step); !errors.Is(err, ErrExecutionStepConflict) {
+		t.Fatalf("recovery claimant replayed provider dispatch: %v", err)
+	}
+	claimed, didClaim, err = store.ClaimExecutionStepRecoveryWithLease(ctx, tenantID, deployment.ID, 1,
+		recoveryJobID, recoveryOwner, planSHA, step)
+	if err != nil || didClaim || claimed.State != "intent" {
+		t.Fatalf("recovery claim replay=%+v didClaim=%t err=%v", claimed, didClaim, err)
+	}
+	reclaimedOwner := "worker-recovery-reclaimed"
+	if _, err := store.pool.Exec(ctx, `UPDATE jobs SET lease_owner=$2,lease_until=now()+interval '1 minute' WHERE id=$1`, recoveryJobID, reclaimedOwner); err != nil {
+		t.Fatal(err)
+	}
+	claimed, didClaim, err = store.ClaimExecutionStepRecoveryWithLease(ctx, tenantID, deployment.ID, 1,
+		recoveryJobID, reclaimedOwner, planSHA, step)
+	if err != nil || !didClaim || claimed.State != "intent" {
+		t.Fatalf("reclaimed recovery claim=%+v didClaim=%t err=%v", claimed, didClaim, err)
+	}
+	if _, err := store.pool.Exec(ctx, `UPDATE jobs SET status='failed',lease_owner=NULL,lease_until=NULL WHERE id=$1`, recoveryJobID); err != nil {
+		t.Fatal(err)
+	}
+	finalJobID, finalOwner := uuid.NewString(), "worker-recovery-final"
+	if _, err := store.pool.Exec(ctx, `INSERT INTO jobs(id,tenant_id,kind,target_type,target_id,status,attempts,max_attempts,
+		created_by,lease_owner,lease_until) VALUES($1,$2,'deployment.reconcile','deployment_generation',$3,'running',1,3,'test',$4,now()+interval '1 minute')`,
+		finalJobID, tenantID, deployment.ID+":1", finalOwner); err != nil {
+		t.Fatal(err)
+	}
+	claimed, didClaim, err = store.ClaimExecutionStepRecoveryWithLease(ctx, tenantID, deployment.ID, 1,
+		finalJobID, finalOwner, planSHA, step)
+	if err != nil || !didClaim || claimed.State != "intent" {
+		t.Fatalf("new-job recovery takeover=%+v didClaim=%t err=%v", claimed, didClaim, err)
+	}
+	recoverySnapshot, err := store.ExecutionRecoverySnapshotWithLease(ctx, tenantID, deployment.ID, 1,
+		finalJobID, finalOwner, planSHA, step.IdempotencyKey)
+	if err != nil || recoverySnapshot.Step.State != "intent" || recoverySnapshot.Definition.Runtime.Version != 3 ||
+		recoverySnapshot.PlanSHA256 != planSHA || len(recoverySnapshot.EnvironmentInputs) != 1 ||
+		recoverySnapshot.EnvironmentInputs[0].VaultixReference != "vaultix://production/services/postgres/password" ||
+		recoverySnapshot.EnvironmentInputs[0].Value != nil {
+		t.Fatalf("runtime recovery snapshot=%+v err=%v", recoverySnapshot, err)
+	}
+	if _, err := store.ExecutionRecoverySnapshotWithLease(ctx, tenantID, deployment.ID, 1,
+		finalJobID, finalOwner, strings.Repeat("f", 64), step.IdempotencyKey); !errors.Is(err, ErrReviewConflict) {
+		t.Fatalf("stale plan loaded recovery snapshot: %v", err)
+	}
+	if _, err := store.ExecutionRecoverySnapshotWithLease(ctx, tenantID, deployment.ID, 1,
+		recoveryJobID, reclaimedOwner, planSHA, step.IdempotencyKey); !errors.Is(err, ErrLostJobLease) {
+		t.Fatalf("stale recovery lease loaded snapshot: %v", err)
+	}
+	if _, err := store.RecordExecutionStepOutcomeWithLease(ctx, tenantID, deployment.ID, 1, recoveryJobID, recoveryOwner, planSHA, step.IdempotencyKey, "succeeded", "provider-op-1", ""); !errors.Is(err, ErrLostJobLease) {
+		t.Fatalf("replaced recovery lease wrote a result: %v", err)
+	}
+	if _, err := store.RecordExecutionStepOutcomeWithLease(ctx, tenantID, deployment.ID, 1, recoveryJobID, reclaimedOwner, planSHA, step.IdempotencyKey, "succeeded", "provider-op-1", ""); !errors.Is(err, ErrLostJobLease) {
+		t.Fatalf("finished recovery job wrote a result: %v", err)
+	}
+	if _, err := store.RecordExecutionStepOutcomeWithLease(ctx, tenantID, deployment.ID, 1, jobID, owner, planSHA, step.IdempotencyKey, "succeeded", "provider-op-1", ""); !errors.Is(err, ErrLostJobLease) {
+		t.Fatalf("replaced lease wrote a result: %v", err)
+	}
+	if err := store.ClaimExecutionStepDispatchWithLease(ctx, tenantID, deployment.ID, 1, jobID, owner, planSHA, step); !errors.Is(err, ErrLostJobLease) {
+		t.Fatalf("replaced lease passed the final dispatch fence: %v", err)
+	}
+	completed, err := store.RecordExecutionStepOutcomeWithLease(ctx, tenantID, deployment.ID, 1, finalJobID, finalOwner, planSHA, step.IdempotencyKey, "succeeded", "provider-op-1", "")
+	if err != nil || completed.State != "succeeded" || completed.ProviderOperationID != "provider-op-1" {
+		t.Fatalf("outcome=%+v err=%v", completed, err)
+	}
+	replayed, started, err = store.BeginExecutionStepWithLease(ctx, tenantID, deployment.ID, 1, finalJobID, finalOwner, planSHA, step)
+	if err != nil || started || replayed.State != "succeeded" {
+		t.Fatalf("completed step replay=%+v started=%t err=%v", replayed, started, err)
+	}
+	var eventCount int
+	if err := store.pool.QueryRow(ctx, `SELECT count(*) FROM shippin_deployment_execution_step_events WHERE tenant_id=$1 AND idempotency_key=$2`, tenantID, step.IdempotencyKey).Scan(&eventCount); err != nil || eventCount != 6 {
+		t.Fatalf("expected intent, dispatch claim, recovery claims and outcome events, count=%d err=%v", eventCount, err)
+	}
+	if _, err := store.pool.Exec(ctx, `UPDATE shippin_deployment_execution_step_events SET actor='changed' WHERE tenant_id=$1 AND idempotency_key=$2`, tenantID, step.IdempotencyKey); err == nil {
+		t.Fatal("execution step history was mutable")
+	}
+	if _, _, err := store.Update(ctx, tenantID, deployment.ID, "operator@example.test", 1,
+		UpdateInput{DesiredState: DesiredPresent, IdempotencyKey: uuid.NewString(),
+			Config: json.RawMessage(deployment.Config), TargetConfig: json.RawMessage(`{"storage":{"pool":"tenant-pool"},"network":{"name":"tenant-net"}}`)}); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.ClaimExecutionStepDispatchWithLease(ctx, tenantID, deployment.ID, 1,
+		finalJobID, finalOwner, planSHA, step); !errors.Is(err, ErrGenerationConflict) {
+		t.Fatalf("stale desired generation passed dispatch claim: %v", err)
+	}
+}

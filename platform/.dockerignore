@@ -1,0 +1,5 @@
+.ai/
+.cache/
+**/node_modules/
+**/dist/
+*.log

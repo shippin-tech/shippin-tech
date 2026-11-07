@@ -30,7 +30,9 @@
 	</aside>
 	<div class="pane">
 		<h2>{selected?.name ?? 'Mail'}</h2>
-		{#if notice}
+		{#if notice === 'sign-in required'}
+			<p><a href="/login">Sign in</a> to see your mail.</p>
+		{:else if notice}
 			<p>{notice}</p>
 		{:else if messages.length === 0}
 			<p>No messages yet.</p>

@@ -1,0 +1,438 @@
+# Shippin platform consolidation plan
+
+## Objective
+
+Deliver one deployable, operator-configurable Shippin platform from the canonical
+`shippin-platform` repository. All product UI lives in `web/`. Incus and Proxmox
+are explicit infrastructure providers. Users can configure provider connections,
+services, deployment sources, networking, identity and policy from the panel.
+Historical folders remain source material until their useful behavior has been
+reviewed, re-authored into canonical ownership, and verified; this plan does not
+authorize blind copying or deletion.
+
+## Operating constraints
+
+- Commit directly to `main`; run `bash scripts/check.sh` before changes and repair
+  a red `main` before adding new work.
+- Assign one canonical owner to each capability. Do not add another panel or
+  import an alternate console wholesale.
+- Review source provenance, license, dependencies, security posture, tests and
+  runtime assumptions before adopting historical code. Public visibility is not
+  a license.
+- Do not encode installation addresses, credentials, tenant IDs, project names,
+  provider IDs or server-specific policy in product code. Use validated,
+  persisted configuration and sealed write-only credentials.
+- Separate desired configuration from provider observations. Keep changes
+  revisioned, auditable, idempotent, lease-fenced where asynchronous, and
+  recoverable after process restart.
+- AgentHub owns human approval. Mutations must bind approval to the exact target,
+  action and configuration hash. An unavailable policy/reviewer fails closed.
+- Archive source folders only after the evidence gate at the end of this plan;
+  do not delete user work as a shortcut to consolidation.
+
+## Canonical ownership map
+
+| Concern | Canonical owner | Required boundary |
+| --- | --- | --- |
+| Operator and tenant panel | `web/` | One React application, shared navigation and design system |
+| HTTP routes, auth and orchestration | `internal/api/` | Validate requests and delegate to domain packages |
+| Incus lifecycle | `internal/hv/incus/` | Incus-specific client, translation and lifecycle operations |
+| Proxmox lifecycle | `internal/hv/proxmox/` | Proxmox-specific client, translation and lifecycle operations |
+| Provider-neutral lifecycle contract | `internal/hv/` | Shared typed capabilities and errors; no provider-specific branches in generic lifecycle code |
+| Server identity and provider configuration | `internal/servers/` plus migrations | Stable system identity, aliases/tags, endpoint configuration, secret references |
+| Service definitions and deployments | `internal/catalog/`, `internal/deployments/` | User-managed source, version, schema, runtime and deployment state |
+| Network integrations and observations | `internal/networking/` | Cloudflare Tunnel, Tailscale, custom inventory; desired links separate from observations |
+| Platform services and health | `internal/db/` plus `internal/api/` domain handlers | Revisioned editable definitions, leases, observations and operator read models |
+| Human approval and provenance | `internal/agenthub/` | AgentHub-backed task, approval, exact action hash and journal |
+| Packaging and developer build | `cmd/`, `install/`, `deploy/`, `scripts/` | Reproducible build, migration path, upgrades and health checks |
+
+## Ordered work and acceptance gates
+
+### 0. Baseline, inventory and source review — required before every adoption batch
+
+Read the repository instructions, `docs/source-of-truth.md`, current roadmap,
+complete candidate files, callers, tests, manifests and build/deploy configuration.
+Record an inventory per source folder (`shippin-mesh`, `shippin-cloud`,
+`shippin-console`, and historical Warden): capability, source commit and file
+hash, current owner, proposed canonical destination, dependencies, license,
+security concerns, tests, disposition and evidence. Keep the audit in ignored
+`.ai/data/`; retain only durable, sanitized architecture decisions in this plan.
+
+**Gate:** no candidate is copied or moved until its origin, license, secret
+handling, tests and canonical owner are understood. Unknown license or provenance
+means reimplement from the desired behavior or defer adoption.
+
+### 1. Stabilize the single deployable and panel
+
+Map existing routes, navigation, build targets, migrations and service boundaries
+to the ownership table above. Resolve duplicate UI and service owners within
+`shippin-platform`; do not import a second console. Define the supported developer
+build and installer entrypoints, configuration schema, migration ordering,
+health/readiness semantics and supported upgrade path.
+
+**Gate:** one documented developer command builds the one panel and server;
+clean-install and upgrade checks pass; no runtime dependency on sibling source
+folders remains.
+
+### 2. Finish provider-neutral lifecycle and explicit Incus/Proxmox drivers
+
+Refactor shared lifecycle orchestration into the provider-neutral `internal/hv/`
+contract and provider behavior into `internal/hv/incus/` and
+`internal/hv/proxmox/`. Keep discovery, validation, capabilities, errors,
+operation persistence, polling and recovery explicit. Confirm the UI can add,
+edit, test and remove connections using user-supplied endpoints, certificates,
+credential references and provider options. No environment-specific address or
+default machine identity may be embedded in product behavior.
+
+**Gate:** contract tests cover each supported operation and unsupported path;
+provider tests exercise positive and negative TLS/auth/API cases; database tests
+cover operation restart, duplicate delivery and stale lease rejection.
+
+### 3. Make AgentHub the sole human-review authority for provider mutations
+
+Replace blanket-denied infrastructure mutations only after an end-to-end
+AgentHub task and approval path exists. Bind approval to actor, system/server ID,
+provider, exact action, target, configuration revision/hash and expiry. Persist
+provenance and audit outcome; re-check the fence immediately before executing the
+provider call. Keep hostname as discovered system identity, with user-configurable
+label, alias and tags. AgentHub tenant/machine mapping remains distinct from
+invented product-specific approval registries.
+
+**Gate:** integration tests prove approved actions execute once, altered targets
+or hashes are rejected, expired/replayed approvals fail, AgentHub outage fails
+closed, and audit failure prevents mutation. Read-only probes remain available
+without manufacturing approvals.
+
+### 4. Complete configurable service catalog and turnkey deployments
+
+Use a versioned, validated catalog for built-in and user-added Git/custom
+deployment sources. Store source URL/ref/digest and deployment parameters as
+configuration, with secret values in the platform secret boundary. Add editable
+service definitions and deployment forms in `web/`. Implement lifecycle/status
+and recovery as persisted operations, not mock buttons. Treat PostgreSQL,
+Dragonfly/Redis and ClickHouse as independently configurable catalog offerings;
+document resource requirements, ports, storage, backups, upgrades, health checks
+and supported HA modes. Do not imply a service is deployable until its runtime,
+provisioning path and failure recovery are implemented and verified.
+
+**Gate:** each shipped catalog item has source/license review, schema validation,
+version pinning, secret redaction, install/upgrade/rollback behavior, smoke test,
+backup/restore evidence and a documented support boundary. Users can add a new
+repository or custom source without code edits.
+
+### 5. Finish network integrations as desired and observed state
+
+Manage Cloudflare Tunnels, Tailscale and custom integrations through validated
+UI configuration, scoped credentials and safe connection tests. Represent
+provider observations separately from Shippin desired links and system identity.
+Support explicit association, status, stale inventory, removal and audit. Any
+provider-side change uses the AgentHub approval path from phase 3. Define
+canonical `shippin_` prefixes for new platform-owned tables and migrations.
+
+**Current slice:** commit `8d3f81c` adds provider-resource-to-server association
+in the existing React panel, audited routes, a prefixed desired-state table and
+retention across temporary observation gaps. Commit `96c4443` updates the pinned
+unauthenticated route inventory. CI run `41982881794` passed all 13 jobs. These
+changes associate local Shippin metadata only; they do not configure tunnels,
+routes, ACLs or providers. Add database-backed regression tests for attach,
+detach, target rejection and inventory omission before treating this capability
+as fully covered.
+
+**Progress:** the association workflow has PostgreSQL-backed coverage for an
+unknown external resource, revoked target, attach, detach, reattachment and an
+empty inventory snapshot. The network package is included in the existing
+disposable-Postgres CI suite. Local Postgres 16 execution passed.
+
+**Gate:** integrations can be added, edited, tested, synchronized and removed;
+resource associations survive transient inventory gaps; forbidden targets and
+provider writes fail safely; credentials never appear in responses or logs.
+
+### 6. Make Nomen, Vaultix, Operator and health fully configurable
+
+Inventory each platform service's actual runtime and API, then provide canonical
+create/edit/disable/test forms for settings that are safe to expose. Health must
+show configuration revision, check time, freshness, latency, resource usage,
+address/provenance when available, and `unknown` when evidence is missing or
+stale. Join Incus state only by stable system ID and retain per-service errors.
+Avoid displaying placeholder zero values as live measurements.
+
+**Gate:** UI mutations persist, survive restart and are audited; invalid config
+and unreachable services produce useful failure states; stale probe results
+cannot overwrite a newer revision; secrets are sealed and write-only.
+
+### 7. Packaging, independent evaluation and archive readiness
+
+Run clean Linux developer builds, fresh installs, upgrades, restore/recovery,
+secret scans, database migrations, provider simulators and UI workflows. Capture
+actual deployment targets and logs with secrets redacted. Evaluate on independent
+projects/systems not used to author the integration. Produce an archive ledger
+mapping every candidate capability/file to its canonical implementation or
+explicit rejected/deferred disposition, with tests and source evidence.
+
+**Gate:** all shipped work builds from `shippin-platform` alone, CI and
+install/upgrade tests are green, supported operations are documented, no
+candidate source contains unique unreviewed capability, and the user can inspect
+the archive ledger. Only then is archival of the external folders safe to
+consider; deletion is a separate explicit action.
+
+## Execution register
+
+This register is the active work order. It deliberately separates implemented
+metadata and design from behavior that has actually been exercised. Complete
+each packet in order, update its status with commit and CI evidence, and do not
+start a dependent packet while its gate is open. Source-by-source provenance and
+dispositions remain in [`design/capability-absorption.md`](design/capability-absorption.md);
+the architecture and UI path remain in [`design/platform-absorption-plan.md`](design/platform-absorption-plan.md).
+
+### Source-closure worklist
+
+Use this table to decide when a source folder can be marked "closed for active
+delivery" and moved to archive-ready review. A source is not closable until all
+checkpoints in its row are complete and linked to evidence in this plan,
+[`design/capability-absorption.md`](design/capability-absorption.md) and
+[`design/archive-readiness.md`](design/archive-readiness.md).
+
+Before marking any row closed, also pass the boundary and nesting gate below.
+
+| Source folder / checkout | What "fully imported and authored here" means | Blocking checkpoints before closure |
+| --- | --- | --- |
+| `shippin-console` | Every accepted control-plane and host operation is re-authored under canonical `internal/`, `cmd/`, `install/` and `web/` owners with AgentHub-backed approval and no runtime dependency on the standalone checkout. | Finish packets 2, 3 and 4 with live-provider evidence; complete rights/dependency/security review and disposition in packet 1; preserve untracked local user data separately before any archive decision. |
+| `shippin-cloud` | Any still-useful behavior is represented as platform-owned API/domain/UI contracts in this repository, or explicitly rejected/deferred with reasons. No second panel or alternate runtime remains. | Complete packet 1 capability and rights inventory for all candidate paths; map accepted behavior to packets 2-7; update archive ledger with adopt/re-author/reject/defer decisions per capability. |
+| `shippin-mesh` | Mesh-origin capabilities (including provider tooling and automation) are either re-authored into canonical providers/deployments/networking boundaries or rejected with evidence. Site-specific automation is converted to validated configuration, not copied scripts. | Complete packet 1 full path inventory and rights/security review; finish packets 3, 4 and 5 for accepted provider/network/runtime behavior; keep dirty user work preserved and accounted for. |
+| Historical `shippin` / Warden checkout | Useful behavior is re-authored into canonical product owners without Warden naming, parallel panel flows, plaintext secret handling or host-specific assumptions. | Preserve all dirty and untracked entries; close remaining capability rows in `design/capability-absorption.md`; complete packet 7 independent evidence that no unique required behavior remains outside this repo. |
+| `third_party/warden-ct102` | The reference matrix is fully dispositioned; remaining needed behavior is implemented in canonical owners and independently tested. | Close outstanding matrix rows and screenshot dispositions; verify no shipped runtime or panel path depends on this tree; then make a separate keep/remove decision in archive review. |
+
+### Boundary and nesting gate (required for every closure)
+
+Treat this as a fail-closed checklist. If any item is "no", the source is not
+closure-ready.
+
+1. **Canonical owner match:** every adopted capability is implemented in the owner
+   defined by [`source-of-truth.md`](source-of-truth.md) (for example, one panel
+   in `web/`, provider logic in `internal/hv/{incus,proxmox}/`, deployment runtime
+   in `internal/deployments/`).
+2. **No cross-layer leaks:** provider or builder behavior is not placed in panel
+   code, and UI-specific behavior is not embedded in provider drivers.
+3. **No parallel surfaces:** no second panel, alternate runtime entrypoint, or
+   sibling-checkout dependency is introduced to "speed up" import.
+4. **Path-level evidence:** capability ledger rows include destination paths and
+   tests proving behavior from canonical owners, not from historical trees.
+5. **Archive gate alignment:** archive-readiness and capability ledgers both show
+   the same final disposition for each imported capability.
+
+### Immediate closure execution queue
+
+Run this queue in order. Do not start the next item until the current item's
+evidence is added to this plan and the linked ledgers.
+
+| Order | Action | Canonical owners | Required evidence to mark done |
+| --- | --- | --- | --- |
+| A1 | Complete packet-1 capability inventory for `shippin-cloud` and `shippin-console` (path, source revision/hash, disposition, rights/dependency/security notes) | `docs/design/capability-absorption.md` | Every remaining row has `adopt`/`re-author`/`reject`/`defer`, canonical destination path, and test/evidence expectation; no "unknown ownership" rows remain. |
+| A2 | Complete packet-1 capability inventory for `shippin-mesh` and historical Warden checkout families | `docs/design/capability-absorption.md` | Each family is mapped to a canonical owner or explicit rejection; site-specific scripts and local-only assumptions are marked non-importable unless re-authored. |
+| A3 | Reconcile capability and archive ledgers so each checkout has matching disposition language and open-gate reasons | `docs/design/capability-absorption.md`, `docs/design/archive-readiness.md` | For each checkout row, open blockers in both ledgers are identical in meaning and scope; no contradiction between "absorbed" and "not yet evidenced". |
+| A4 | Close packet-2/3 live-evidence gap for approved provider mutations (AgentHub + Incus + Proxmox) without adding alternate runtime paths | `internal/agenthub/`, `internal/hv/`, `internal/api/`, `web/` | Disposable-provider runs include approval success/denial/replay/expiry and provider call read-back; results referenced here with commit and Checks run IDs. |
+| A5 | Close packet-4 runtime gap to remove `runtime_unsupported` claims for supported paths only | `internal/deployments/`, `internal/catalog/`, `internal/hostd/`, `web/` | Declared health, recovery, and lifecycle evidence exists for each supported action; unsupported actions stay explicitly labeled unsupported. |
+| A6 | Run closure decision review per source using the boundary/nesting gate and release gates | This plan plus both ledgers | Each source row has a pass/fail checklist result; only pass rows are eligible for explicit archive/shutdown decisions. |
+
+### Canonical absorption delivery plan (execution-ready)
+
+This is the concrete build sequence for shipping the canonical panel/runtime and
+closing source folders safely. Execute in order; each packet must end with a
+green `main`, linked evidence, and explicit unsupported boundaries.
+
+| Window | Packet | Scope and canonical owners | Acceptance checks (must pass before next packet) |
+| --- | --- | --- | --- |
+| Now | P1 - absorption inventory completion | Finish packet-1 family mapping and source dispositions in `docs/design/capability-absorption.md` and `docs/design/archive-readiness.md` for all source checkouts. | Every source family has `adopt`/`re-author`/`reject`/`defer` with canonical destination and blocker text aligned in both ledgers. |
+| Next | P2 - Incus runtime completion | Complete present/absent runtime path in `internal/deployments/`, `internal/api/`, `internal/hv/incus/`, and `web/` read models for supported operations. | Worker outcomes are `ready`/`degraded`/`absent` for supported paths; failure/recovery paths are tested; unsupported operations remain explicitly unsupported and never success-shaped. |
+| Next | P3 - Proxmox runtime parity | Implement Proxmox application runtime path under `internal/hv/proxmox/` and `internal/api/` with the same lease/review/dispatch/recovery contract used by Incus. | Disposable-provider tests cover create/start/stop/remove/read-back plus denial/replay/lease-loss/ambiguous-provider recovery. |
+| Next | P4 - provider mutation live proof | Validate live AgentHub + provider behavior for approved mutation paths in `internal/agenthub/`, `internal/api/`, infra UI. | Evidence includes approval allow/deny/expiry/replay and provider read-back on disposable Incus and Proxmox, with zero-write denial proof. |
+| Next | P5 - install/upgrade hardening | Harden install and upgrade paths in `install/`, `deploy/`, `scripts/`, migrations, and release checks. | Fresh install, upgrade, and rollback-by-restore workflows pass from clean checkout; no runtime dependency on sibling source trees. |
+| Next | P6 - closure decision pass | Apply boundary/nesting gate and release gates source-by-source. | Only rows with complete evidence move to archive-ready review; no source folder is shut down or deleted without explicit pass result and user review. |
+
+### Definition of done for every packet
+
+1. Canonical owner boundaries are preserved (`web/` single panel, provider logic
+   in `internal/hv/*`, orchestration in `internal/api/` + `internal/deployments/`).
+2. Behavior is proven by checks that observe runtime outcomes and at least one
+   negative/recovery path, not only schema or UI presence.
+3. `main` is green after push (current Checks workflow), and the packet records
+   commit + run IDs in this plan and the ledgers.
+4. Install/upgrade compatibility is preserved: migrations are forward-safe, and
+   installer/update paths remain validated by existing CI gates.
+5. Unsupported behavior is explicitly surfaced as unsupported; no silent fallback
+   or success-shaped failure.
+
+| Order | Packet and canonical owner | Current status | Implementation order and observable exit gate |
+| --- | --- | --- | --- |
+| 0 | Baseline and one deployable: `web/`, `cmd/console`, `cmd/shippin-hostd`, `install/`, CI | **Current baseline passed locally and on GitHub.** `bash scripts/check.sh` passed on `main` `e88bc24` on 2026-11-05. GitHub Checks run `41999295954` passed all 13 jobs, including disposable-Postgres API/identity suites, the one React panel build/budget, installer fresh/upgrade, compose, public-tree and secret scans. No open PRs were returned by `gh pr list --state open`. Standalone release/rollout and live provider behavior remain open. | Keep all panel work inside `web/`; verify standalone control-plane and host-agent artifacts, install/upgrade/migration flow, and no sibling checkout runtime dependency. Record Linux CI and installation evidence. |
+| 1 | Source inventory and rights: historical `shippin-mesh`, `shippin-cloud`, `shippin-console`, and Warden-named source; ledger in `.ai/data/` | **Partially audited; not archive-ready.** The `shippin-mesh` Proxmox MCP package is now source-hashed and reviewed against the current Go driver and one panel; the wider mesh/console/cloud path inventory and per-capability rights/security/test comparison remain incomplete. | Inventory every candidate path by source revision/hash, behavior, dependency/license, security boundary, current canonical owner, implementation evidence and disposition. Read-only review only; no wholesale import, reset, merge, or deletion. Exit when no useful capability or user-local change is unresolved. |
+| 2 | Provider mutation approval: `internal/agenthub/`, `internal/api/infra*`, `internal/servers/`, one `web/` guest workflow | **Single-guest power review and configurable local expiry are implemented in `223add2` + `2e788bd`, PostgreSQL-tested, and CI green (run `41991683216`, 13/13 jobs); live AgentHub/provider behavior remains unverified.** Start, stop, shutdown and reboot require exact-action AgentHub review, a configured 1–1440 minute Shippin execution window (default 30), one-shot consume, and durable operation/review provenance. Expiration is persisted per review and atomically rejected/journaled before provider execution. This does not close or expire the AgentHub ticket. Batch and all other provider writes remain fail-closed. | Confirm live AgentHub rule/quorum semantics; inspect one-shot recovery and operator/tenant authorization against independent negative cases. Then exercise against disposable Incus and Proxmox systems before enabling/claiming live behavior. Extend operation-by-operation only. |
+| 3 | Incus and Proxmox lifecycle: `internal/hv/{incus,proxmox}/`, `internal/hv/`, infra API and UI | **Provider lifecycle files exist; current general writes remain disabled. Proxmox overview now includes typed, optional quorum and bounded node-scoped live replication observations; local fake-API success and failure paths pass. This does not verify a live Proxmox token or enable lifecycle writes.** | Finish guest power first; then create/configure/clone/delete, snapshots/restore, storage and networking as distinct typed provider capabilities with provider-specific contracts. Test unsupported paths, auth/TLS failures, idempotency, operation recovery, read-back and disposable Incus and Proxmox behavior. UI add/edit/test/remove uses configured endpoints, certs and credentials only. |
+| 4 | Deployment runtime and source builder: `internal/deployments/`, `internal/catalog/`, `internal/jobs/`, `internal/hostd/`, deployment UI | **The worker now executes reviewed Incus persistent-volume ensure/read-back, stopped digest-pinned OCI create/read-back and separately reviewed power/read-back; it still reports `runtime_unsupported` because health, deletion, full lifecycle and Proxmox runtime remain unsupported.** Current `main` supports tenant-assigned Incus managed bridge/OVN network selection, immutable generation/review binding and live provider-kind/inventory revalidation (`f98c970`, `7961d91`, `e88bc24`; run `41999295954` passed). Packet 4.1 now persists an operator-controlled Incus tenant-secret exposure acknowledgement, defaults it off, surfaces it in the existing provider editor and blocks lease-fenced Vaultix reveal until enabled (`057_server_deployment_secret_trust.sql`; verified on main). This makes the provider trust boundary explicit; it is not secret isolation. The storage primitive is wired and verified with PostgreSQL CI; commit 53adab9 adds the stopped-workload step and GitHub Checks run 42025778200 passed all 13 jobs including PostgreSQL integration. Power packet 4.3c is implemented and passed all 13 GitHub Checks, including PostgreSQL API tests, in run 42029507436. Provider addresses now appear in the existing service resource view: Incus live state, Proxmox LXC interface inventory, and Proxmox QEMU guest-agent output; the UI explicitly says these observations do not prove console reachability or application health. Provider/API simulator tests and scripts/check.sh pass; GitHub Checks run 42032654740 passed all 13 jobs on commit 4c826c5. Live provider permissions remain unverified. Proxmox application execution is absent. Worker JIT AgentHub authorization, immutable generation snapshots, lease-fenced decision/outcome writes and audited tenant Vaultix lookup exist; the volume and stopped-workload steps each consume worker authorization and a one-time dispatch claim. Packet 4.2 now derives an ordered provider-step plan and deterministic step keys from the stored generation, persists plan version/digest with the review, includes the plan in redacted AgentHub evidence and rejects a stale plan before AgentHub authorization; packet 4.3a is verified; packet 4.3b implements separately authorized stopped-workload create in commit 53adab9; GitHub Checks run 42025778200 passed all 13 jobs including PostgreSQL integration. Health and deletion remain absent; power packet 4.3c passed PostgreSQL CI run 42029507436. | **4.1 trust policy — implemented and verified in `76548d6`**: migration 057, persisted default-deny Incus-only setting, existing-panel control, provider-change clearing, and current tenant/generation/target enforcement before any Vaultix request. PostgreSQL-backed positive/negative tests, `bash scripts/check.sh`, and GitHub Checks run `42001830964` (13 jobs) pass. This records trust in Incus administrators; it is not isolation or an enabled executor. If that trust model is unacceptable, a guest-side broker or stronger isolation is required before execution. **4.2 plan binding - partially implemented**: the canonical deployment package derives a versioned ordered plan from the stored generation and hashes the provider, target, pinned definition/source, validated config and step set. Deterministic step keys and the plan version/digest are persisted with review reservations; the AgentHub action and bounded evidence bind the plan, and stale digests are denied before AgentHub. Focused and full sequential PostgreSQL-backed suites pass. Packet 4.2a now persists a plan-bound step intent before dispatch and records a normalized outcome under the same live job lease; unique generation/step keys suppress duplicate intent, and append-only events preserve intent/outcome history (migration 059). PostgreSQL tests cover approval denial, replay suppression, stale-lease rejection and append-only history. Packet 4.2b adds a read-only Incus OCI exact-identity inspection for ambiguous create recovery, with ownership and missing-state tests; the worker does not call it yet. Packet 4.2c separates the Incus OCI volume ensure, stopped-instance create/read-back, running transition/read-back, stop, and stopped-only delete into distinct provider methods so a future executor can journal each mutation independently. The legacy bundled create/delete methods remain convenience orchestration and are not worker-safe step primitives. Focused negative tests ensure a workload create cannot implicitly create storage or change power, and stopped-only delete refuses a running guest without mutation. Most of these provider methods remain unwired; the stopped-instance create is now invoked by the worker under packet 4.3b. Packet 4.2d adds a live-job-lease recovery claim for an existing unresolved step, bound again to current generation, immutable plan digest and exact step; a live claim cannot be stolen, an expired claim can be replaced, and only the current recovery claimant can record the outcome (migration 060). Database tests cover claim replay, same-job lease replacement, takeover by a new job after the prior job terminates, and stale original/recovery worker outcome rejection. Packet 4.2e adds `ExecutionRecoverySnapshotWithLease`: it reloads only the current immutable generation under the active recovery claim, recomputes the execution plan digest, validates the pinned runtime/configuration, and extracts declared environment inputs while preserving Vaultix references without resolving secret material. Database tests cover a valid recovery snapshot, stale digest and stale lease denial. Packet 4.2f adds lease-fenced enumeration of unresolved plan intents in approved plan order and exact read-only Incus volume inspection, including installation-independent deployment naming; focused tests cover unresolved-intent ordering, absent/owned/mismatched volume state and zero provider writes. Packet 4.2g wires exact persistent-volume, OCI workload identity and running-state observations: the leased worker reloads the pinned snapshot, revalidates assigned live Incus storage/network inventory and performs read-only provider checks. Exact desired state records `succeeded`; absence or status mismatch records `unknown` and is never retried. Version 3 Vaultix references resolve only through the existing lease-, audit- and trust-gated lookup path. Health, delete and general infrastructure provider mutations remain unsupported; the worker records `runtime_unsupported` after the implemented deployment steps. PostgreSQL-backed API tests cover present, absent and mismatched observations with no provider writes. Remaining: recover other ambiguous operations with their exact identity checks; then implement separately gated provider execution, fresh target inventory and AgentHub checks, plus crash/partial completion recovery. Packet 4.3b is implemented in `53adab9`: the worker creates a stopped OCI workload after reviewed volume ensure. Positive, denial, mismatched read-back and ambiguous-create recovery tests passed PostgreSQL CI run `42025778200` (13 jobs). Packet 4.3c adds a separately reviewed power operation and passed PostgreSQL CI run 42029507436; provider address display is implemented, while health, delete and Proxmox application operations remain unsupported. **4.3 typed Incus executor**: consume only a validated immutable OCI/runtime snapshot; enforce version, resource, selected storage/network, environment and generation identity; ensure storage, create stopped, then power through distinct reviewed and read-back steps. **4.4 observed health**: implement bounded TCP/HTTP health checks with persisted freshness and no `ready` before provider read-back plus health. **4.5 lifecycle**: implement idempotent update/cancel/remove with snapshot/data preservation and generation/lease fences. **4.6 Proxmox strategy**: separately declare VM/image/cloud-init/guest-agent capabilities and implement/verify a typed executor; no Incus recipe may imply Proxmox support. **4.7 source builds**: only after deployment can consume a pinned artifact, design isolated bounded Git/custom acquisition/build, immutable provenance and cleanup; no host shell or credential-bearing URL. Each subpacket needs positive, denied, stale-generation, lost-lease, provider-error, read-back mismatch and recovery evidence. Keep incomplete combinations visibly unsupported; no live-deployment claims until this gate closes. |
+| 5 | Turnkey data services: catalog/runtime adapters and deployment UI | **Design/catalog groundwork only; no verified turnkey service deployment.** | On the verified runtime, implement PostgreSQL, Dragonfly, Redis and ClickHouse as explicit engine-specific versioned offerings. Configure compute, storage, placement, network, users, secret rotation, health, upgrades, backups and actual restore tests. Never call a catalog card deployed until provider read-back and health prove it. |
+| 6 | Networking: `internal/networking/`, `shippin_network_*` schema, infrastructure UI | **Configuration, inventory sync and local resource association exist; remote tunnel/device/routes writes do not.** | Finish add/edit/test/rotate/revoke and permission-scoped writes for Cloudflare Tunnel and Tailscale; define a minimal validated custom integration contract. Persist desired links apart from observations; verify stale inventory, removal, tenant/target denial, audit and secret redaction. |
+| 7 | Platform services and health: platform service domain, API and existing settings/overview UI | **Editable registry, bounded probes, observations and stale/unknown state exist; some probes/resource integrations remain incomplete.** | Complete Nomen, Vaultix, Operator, service catalog and platform deployment configuration through persisted create/edit/disable/test APIs. Replace missing measurements with `unknown`, expose freshness/revision/provenance and errors, enforce revision fences, and test persistence across restart. No installation-specific address or credentials in defaults. |
+| 8 | Dashboards and navigation: the existing `web/` feature routes | **Separate infrastructure, health, services and deployment views exist; unified live deployment/resource history remains incomplete.** | Join only by stable system/service/deployment IDs. Build operator views for provider resources, service instances, operation events and health; preserve role/tenant access and keep each destination within four actions from its parent workflow. Validate API-backed behavior and failure/empty/stale states. |
+| 9 | Developer build, rollout, evaluation and source retirement: `scripts/`, CI, installer, docs and absorption ledger | **Local repo checks pass; standalone rollout and live provider acceptance are not yet evidenced.** | Verify Linux release binaries, clean install, upgrade, backup/restore, secret/public-tree scan, migration replay and disposable-provider workflows. Use independent evaluation targets. Finish every source ledger row and rights review, then produce archive readiness evidence. Source deletion is separate and is not authorized by this plan. |
+
+### Current execution slice
+
+Packet 2 now has a locally implemented slice for single-guest start, stop,
+shutdown and reboot. It persists exact action and endpoint hashes, creates and
+submits a mapped AgentHub ticket with evidence, rechecks the submitted ticket
+hash and current decision before execution, consumes the review once, and joins
+the existing operation journal. Operator and tenant routes use the same React
+dialog in `web/`. Disposable PostgreSQL tests cover replay/conflict, changed
+ticket binding, pending review, approval, outage, one-shot execution and
+provenance. Local Go tests, disposable PostgreSQL, panel build, full
+`bash scripts/check.sh`, and GitHub Checks run `41987565565` for commit
+`223add2` pass. Follow-up commit `2e788bd` adds an audited operator setting for
+the local review window, a fixed database-clock expiry on each request, an
+append-only expired event, and atomic expiry rejection at claim. PostgreSQL-backed
+API tests confirm an AgentHub-passed but locally expired ticket never calls the
+provider. Full local checks pass; GitHub Checks run `41991683216` passed all 13
+jobs. The local window does not close the AgentHub ticket. Live AgentHub
+policy/quorum and Incus/Proxmox calls remain unverified. Batch and all other
+provider writes remain fail-closed. The
+source-hashed handoff is stored in the Git-ignored session
+`.ai/data/sessions/2026/11/9db05ac5-2958-4ec6-95c2-f5d9e9692ece/`.
+
+The next Proxmox read-only slice was planned and source-hashed in
+`.ai/data/sessions/2026/11/a0631f71-9a29-4eca-931c-26673aa51c87/`. Official
+`pve-manager` API source confirms quorum in `/cluster/status` and per-node live
+replication status at `/nodes/{node}/replication` (`VM.Audit` required). The
+candidate MCP's `/cluster/replication` is configuration inventory and was not
+treated as job status. Canonical `NodeDetails`, the Proxmox driver and the same
+`web/` node-facts view now carry optional quorum and capped (200 job) local-node
+replication observations. Implementation commit `4985804` is on `main`; focused
+`go test -count=1 ./internal/hv/proxmox`, panel tests, and full post-change
+`bash scripts/check.sh` passed. GitHub Checks run `41993715181` passed all 13
+jobs. No live Proxmox endpoint was available, so real permission and payload
+behavior remain unverified. Cluster-wide aggregation and any writes remain out
+of scope.
+
+The active packet is deployment runtime. `bash scripts/check.sh` passed locally
+after packet 4.2f. Commit `b82ae39` is pushed to `main`; GitHub Checks run
+`42012968075` passed all 13 jobs, including database-backed identity/API suites,
+fresh install, upgrade, compose, panel, public-tree and gitleaks jobs. The
+closed public-tree PR #17 was not merged, but its correction is already on
+`main` in `5265ef2`; its Checks run `41780191722` passed. `gh pr list --state
+open` returned no open pull requests. The source-hashed work plan is stored in ignored session
+`.ai/data/sessions/2026/11/519ed9b9-8e0c-4dfe-b026-ff03580ef9f3/` and its
+plan and refreshed source baseline validate against the latest files. The plan
+orders the remaining work as:
+capability/rights inventory; one standalone build and panel; explicit Incus and
+Proxmox lifecycle; AgentHub mutation gates; bounded build plus safe runtime;
+PostgreSQL/Dragonfly/Redis/ClickHouse offerings; Cloudflare/Tailscale/custom
+network writes; configurable Nomen/Vaultix/Operator/catalog and health; unified
+resource/deployment dashboards; then rollout, independent evaluation and
+archive-readiness evidence. Each packet is blocked on its stated preceding
+contract and acceptance checks. The current runtime implementation boundary is
+not yet safe to execute: the Incus OCI helper is not connected to the worker,
+does not implement the full catalog network and health contract, and stores
+environment values readable by Incus administrators. Packet 4.1 now makes
+that exposure an explicit, persisted, default-deny operator setting and checks
+it before the Vaultix resolver makes a network request; it does not isolate
+secrets from a trusted Incus administrator. Proxmox has no app executor.
+Private Incus NIC intent is configurable and provider-revalidated; neither it
+nor the new trust policy constitutes a deployment executor. Packet 4.2f adds
+lease-fenced enumeration of unresolved plan intents in approved order and exact
+read-only Incus volume inspection. Packet 4.2g wires exact storage-volume and
+OCI workload identity observations to the worker and records presence as
+succeeded or absence as unknown without retrying. Version 3 environment
+references resolve only through the existing lease-, audit- and trust-gated
+Vaultix path. Power, health, delete and all provider mutations remain
+unsupported; the worker still reports runtime_unsupported after recovery.
+Packet **4.2h — final dispatch fence** is partially implemented in `27e3bd6`
+and `236bc81`:
+the store verifies lease, generation, recomputed plan, exact original intent,
+prerequisite completion and a same-job AgentHub allow event, then atomically
+consumes a one-time dispatch claim and appends a `dispatch_claimed` step event
+(migration 061). A claimed step is ambiguous after a crash and must go through
+read-only provider recovery; the permit cannot be replayed. PostgreSQL tests now
+cover missing current worker decision, valid one-time claim, replay denial,
+altered step and plan, unfinished prerequisite, recovery claimant denial and
+lost lease. The follow-up test also injects an append-only audit insert failure
+and verifies that the dispatch claim rolls back, and rejects a stale desired
+generation. GitHub Checks run `42019169415` passed all 13 jobs, including PostgreSQL tests for missing current worker decision, valid one-time claim, replay denial, altered step and plan, unfinished prerequisite, recovery claimant denial, lost lease, audit insertion rollback and stale desired generation.
+Packet **4.3a — Incus storage executor** is implemented on `main` in `aabbd72`: the worker reloads the approved immutable generation under its live lease, validates the exact review plan, revalidates tenant-assigned Incus storage and network inventory, obtains current AgentHub authorization, consumes the one-time dispatch claim, ensures only the persistent volume, reads it back and records the step outcome. Denial records a failed step without provider writes; an ambiguous provider error leaves the claimed intent for exact read-only recovery, never a blind retry. Database-backed positive, denial, replay and ambiguous recovery tests passed in GitHub Checks run `42020794931` (all 13 jobs, including PostgreSQL integration). Packet **4.3b — stopped OCI workload** adds digest-pinned create/read-back under the same per-step authorization and recovery boundaries (commit 53adab9; PostgreSQL CI run 42025778200 passed). Packet **4.3c — Incus power** adds a separately reviewed start/read-back operation without revealing environment secrets; commit 0722b96 passed all 13 GitHub Checks, including PostgreSQL tests, in run 42029507436. The worker remains `runtime_unsupported` pending declared health, delete, full service lifecycle and Proxmox application execution.
+After packet 4.3c passed PostgreSQL CI, packet **4.4** commit `4c826c5` exposes provider-observed guest addresses in the existing service resource UI without treating them as reachability evidence; focused tests and GitHub Checks run `42032654740` passed. Continue 4.4 with an authenticated per-server probe, route validation and persisted observed health; **4.5** update/cancel/remove with data-preserving recovery; **4.6** separately designed Proxmox VM runtime; **4.7** bounded Git/custom artifact acquisition and builds. Every provider write
+is a separately reviewed operation and must retain zero-write denial, stale
+lease/generation, audit failure, provider error, read-back mismatch, crash and
+recovery coverage. PostgreSQL/Dragonfly/Redis/ClickHouse offerings, remote
+Cloudflare/Tailscale writes, service runtime configuration, unified dashboards,
+source-by-source archive readiness and rollout remain in their existing packet
+order above; they do not inherit support from an Incus OCI capability. Until a
+packet passes its gate, affected behavior remains `unsupported` and cannot be
+described as deployable.
+
+### Evidence update rules
+
+Each packet update names the owning files and migration, tests actually run,
+local environment limits, resulting main commit, and GitHub workflow conclusion.
+Do not mark a packet complete from schema presence, mocked UI, accepted HTTP
+requests, or an agent's summary. If the provider or AgentHub environment is
+unavailable, keep that behavior explicitly unverified and continue only with
+independent work that does not depend on it.
+
+### Current checkpoint — Incus desired-absent removal
+
+The canonical worker now executes the reviewed Incus OCI removal packet: stop,
+remove the exact owned workload while retaining its deployment volume, and
+verify absence. Each mutation uses a current lease-fenced AgentHub decision and
+one-time dispatch claim. Before delete dispatch, the worker verifies ownership
+and checks snapshots; if snapshots exist it records a known failed step without
+deleting them or entering ambiguous recovery. Ambiguous provider writes use
+read-only recovery. Only a fresh absence observation records desired-absent as
+observed. This does not add Proxmox workload execution, service health, updates,
+rollback, persistent-data deletion, backup/restore, or live-provider proof.
+Local checks are required before committing; these DB-backed tests require the
+disposable-Postgres CI job because this workstation has no
+`SHIPPIN_TEST_DATABASE_URL`.
+
+### Current checkpoint — Incus desired-absent removal
+
+The canonical worker now executes the reviewed Incus OCI removal packet: stop,
+remove the exact owned workload while retaining its deployment volume, and
+verify absence. Each mutation uses a current lease-fenced AgentHub decision and
+one-time dispatch claim. Before delete dispatch, the worker verifies ownership
+and checks snapshots; if snapshots exist it records a known failed step without
+deleting them or entering ambiguous recovery. Ambiguous provider writes use
+read-only recovery. Only a fresh absence observation records desired-absent as
+observed. This does not add Proxmox workload execution, service health, updates,
+rollback, persistent-data deletion, backup/restore, or live-provider proof.
+Removal tests use the supported lifecycle: create present at generation 1, then
+request absent at generation 2. The first pushed test fixture incorrectly tried
+to create absent directly; CI caught it. A second issue in the recovery test's
+fake provider opener was also fixed. The complete database-backed CI package set
+then passed locally on disposable PostgreSQL with the CI trust-auth mode; the
+correction commit still needs a terminal GitHub Checks result. No live Incus
+host was available.
+
+### CI result — corrected removal fixtures
+
+Commit `e7e1dc6` corrected the database fixtures to create present, request absent through Update, and supply the read-only recovery fake. GitHub Checks run `42039645110` passed all 13 jobs, including the disposable-Postgres API suite. No live Incus host was available, so provider execution remains unverified on a real server.
+
+### Current checkpoint -- revision-fenced provider API health
+
+The existing infrastructure overview and authenticated per-server health route
+now record one latest provider API observation per server in
+`shippin_server_health_observations`. Migration 062 adds a monotonically
+increasing `servers.hv_revision`; endpoint create starts at revision 1 and every
+edit or detach advances it. The observation write compares the live endpoint
+revision, and reads exclude observations for a changed or detached endpoint.
+This check reports API reachability only. It does not report guest or
+application health. Provider API state remains operational when a later guest
+inventory call fails; UI text, checked time and measured latency remain in the
+single infrastructure panel. Overview fanout uses the existing configurable
+shared probe gate.
+
+Focused Go tests and the full repository `bash scripts/check.sh` passed locally.
+PostgreSQL 16 migration, endpoint revision and stale-probe tests passed against
+a temporary trust-auth database container; the container was removed after the
+run. GitHub Checks run `42044128379` for commit `509eef0` passed all 13 jobs,
+including disposable-Postgres integration, console, panel, installer, compose,
+secret scan and public-tree checks. A live Incus/Proxmox credential path remains
+unverified. The broader rollout, deployment runtime, managed database offerings,
+network provider writes, source absorption review and archive-readiness gates
+remain open in their ordered packets above.

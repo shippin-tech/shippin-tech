@@ -6,7 +6,9 @@
 
 <section class="people">
 	<h1>Contacts</h1>
-	{#if notice}
+	{#if notice === 'sign-in required'}
+		<p><a href="/login">Sign in</a> to see your contacts.</p>
+	{:else if notice}
 		<p>{notice}</p>
 	{:else if people.length === 0}
 		<p>No contacts yet.</p>

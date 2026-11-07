@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "name": "shippin-enterprise-control-plan",
+  "lanes": [
+    {
+      "id": "dedicated_stack_per_client",
+      "label": "Dedicated stack per client",
+      "projectNamePattern": "shippin-<client>-<env>",
+      "requiresUniquePortsOnSharedHost": true,
+      "requiresUniqueHostname": true
+    },
+    {
+      "id": "shared_cluster_multi_tenant",
+      "label": "Shared cluster multi-tenant",
+      "projectNamePattern": "shippin-shared-<env>",
+      "requiresUniquePortsOnSharedHost": false,
+      "requiresUniqueHostname": true
+    },
+    {
+      "id": "hybrid",
+      "label": "Hybrid",
+      "projectNamePattern": "shippin-<lane>-<client>-<env>",
+      "requiresUniquePortsOnSharedHost": true,
+      "requiresUniqueHostname": true
+    }
+  ],
+  "scriptedEvents": [
+    {
+      "id": "bootstrap.instance",
+      "description": "Validate config and start the instance healthy.",
+      "actionName": "ReloadSettings"
+    },
+    {
+      "id": "promote.canary",
+      "description": "Deploy digest to one instance and validate core workflows.",
+      "actionName": "UpdateApps"
+    },
+    {
+      "id": "promote.wave",
+      "description": "Roll out the same digest across remaining instances.",
+      "actionName": "UpdateApps"
+    },
+    {
+      "id": "rollback.digest",
+      "description": "Return the instance to a known-good digest.",
+      "actionName": "ReloadSettings"
+    },
+    {
+      "id": "drill.recovery",
+      "description": "Run backup/restore and failover drills.",
+      "actionName": "InvalidateCaches"
+    }
+  ]
+}
