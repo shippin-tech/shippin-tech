@@ -2,6 +2,10 @@
 
 Status: **draft; implementation and release are not complete.** The immediate priority is now [absorbing shippin-platform](2026-11-07-platform-absorption.md); resume the wider workspace sequence after its agreed gate. The JSON record beside this plan is the machine-readable index. Existing dated plans are historical evidence; an `implemented` status on one of them only means that plan's stated scope passed its recorded proof. It is not evidence of complete product behavior.
 
+## Current implementation correction (2026-11-07)
+
+The local Docker UI now builds from current Svelte source. Typed registry CRUD, filtered User/Group variants, singleton views, references, membership-map sets, keyed object lists, numeric maps, parameterized server actions and real delivery tracing have representative browser proof. Domain/group changes persisted through reload; temporary records were deleted and the settings value restored. Earlier rows below describe the planning baseline and are superseded by this correction. The complete original-file inventory and explicit open work are in `ui/porting/webui-files.json` and `ui/porting/README.md`. Full portal parity, dedicated/shared/hybrid orchestration and the connected workspace remain incomplete. False promotion/rollback mappings to mail-engine actions were removed.
+
 ## Goal and completion
 
 Replace the behavior of the original `assets/webui` portal with a maintainable SvelteKit application, then evolve the same application into a hosted mail, drive, and docs experience that can connect to the wider network. The target is functional parity and verified integration, not a literal conversion of minified build chunks into one-for-one Svelte files. Retain fonts, images, and actual mail HTML where appropriate; generated build output is not source.

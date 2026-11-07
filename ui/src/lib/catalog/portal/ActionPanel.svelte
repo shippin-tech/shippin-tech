@@ -1,139 +1,85 @@
 <script lang="ts">
 	import { AlertDialog } from 'bits-ui';
-	import { actionResult, actionSet } from '$lib/adapter/action-call';
-	import { accountId, jmap } from '$lib/adapter/jmap';
-	import { scriptedEvents } from '$lib/portal/control-plan';
-	import { actions } from '$lib/portal/catalog';
-	import {
-		ANOTHER,
-		BACK,
-		CANCEL,
-		CONFIRM_TITLE,
-		EXECUTE,
-		FAILED,
-		FAILED_TITLE,
-		REQUIRED,
-		RUNNING,
-		SIGN_IN_REQUIRED,
-		SUBTITLE,
-		TITLE,
-		actionNotice,
-		actionGroups,
-		type ActionItem
-	} from '$lib/portal/actions';
+	import SchemaField from './SchemaField.svelte';
+	import { defaultsFor, recordPatch, type PortalSchema, type ReferenceLoader } from '$lib/portal/schema';
+	import { actionGroups, type ActionItem } from '$lib/portal/actions';
 
-	const groups = actionGroups(actions);
+	let { schema, execute, references }: { schema: PortalSchema; references: ReferenceLoader; execute: (name: string, parameters: Record<string, unknown>) => Promise<Record<string, unknown>> } = $props();
+	const groups = $derived(actionGroups((schema.schemas['x:Action']?.variants ?? []).map((variant) => ({ ...variant, schema: variant.schemaName ?? '' }))));
 	let picked = $state<ActionItem | null>(null);
-	let notice = $state('');
+	let draft = $state<Record<string, unknown>>({});
+	let result = $state<Record<string, unknown> | null>(null);
+	let confirming = $state(false);
 	let busy = $state(false);
-
+	let error = $state('');
+	const properties = $derived(schema.fields[picked?.schema ?? '']?.properties ?? {});
+	const sections = $derived(schema.forms[picked?.schema ?? '']?.sections ?? []);
 	function choose(action: ActionItem) {
-		if (busy) return;
-		notice = '';
-		if (action.schema) {
-			notice = REQUIRED;
-			return;
-		}
 		picked = action;
+		draft = defaultsFor(schema, action.schema);
+		result = null;
+		error = '';
+		confirming = !action.schema;
 	}
-
-	async function runAction(name: string, label: string) {
-		try {
-			busy = true;
-			notice = RUNNING;
-			const responses = await jmap([], [actionSet(accountId(), name)]);
-			const payload = responses.find((response) => response[0] === 'x:Action/set')?.[1] as
-				| Record<string, unknown>
-				| undefined;
-			notice = actionNotice(actionResult(payload ?? {}, 'a0'), label);
-		} catch (err) {
-			const text = err instanceof Error ? err.message : FAILED;
-			notice = text === 'sign-in required' ? SIGN_IN_REQUIRED : `${FAILED} ${text}`;
-		} finally {
-			busy = false;
-		}
-	}
-
-	async function confirm() {
+	async function run() {
 		if (!picked || busy) return;
-		const choice = picked;
-		picked = null;
-		await runAction(choice.name, choice.label);
-	}
-
-	async function runScriptedAction(name: string, label: string) {
-		if (busy) return;
-		await runAction(name, label);
+		busy = true;
+		error = '';
+		confirming = false;
+		try {
+			const input = recordPatch(schema, picked.schema, {}, draft, true);
+			result = { ...input, ...await execute(picked.name, input) };
+		} catch (cause) {
+			error = cause instanceof Error ? cause.message : 'Action failed.';
+		} finally { busy = false; }
 	}
 </script>
 
 <section class="actions">
-	<h1>{TITLE}</h1>
-	<p>{SUBTITLE}</p>
-	<section>
-		<h2>Scripted events</h2>
-		{#each scriptedEvents as event (event.id)}
-			<button type="button" onclick={() => runScriptedAction(event.actionName, event.label)} disabled={busy}>
-				{event.label}
-			</button>
+	<h1>Actions</h1><p>Execute server management actions</p>
+	{#if !picked}
+		{#each groups as group (group.label)}
+			<section><h2>{group.label}</h2><div class="choices">
+				{#each group.actions as action (action.name)}<button type="button" onclick={() => choose(action)}>{action.label}</button>{/each}
+			</div></section>
 		{/each}
-	</section>
-	{#each groups as group (group.label)}
-		<section>
-			<h2>{group.label}</h2>
-			{#each group.actions as action (action.name)}
-				<button type="button" onclick={() => choose(action)} disabled={busy}>{action.label}</button>
-			{/each}
-		</section>
-	{/each}
-	{#if notice === FAILED}
-		<h2>{FAILED_TITLE}</h2>
-		<p role="alert">{FAILED}</p>
-		<button type="button" onclick={() => (notice = '')}>{BACK}</button>
-	{:else if notice}
-		<p role="status">{notice}</p>
-		{#if !busy}
-			<button type="button" onclick={() => (notice = '')}>{ANOTHER}</button>
-		{/if}
+	{:else}
+		<h2>{picked.label}</h2>
+		{#if error}<p role="alert">{error}</p>{/if}
+		{#if result}<p role="status">Action executed successfully.</p>{/if}
+		{#if busy}<p role="status">Running action...</p>{/if}
+		{#if picked.schema}
+			<form onsubmit={(event) => { event.preventDefault(); void run(); }} aria-busy={busy}>
+				{#each sections as section, index (index)}
+					{@const fields = section.fields.filter((field) => properties[field.name] && (result ? field.name in result : properties[field.name].update !== 'serverSet'))}
+					{#if fields.length}<section><h3>{section.title ?? ''}</h3><div class="fields">
+						{#each fields as field (field.name)}
+							<SchemaField {schema} {references} spec={properties[field.name].type} label={field.label} path={field.name} value={(result ?? draft)[field.name]} disabled={busy || result !== null} onchange={(value) => draft = { ...draft, [field.name]: value }} />
+						{/each}
+					</div></section>{/if}
+				{/each}
+				{#if !result}<button type="submit" disabled={busy}>Execute</button>{/if}
+			</form>
+		{:else if !result && !confirming}<button type="button" disabled={busy} onclick={() => confirming = true}>Execute</button>{/if}
+		<button type="button" disabled={busy} onclick={() => { picked = null; result = null; error = ''; }}>Back to actions</button>
 	{/if}
 </section>
 
-<AlertDialog.Root
-	open={picked != null}
-	onOpenChange={(open) => {
-		if (!open) picked = null;
-	}}
->
-	<AlertDialog.Portal>
-		<AlertDialog.Overlay class="action-overlay" />
-		<AlertDialog.Content class="action-dialog">
-			<AlertDialog.Title>{CONFIRM_TITLE}</AlertDialog.Title>
-			<AlertDialog.Description>{picked?.label ?? ''}</AlertDialog.Description>
-			<div class="row">
-				<AlertDialog.Cancel disabled={busy}>{CANCEL}</AlertDialog.Cancel>
-				<AlertDialog.Action onclick={confirm} disabled={busy}>{EXECUTE}</AlertDialog.Action>
-			</div>
-		</AlertDialog.Content>
-	</AlertDialog.Portal>
+<AlertDialog.Root bind:open={confirming}>
+	<AlertDialog.Portal><AlertDialog.Overlay class="action-overlay" /><AlertDialog.Content class="action-dialog">
+		<AlertDialog.Title>Run this action?</AlertDialog.Title><AlertDialog.Description>{picked?.label ?? ''}</AlertDialog.Description>
+		<div class="row"><AlertDialog.Cancel>Cancel</AlertDialog.Cancel><AlertDialog.Action onclick={run}>Execute</AlertDialog.Action></div>
+	</AlertDialog.Content></AlertDialog.Portal>
 </AlertDialog.Root>
 
 <style>
-	.actions, section { display: grid; gap: var(--y-2xs); justify-items: start; }
-	h1, h2, p { margin: 0; }
-	h2 { color: var(--color-muted); }
-	button, :global(.action-dialog button) {
-		font: inherit;
-		min-height: 2.75rem;
-		padding: var(--y-2xs) var(--x-2xs);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
-		background: var(--color-card);
-		color: var(--color-text);
-		cursor: pointer;
-	}
-	.row, :global(.action-dialog .row) { display: flex; gap: var(--x-2xs); }
-	button:focus-visible, :global(.action-dialog button:focus-visible) {
-		outline: 2px solid var(--color-focus);
-		outline-offset: 2px;
-	}
+	.actions, section, form { display: grid; gap: var(--space-3); }
+	h1, h2, h3, p { margin: 0; }
+	.fields, .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--space-3); }
+	button { font: inherit; min-height: 2.75rem; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-card); color: var(--color-text); cursor: pointer; }
+	button:disabled { opacity: .6; }
+	p[role='alert'] { color: var(--color-danger); }
+	:global(.action-overlay) { position: fixed; inset: 0; background: #0008; z-index: 50; }
+	:global(.action-dialog) { position: fixed; inset: 50% auto auto 50%; transform: translate(-50%, -50%); background: var(--color-card); color: var(--color-text); padding: var(--space-4); border-radius: var(--radius); z-index: 51; }
+	:global(.action-dialog .row) { display: flex; gap: var(--space-2); margin-block-start: var(--space-3); }
 </style>

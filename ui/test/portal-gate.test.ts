@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { nextAfterDiscover } from '../src/lib/adapter/discover-call';
 import { classifyMetrics } from '../src/lib/adapter/metrics-call';
-import { actionNotice } from '../src/lib/portal/actions';
 import { cell, registryGet, usingFor } from '../src/lib/adapter/portal-call';
 import { COPY_BLOCKED, copyLabel, writeClipboard } from '../src/lib/portal/copy';
-import { deploymentLanes, scriptedEvents } from '../src/lib/portal/control-plan';
+import { recordPatch, type PortalSchema } from '../src/lib/portal/schema';
 import { views } from '../src/lib/portal/catalog';
 import { buildSearchIndex, querySearch, searchLabel } from '../src/lib/portal/search';
 
@@ -82,16 +81,16 @@ describe('discover', () => {
 	});
 });
 
-describe('enterprise control plan', () => {
-	it('offers all deployment lanes and scripted events', () => {
-		expect(deploymentLanes.map((lane) => lane.id)).toEqual([
-			'dedicated_stack_per_client',
-			'shared_cluster_multi_tenant',
-			'hybrid'
-		]);
-		expect(scriptedEvents.some((event) => event.id === 'promote.canary')).toBe(true);
-		expect(scriptedEvents.some((event) => event.id === 'rollback.digest')).toBe(true);
-		expect(scriptedEvents.every((event) => event.actionName.length > 0)).toBe(true);
-		expect(actionNotice('saved', 'Promote Canary')).toContain('Action executed successfully.');
+describe('schema record writes', () => {
+	it('preserves nested values and excludes server-owned and immutable update properties', () => {
+		const schema = { fields: { example: { properties: {
+			config: { type: { type: 'object' }, update: 'mutable' },
+			id: { type: { type: 'string' }, update: 'serverSet' },
+			name: { type: { type: 'string' }, update: 'immutable' }
+		} } } } as unknown as PortalSchema;
+		const original = { id: 'one', name: 'fixed', config: { '@type': 'Manual' } };
+		const draft = { id: 'changed', name: 'changed', config: { '@type': 'Automatic', nested: ['one', 'two'] } };
+		expect(recordPatch(schema, 'example', original, draft, false)).toEqual({ config: draft.config });
+		expect(recordPatch(schema, 'example', {}, draft, true)).toEqual({ name: 'changed', config: draft.config });
 	});
 });

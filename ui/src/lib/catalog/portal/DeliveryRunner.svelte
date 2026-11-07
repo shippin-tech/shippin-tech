@@ -2,7 +2,6 @@
 	import {
 		DELIVERY_SUBTITLE,
 		DELIVERY_TITLE,
-		FAILED_START,
 		INVALID_TARGET,
 		START_TRACE,
 		TARGET_LABEL,
@@ -15,28 +14,34 @@
 
 	let {
 		stages = [],
-		onstart
+		phase = 'idle',
+		notice = '',
+		onstart,
+		onstop
 	}: {
 		stages?: readonly DeliveryStage[];
-		onstart?: (target: string) => void;
+		phase?: 'idle' | 'connecting' | 'running' | 'completed' | 'cancelled' | 'failed';
+		notice?: string;
+		onstart: (target: string) => void;
+		onstop: () => void;
 	} = $props();
 
 	let target = $state('');
-	let notice = $state('');
+	let validation = $state('');
+	const busy = $derived(phase === 'connecting' || phase === 'running');
 
 	function start() {
-		notice = '';
+		validation = '';
 		if (!validTarget(target)) {
-			notice = INVALID_TARGET;
+			validation = INVALID_TARGET;
 			return;
 		}
-		if (onstart) onstart(target.trim());
-		else notice = FAILED_START;
+		onstart(target.trim());
 	}
 </script>
 
 <section class="runner">
-	<h2>{DELIVERY_TITLE}</h2>
+	<h1>{DELIVERY_TITLE}</h1>
 	<p>{DELIVERY_SUBTITLE}</p>
 	<form
 		onsubmit={(event) => {
@@ -46,15 +51,17 @@
 	>
 		<label>
 			{TARGET_LABEL}
-			<input name="target" placeholder={TARGET_PLACEHOLDER} bind:value={target} />
+			<input name="target" placeholder={TARGET_PLACEHOLDER} bind:value={target} disabled={busy} />
 		</label>
-		<button type="submit">{START_TRACE}</button>
+		<button type="submit" disabled={busy}>{START_TRACE}</button>
+		{#if busy}<button type="button" onclick={onstop}>Cancel trace</button>{/if}
 	</form>
-	{#if notice}<p role="status">{notice}</p>{/if}
+	{#if validation}<p role="alert">{validation}</p>{/if}
+	{#if notice}<p role={phase === 'failed' ? 'alert' : 'status'}>{notice}</p>{/if}
 	{#if stages.length}
 		<ol>
 			{#each stages as stage, index (`${stage.type}-${index}`)}
-				<li data-tone={stageTone(stage.type)}>{phaseLabel(stage.type)}</li>
+				<li data-tone={stageTone(stage.type)}><details><summary>{phaseLabel(stage.type)}: {stage.type}</summary><pre>{JSON.stringify(stage, null, 2)}</pre></details></li>
 			{/each}
 		</ol>
 	{/if}
@@ -62,7 +69,7 @@
 
 <style>
 	.runner { display: grid; gap: var(--y-2xs); }
-	h2, p { margin: 0; }
+	h1, p { margin: 0; }
 	form { display: grid; gap: var(--y-2xs); justify-items: start; }
 	label { display: grid; gap: var(--y-3xs); }
 	input, button {

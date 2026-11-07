@@ -12,11 +12,7 @@
 	} from '$lib/adapter/metrics';
 	import { account } from '$lib/adapter/session';
 	import PortalView from '$lib/catalog/portal/PortalView.svelte';
-	import ControlPlanPanel from '$lib/catalog/portal/ControlPlanPanel.svelte';
-	import GraphMount from '$lib/flow/GraphMount.svelte';
-	import { layoutGraph } from '$lib/flow/portal/nodes';
 
-	const maps = ['Management', 'Settings', 'Account'] as const;
 	const names = ['user.count', 'domain.count', 'queue.count'] as const;
 
 	let period = $state<'24h' | '7d' | '30d' | '90d'>('24h');
@@ -99,25 +95,3 @@
 </script>
 
 <PortalView view="CustomComponent/Dashboard" {period} {metrics} {counts} {points} onperiod={(next) => (period = next)} />
-<ControlPlanPanel />
-
-{#each maps as name}
-	<section class="map" aria-label="{name} graph">
-		<h2>{name}</h2>
-		<GraphMount items={layoutGraph(name)} />
-	</section>
-{/each}
-
-<style>
-	.map {
-		display: grid;
-		gap: var(--space-3);
-		margin-block-start: var(--space-4);
-	}
-
-	h2 {
-		margin: 0;
-		color: var(--color-text);
-		font-size: var(--step-m);
-	}
-</style>

@@ -52,7 +52,7 @@
 <style>
 	.shell {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--aside)), 1fr));
+		grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
 		gap: var(--x-s);
 		align-items: start;
 	}
@@ -101,4 +101,7 @@
 		align-content: start;
 	}
 	.view { min-inline-size: 0; }
+	@media (max-width: 56rem) {
+		.shell { grid-template-columns: minmax(0, 1fr); }
+	}
 </style>

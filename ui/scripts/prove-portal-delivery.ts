@@ -1,8 +1,7 @@
 /**
- * Proves the delivery runner parses a stage and does not start a trace.
+ * Checks delivery event contracts; real execution is in prove-portal-records.mjs.
  * Run from ui/: node --experimental-strip-types scripts/prove-portal-delivery.ts
  */
-import { readFileSync } from 'node:fs';
 import {
 	FAILED_START,
 	INVALID_TARGET,
@@ -31,20 +30,9 @@ if (validTarget('not a domain') || validTarget('')) throw new Error('invalid tar
 if (INVALID_TARGET !== 'Enter a valid email address or domain.') throw new Error('invalid copy');
 if (deliveryStreamUrl('', 'example.org') !== '') throw new Error('empty token');
 const url = deliveryStreamUrl('tok', 'John@Example.org');
-if (url !== '/api/live/delivery/john%40example.org?token=tok') throw new Error('url ' + url);
+if (url !== '/api/live/delivery/John%40Example.org?token=tok') throw new Error('url ' + url);
 if (FAILED_START !== 'Failed to start trace.' || START_TRACE !== 'Start trace') throw new Error('start copy');
 
-const runner = readFileSync(new URL('../src/lib/catalog/portal/DeliveryRunner.svelte', import.meta.url), 'utf8');
-const page = readFileSync(new URL('../src/routes/(portal)/portal/[...view]/+page.svelte', import.meta.url), 'utf8');
-if (!runner.includes('DELIVERY_TITLE') || !runner.includes('START_TRACE') || !runner.includes('FAILED_START') || !runner.includes('INVALID_TARGET')) {
-	throw new Error('bindings');
-}
-if (runner.includes("from '$lib/adapter") || runner.includes('EventSource') || runner.includes('/api/live/delivery')) {
-	throw new Error('runner starts a trace');
-}
-if (page.includes('EventSource') || page.includes('/api/live/delivery') || page.includes('/api/token/delivery')) {
-	throw new Error('page starts a trace');
-}
-if (!page.includes('DeliveryRunner')) throw new Error('page missing runner');
+if (stages[0]?.domain !== 'example.org') throw new Error('stage details lost');
 
-console.log('ok');
+console.log('Delivery event contracts passed. Real stream: node scripts/prove-portal-records.mjs');

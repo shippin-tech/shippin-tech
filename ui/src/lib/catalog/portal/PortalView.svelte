@@ -3,7 +3,6 @@
 	import DashboardPanel from './DashboardPanel.svelte';
 	import RecordForm from './RecordForm.svelte';
 	import RecordTable from './RecordTable.svelte';
-	import WriteActions from './WriteActions.svelte';
 	import { createLabel, objectLabel } from '$lib/portal/writes';
 
 	let {
@@ -87,17 +86,7 @@
 		{:else if phase === 'signed-out'}
 			<p><a href="/login">Sign in</a></p>
 		{/if}
-		{#if phase === 'ready' && record.kind !== 'view' && record.kind !== 'custom'}
-			<WriteActions
-				name={subject}
-				label={rowLabel}
-				{creating}
-				canDelete={record.kind !== 'singleton' && !creating && !!picked}
-				oncreate={() => (creating = true)}
-				oncancel={() => (creating = false)}
-			/>
-		{/if}
-		<RecordForm sections={record.sections} picked={creating ? undefined : picked} />
+		{#if phase === 'ready'}<RecordForm sections={record.sections} {picked} />{/if}
 	{/if}
 </article>
 

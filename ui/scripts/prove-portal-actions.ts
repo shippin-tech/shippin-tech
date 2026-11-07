@@ -2,10 +2,8 @@
  * Proves the action list and action posting wiring.
  * Run from ui/: node --experimental-strip-types scripts/prove-portal-actions.ts
  */
-import { readFileSync } from 'node:fs';
 import { actionResult, actionSet } from '../src/lib/adapter/action-call.ts';
 import { FAILED, REQUIRED, actionGroups } from '../src/lib/portal/actions.ts';
-import { scriptedEvents } from '../src/lib/portal/control-plan.ts';
 import { actions } from '../src/lib/portal/catalog.ts';
 
 if (actions.length !== 11) throw new Error('count ' + actions.length);
@@ -24,17 +22,10 @@ if (create?.['@type'] !== 'ReloadSettings') throw new Error('create');
 if (actionResult({ created: { a0: { id: '1' } } }, 'a0') !== 'saved') throw new Error('saved');
 if (actionResult({ notCreated: { a0: { type: 'forbidden' } } }, 'a0') !== 'rejected') throw new Error('rejected');
 if (actionResult({}, 'a0') !== 'missing') throw new Error('missing');
-if (!scriptedEvents.every((event) => event.actionName.length > 0)) throw new Error('scripted');
 
-const panel = readFileSync(new URL('../src/lib/catalog/portal/ActionPanel.svelte', import.meta.url), 'utf8');
-const page = readFileSync(new URL('../src/routes/(portal)/portal/[...view]/+page.svelte', import.meta.url), 'utf8');
-if (!panel.includes('CONFIRM_TITLE') || !panel.includes('EXECUTE') || !panel.includes('FAILED')) {
-	throw new Error('bindings');
-}
-if (!panel.includes("from '$lib/adapter/action-call'") || !panel.includes('actionSet') || !panel.includes('jmap(')) {
-	throw new Error('panel-posts');
-}
-if (!page.includes('ActionPanel') || !page.includes("id === 'x:Action'")) throw new Error('route');
-if (page.includes('actionSet') || page.includes('x:Action/set')) throw new Error('route-posts');
+const parameters = { remoteIp: '127.0.0.1', envRcptTo: { 'admin@local.test': true } };
+const parameterized = actionSet('acct', 'ClassifySpam', parameters);
+const body = (parameterized[1].create as Record<string, Record<string, unknown>>).a0;
+if (body['@type'] !== 'ClassifySpam' || body.envRcptTo !== parameters.envRcptTo) throw new Error('parameters');
 
-console.log('ok');
+console.log('Action call contracts passed. Real execution: node scripts/prove-portal-records.mjs');

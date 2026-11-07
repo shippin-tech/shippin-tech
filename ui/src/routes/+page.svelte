@@ -1,7 +1,7 @@
 <section class="hero">
 	<p class="brand">shippin.tech</p>
-	<h1>Enterprise mail, calendar, contacts, and client control.</h1>
-	<p class="lede">Operate client lanes from one control workflow: dedicated, shared, or hybrid.</p>
+	<h1>Mail server administration.</h1>
+	<p class="lede">Manage domains, accounts and settings for this mail installation.</p>
 	<div class="actions">
 		<a href="/portal">Open Portal</a>
 		<a href="/login">Sign in</a>

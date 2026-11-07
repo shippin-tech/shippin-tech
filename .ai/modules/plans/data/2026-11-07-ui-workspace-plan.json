@@ -11,29 +11,174 @@
     "response": "The detailed plan is .ai/modules/plans/data/2026-11-07-ui-workspace-plan.md; this record indexes it without marking the implementation complete."
   },
   "sources": [
-    {"kind": "code", "ref": ".ai/PROTOCOL.md"},
-    {"kind": "code", "ref": ".ai/modules/plans/SKILL.md"},
-    {"kind": "code", "ref": ".ai/modules/plans/schema/plan.schema.json"},
-    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-04-portal-to-svelte.json"},
-    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-04-ui-file-map.json"},
-    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-05-portal-remaining.json"},
-    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-05-portal-bootstrap.json"},
-    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-05-portal-writes.json"},
-    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-05-portal-delivery.json"},
-    {"kind": "code", "ref": ".ai/modules/plans/data/2026-11-05-portal-actions.json"},
-    {"kind": "code", "ref": ".cursor/rules/product-boundaries.mdc"},
-    {"kind": "code", "ref": "ui/src/lib/ai-runtime/mail/kernel/instruction.md"},
-    {"kind": "code", "ref": "ui/src/lib/ai-runtime/docs/kernel/instruction.md"},
-    {"kind": "code", "ref": "ui/src/lib/catalog/portal/PortalView.svelte"},
-    {"kind": "code", "ref": "ui/src/lib/catalog/portal/RecordForm.svelte"},
-    {"kind": "code", "ref": "ui/src/lib/catalog/portal/WriteActions.svelte"},
-    {"kind": "code", "ref": "ui/src/routes/(portal)/portal/+layout.svelte"},
-    {"kind": "code", "ref": "ui/src/lib/adapter/mail.ts"},
-    {"kind": "code", "ref": "crates/http/src/portal.rs"},
-    {"kind": "code", "ref": "crates/http/src/request.rs"},
-    {"kind": "code", "ref": "crates/common/src/manager/defaults.rs"},
-    {"kind": "code", "ref": "Dockerfile.fdb"},
-    {"kind": "code", "ref": "ui/package.json"}
+    {
+      "kind": "code",
+      "ref": ".ai/PROTOCOL.md"
+    },
+    {
+      "kind": "code",
+      "ref": ".ai/modules/plans/SKILL.md"
+    },
+    {
+      "kind": "code",
+      "ref": ".ai/modules/plans/schema/plan.schema.json"
+    },
+    {
+      "kind": "code",
+      "ref": ".ai/modules/plans/data/2026-11-04-portal-to-svelte.json"
+    },
+    {
+      "kind": "code",
+      "ref": ".ai/modules/plans/data/2026-11-04-ui-file-map.json"
+    },
+    {
+      "kind": "code",
+      "ref": ".ai/modules/plans/data/2026-11-05-portal-remaining.json"
+    },
+    {
+      "kind": "code",
+      "ref": ".ai/modules/plans/data/2026-11-05-portal-bootstrap.json"
+    },
+    {
+      "kind": "code",
+      "ref": ".ai/modules/plans/data/2026-11-05-portal-writes.json"
+    },
+    {
+      "kind": "code",
+      "ref": ".ai/modules/plans/data/2026-11-05-portal-delivery.json"
+    },
+    {
+      "kind": "code",
+      "ref": ".ai/modules/plans/data/2026-11-05-portal-actions.json"
+    },
+    {
+      "kind": "code",
+      "ref": ".cursor/rules/product-boundaries.mdc"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/ai-runtime/mail/kernel/instruction.md"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/ai-runtime/docs/kernel/instruction.md"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/catalog/portal/PortalView.svelte"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/catalog/portal/RecordForm.svelte"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/routes/(portal)/portal/+layout.svelte"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/adapter/mail.ts"
+    },
+    {
+      "kind": "code",
+      "ref": "crates/http/src/portal.rs"
+    },
+    {
+      "kind": "code",
+      "ref": "crates/http/src/request.rs"
+    },
+    {
+      "kind": "code",
+      "ref": "crates/common/src/manager/defaults.rs"
+    },
+    {
+      "kind": "code",
+      "ref": "Dockerfile.fdb"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/package.json"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/porting/README.md"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/porting/webui-files.json"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/portal/schema.ts"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/catalog/portal/RegistryEditor.svelte"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/catalog/portal/SchemaField.svelte"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/catalog/portal/ReferenceField.svelte"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/catalog/portal/ActionPanel.svelte"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/adapter/portal.ts"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/adapter/actions.ts"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/lib/adapter/delivery.ts"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/src/routes/(portal)/portal/Delivery.svelte"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/scripts/prove-portal-records.mjs"
+    },
+    {
+      "kind": "code",
+      "ref": "deploy/local/Dockerfile.web"
+    },
+    {
+      "kind": "code",
+      "ref": "deploy/local/compose.yaml"
+    },
+    {
+      "kind": "code",
+      "ref": "assets/webui/assets/ActionPage-x2HeLrph.js"
+    },
+    {
+      "kind": "code",
+      "ref": "assets/webui/assets/AdminPanel-DhmcW4yN.js"
+    },
+    {
+      "kind": "code",
+      "ref": "assets/webui/assets/DeliveryTracePage-CZs7z0nn.js"
+    },
+    {
+      "kind": "code",
+      "ref": "crates/registry/src/types/map.rs"
+    },
+    {
+      "kind": "code",
+      "ref": "crates/registry/src/types/list.rs"
+    },
+    {
+      "kind": "code",
+      "ref": "platform/internal/servers/endpoint.go"
+    }
   ],
   "concerns": [
     "Historical implemented records prove only their stated scope; some deliberately leave setup, writes, and delivery nonfunctional.",
@@ -44,7 +189,7 @@
     "The workspace contains uncommitted changes that must be preserved."
   ],
   "context": "Existing Svelte routes, adapters, catalog, context kernels and historical plans should become a single maintainable source of truth, with the portal migration and the connected workspace distinguished by actual dependencies and proofs.",
-  "current_state": "The Svelte root build and several portal and workspace surfaces exist. Portal registry forms are readonly, setup finish and delivery execution are incomplete, the legacy mount remains separate, and Docs has no editor. Current proof includes mock-based tests and does not establish complete deployed behavior.",
+  "current_state": "Local Docker serves the current Svelte source. Shared typed registry CRUD, User/Group variants, static filters, singleton settings views, object references, membership-map sets, keyed object lists, numeric maps, parameterized actions/results and real delivery tracing are implemented with representative browser persistence proof. All 57 original webui files have current owners and remaining-work dispositions under ui/porting. False control-plane promotion/rollback mappings were removed. The full portal, platform React migration, tenant/installation bindings, dedicated/shared/hybrid orchestration, Drive and Docs are incomplete.",
   "target_design": "One SvelteKit UI, one domain context owner per feature, one shared session and transport boundary, reusable presentation catalog and tokens, a behavior-traced portal migration, and workspace integrations proven against actual owned services. The accompanying Markdown records the proposed tree and eight gated packages.",
   "changes": [
     "Inventory the original portal and current implementation, then reconcile conflicting scope and historical plans.",
@@ -66,13 +211,28 @@
       "command": "py -3.11 .ai/machine/organize.py --check",
       "proves": "The new record and all existing operating modules conform to their schemas.",
       "expected": "exit 0",
-      "result": "Failed: four existing chat index entries reference missing sessions under D:/localdev/mail-shippin/shippin-tech. No plan schema error was reported."
+      "result": "Passed: 6 modules, 605 lines, 43 documents, 169 events, 64 messages, 328 tools, 44 journal records."
     },
     {
       "name": "whole-migration-release-gate",
       "command": "Complete the capability-matrix and context/import checkers in packages 1 and 2; run them with npm run check, npm test, npm run build, npm run test:browser and the disposable-server and image upgrade/rollback suites described in the companion plan.",
       "proves": "All original portal capabilities have owners and behavioral proofs, context links and imports are coherent, and agreed workspace and hosted journeys work against actual services.",
-      "expected": "All checks pass with recorded revisions, environments and outcomes; no unowned or unproven original capability remains."
+      "expected": "All checks pass with recorded revisions, environments and outcomes; no unowned or unproven original capability remains.",
+      "result": "Incomplete. See ui/porting/webui-files.json and ui/porting/README.md for explicit remaining original-file and control-plane gaps."
+    },
+    {
+      "name": "docker-portal-persistence",
+      "command": "cd ui; node scripts/prove-portal-records.mjs",
+      "proves": "Real authenticated backend writes and reloads, original variant/static-filter semantics, keyed collections, action output and live delivery transport against the persistent local Docker stack.",
+      "expected": "All browser assertions pass; disposable records removed and singleton restored.",
+      "result": "Passed: domain CRUD and set alias, singleton save/reload/restore, Group variant/reference/quota/keyed alias and User filtering, confirmed deletion, real spam-classification score/tags, real delivery event stream for reserved invalid domain."
+    },
+    {
+      "name": "local-ui-static-checks",
+      "command": "cd ui; npm run check; npm test; node scripts/check-webui-inventory.mjs; docker compose --env-file ../deploy/local/.env -f ../deploy/local/compose.yaml build web",
+      "proves": "Svelte and TypeScript compile, unit contracts pass, all original assets have owned dispositions, and the current source builds into the local Docker UI.",
+      "expected": "No Svelte diagnostics; unit tests pass; 57 files inventoried; Docker build succeeds.",
+      "result": "Svelte check: 0 errors, 0 warnings. Vitest: 2 files, 7 tests passed. Inventory: 57 original files accounted for. Docker source build passed."
     }
   ],
   "status": "draft"

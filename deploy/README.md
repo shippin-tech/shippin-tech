@@ -91,10 +91,12 @@ For client-by-client enterprise offers, support all lanes with one standard:
 - **Hybrid:** shared by default with dedicated upgrades for premium or
   compliance clients.
 
-Use [control-plan.template.json](./control-plan.template.json) as the source
-for lane metadata and scripted event IDs (`bootstrap.instance`,
-`promote.canary`, `promote.wave`, `rollback.digest`, `drill.recovery`) so
-automation and UI stay aligned.
+[control-plan.template.json](./control-plan.template.json) records design
+requirements only. It does not implement these lanes or deployment automation.
+Unique Compose names and ports do not isolate clients sharing the same data
+stores. Dedicated installations require distinct storage and credential
+boundaries; hybrid placement requires explicit tenant-to-installation ownership.
+Mail reload and web-bundle update actions are not rollout or rollback operations.
 
 ## Updates and recovery
 

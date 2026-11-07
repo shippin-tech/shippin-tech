@@ -27,7 +27,7 @@ const PHASES: [string, string][] = [
 
 const DOMAIN = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i;
 
-export type DeliveryStage = { type: string };
+export type DeliveryStage = { type: string; [key: string]: unknown };
 
 export function validTarget(value: string): boolean {
 	const target = value.trim();
@@ -43,7 +43,7 @@ export function validTarget(value: string): boolean {
 
 export function deliveryStreamUrl(token: string, target: string): string {
 	if (!token || !validTarget(target)) return '';
-	const encoded = encodeURIComponent(target.trim().toLowerCase());
+	const encoded = encodeURIComponent(target.trim());
 	return `/api/live/delivery/${encoded}?token=${encodeURIComponent(token)}`;
 }
 
@@ -55,7 +55,7 @@ export function parseDeliveryFrame(frame: string): DeliveryStage[] {
 	if (!list.every((item) => item && typeof item === 'object' && typeof (item as { type?: unknown }).type === 'string')) {
 		throw new TypeError('Unexpected delivery event');
 	}
-	return list.map((item) => ({ type: (item as { type: string }).type }));
+	return list as DeliveryStage[];
 }
 
 export function phaseLabel(type: string): string {

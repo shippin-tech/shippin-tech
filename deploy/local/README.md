@@ -25,7 +25,7 @@ credential files are ignored by git. Keep them with the volumes when restarting.
 - SMTP: localhost:21025; submission: localhost:21587
 - IMAPS: localhost:21993; HTTPS: localhost:21443
 
-The `web` container serves the Svelte build and proxies mail APIs to the `mail`
+The `web` container builds the current `ui/` source and serves that Svelte build, then proxies mail APIs to the `mail`
 container. The engine's direct HTTP test port is localhost:28081. The gateway
 resolves the engine through Docker DNS so container replacement does not leave
 it pointing at an old address.
@@ -54,3 +54,16 @@ sign-in followed by inbox and message reading all passed against this Docker
 installation. Run the browser proof from `ui/` with
 `node scripts/prove-local-mail.mjs`; its screenshot is written under
 `target/local-mail-proof/reader.png`.
+
+To rebuild only the UI after a complete frontend batch:
+
+```powershell
+docker compose --env-file deploy/local/.env -f deploy/local/compose.yaml build web
+docker compose --env-file deploy/local/.env -f deploy/local/compose.yaml up -d --no-deps --wait web
+```
+
+Run `node scripts/prove-portal-records.mjs` from `ui/` for real registry writes,
+singleton settings, filtered accounts, parameterized actions and delivery-stream
+checks. The original-file inventory and remaining migration gaps are in
+`ui/porting/README.md`. This Docker installation operates one mail installation;
+it does not implement fleet or hybrid placement.

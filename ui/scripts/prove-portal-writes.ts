@@ -1,8 +1,7 @@
 /**
- * Proves schema write controls build a set call and do not post it.
+ * Checks registry payload and response contracts. Real persistence is checked by prove-portal-records.mjs.
  * Run from ui/: node --experimental-strip-types scripts/prove-portal-writes.ts
  */
-import { readFileSync } from 'node:fs';
 import { registrySet, setResult } from '../src/lib/adapter/writes-call.ts';
 import {
 	NOT_CONFIRMED,
@@ -39,14 +38,4 @@ if (setResult({ destroyed: ['d1'] }, 'd1') !== 'saved') throw new Error('destroy
 if (setResult({ notDestroyed: { d1: { type: 'forbidden' } } }, 'd1') !== 'rejected') throw new Error('rejected');
 if (setResult({}, 'd1') !== 'missing') throw new Error('missing');
 
-const actions = readFileSync(new URL('../src/lib/catalog/portal/WriteActions.svelte', import.meta.url), 'utf8');
-const view = readFileSync(new URL('../src/lib/catalog/portal/PortalView.svelte', import.meta.url), 'utf8');
-const page = readFileSync(new URL('../src/routes/(portal)/portal/[...view]/+page.svelte', import.meta.url), 'utf8');
-if (!actions.includes('AlertDialog') || !actions.includes('deleteItem') || !actions.includes('NO_CHANGES') && !actions.includes('writeNotice')) {
-	throw new Error('actions');
-}
-if (actions.includes("from '$lib/adapter") || actions.includes('/set')) throw new Error('actions post');
-if (!view.includes('WriteActions') || view.includes("from '$lib/adapter")) throw new Error('view');
-if (page.includes('registrySet') || page.includes('/set')) throw new Error('route posts');
-
-console.log('ok');
+console.log('Registry call contracts passed. Real persistence: node scripts/prove-portal-records.mjs');

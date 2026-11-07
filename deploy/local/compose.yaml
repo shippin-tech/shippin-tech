@@ -76,8 +76,8 @@ services:
       - 127.0.0.1:21993:993
   web:
     build:
-      context: .
-      dockerfile: Dockerfile.web
+      context: ../..
+      dockerfile: deploy/local/Dockerfile.web
     restart: unless-stopped
     depends_on:
       mail: {condition: service_healthy}

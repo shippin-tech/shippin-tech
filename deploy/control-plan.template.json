@@ -1,5 +1,7 @@
 {
   "version": 1,
+  "status": "design-only",
+  "description": "Deployment placement requirements, not executable rollout actions. Mail reload and app-bundle updates do not provision or roll back instances.",
   "name": "shippin-enterprise-control-plan",
   "lanes": [
     {
@@ -22,33 +24,6 @@
       "projectNamePattern": "shippin-<lane>-<client>-<env>",
       "requiresUniquePortsOnSharedHost": true,
       "requiresUniqueHostname": true
-    }
-  ],
-  "scriptedEvents": [
-    {
-      "id": "bootstrap.instance",
-      "description": "Validate config and start the instance healthy.",
-      "actionName": "ReloadSettings"
-    },
-    {
-      "id": "promote.canary",
-      "description": "Deploy digest to one instance and validate core workflows.",
-      "actionName": "UpdateApps"
-    },
-    {
-      "id": "promote.wave",
-      "description": "Roll out the same digest across remaining instances.",
-      "actionName": "UpdateApps"
-    },
-    {
-      "id": "rollback.digest",
-      "description": "Return the instance to a known-good digest.",
-      "actionName": "ReloadSettings"
-    },
-    {
-      "id": "drill.recovery",
-      "description": "Run backup/restore and failover drills.",
-      "actionName": "InvalidateCaches"
     }
   ]
 }
