@@ -5,6 +5,7 @@ import json
 import pathlib
 import smtplib
 import ssl
+import sys
 import time
 import urllib.request
 import uuid
@@ -32,15 +33,19 @@ def jmap(name, args):
         raise RuntimeError(str(result[1]))
     return result[1]
 
-marker = 'Docker delivery check ' + str(uuid.uuid4())
+existing = '--existing' in sys.argv
+marker_path = HERE / '.last-message.json'
+marker = json.loads(marker_path.read_text()) if existing else 'Docker delivery check ' + str(uuid.uuid4())
 message = EmailMessage()
 message['From'] = username
 message['To'] = username
 message['Subject'] = marker
 message.set_content('SMTP to persistent storage to JMAP: ' + marker)
-with smtplib.SMTP('127.0.0.1', 21025, timeout=30) as smtp:
-    smtp.send_message(message)
-print('SMTP accepted local delivery.')
+if not existing:
+    with smtplib.SMTP('127.0.0.1', 21025, timeout=30) as smtp:
+        smtp.send_message(message)
+    marker_path.write_text(json.dumps(marker))
+    print('SMTP accepted local delivery.')
 for attempt in range(30):
     ids = jmap('Email/query', {'filter': {'subject': marker}})['ids']
     if ids:

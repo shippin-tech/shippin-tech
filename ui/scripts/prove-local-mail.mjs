@@ -12,8 +12,6 @@ try {
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.waitForURL('**/portal', { timeout: 20000 });
   await page.goto('http://127.0.0.1:28080/mail');
-  await page.waitForTimeout(2000);
-  console.log('Mailbox page:', await page.locator('main').innerText());
   await page.getByRole('link', { name: /Docker delivery check/ }).first().waitFor({ timeout: 15000 });
   await page.getByRole('link', { name: /Docker delivery check/ }).first().click();
   await page.locator('.body').filter({ hasText: 'SMTP to persistent storage to JMAP' }).waitFor();

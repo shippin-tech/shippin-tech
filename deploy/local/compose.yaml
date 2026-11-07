@@ -46,7 +46,7 @@ services:
     volumes:
       - nats-data:/data
   mail:
-    image: shippintech-mail:2613565
+    image: ${LOCAL_MAIL_IMAGE:-shippintech-mail:local}
     command: [--config, /var/lib/shippin.tech/config.json]
     restart: unless-stopped
     hostname: mail.local.test
@@ -68,12 +68,26 @@ services:
       - fdb-config-v2:/var/fdb:ro
       - mail-data:/var/lib/shippin.tech
     ports:
-      - 127.0.0.1:28080:8080
+      - 127.0.0.1:28081:8080
       - 127.0.0.1:21443:443
       - 127.0.0.1:21025:25
       - 127.0.0.1:21465:465
       - 127.0.0.1:21587:587
       - 127.0.0.1:21993:993
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    restart: unless-stopped
+    depends_on:
+      mail: {condition: service_healthy}
+    ports:
+      - 127.0.0.1:28080:80
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -O /dev/null http://127.0.0.1/portal"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 volumes:
   fdb-config-v2:
   fdb-data-v2:

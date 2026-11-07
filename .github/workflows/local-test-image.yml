@@ -22,8 +22,8 @@ jobs:
           image="ghcr.io/${GITHUB_REPOSITORY,,}-scale@$IMAGE_DIGEST"
           printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           docker pull "$image"
-          docker tag "$image" shippintech-mail:2613565
-          docker save shippintech-mail:2613565 | gzip > mail-image.tar.gz
+          docker tag "$image" shippintech-mail:local
+          docker save shippintech-mail:local | gzip > mail-image.tar.gz
       - uses: actions/upload-artifact@v4
         with:
           name: mail-docker-image

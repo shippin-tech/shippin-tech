@@ -1,5 +1,11 @@
 # Pull-based test deployments
 
+For a local Docker test installation on this workstation, use
+[the persistent local stack](local/README.md). It includes the mail server,
+FoundationDB, object storage and NATS, initial account setup, and a real
+SMTP/JMAP/IMAP verification script. Start it with `./deploy/local/start.ps1`
+from the repository root. The server UI is at `http://127.0.0.1:28080/portal`.
+
 Requires Linux amd64, Docker Engine, Compose v2 with `up --wait`, and
 util-linux (`flock`). Each server runs one mail node from a prebuilt image.
 
