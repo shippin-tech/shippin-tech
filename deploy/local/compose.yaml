@@ -5,9 +5,9 @@ services:
     environment:
       FDB_NETWORKING_MODE: container
     volumes:
-      - fdb-config:/var/fdb
-      - fdb-data:/var/fdb/data
-      - fdb-logs:/var/fdb/logs
+      - fdb-config-v2:/var/fdb
+      - fdb-data-v2:/var/fdb/data
+      - fdb-logs-v2:/var/fdb/logs
     healthcheck:
       test: [CMD-SHELL, "fdbcli --exec 'status' --timeout 3 >/dev/null 2>&1"]
       interval: 3s
@@ -16,9 +16,9 @@ services:
   fdb-init:
     image: foundationdb/foundationdb:7.4.6
     depends_on:
-      foundationdb: {condition: service_healthy}
+      foundationdb: {condition: service_started}
     volumes:
-      - fdb-config:/var/fdb
+      - fdb-config-v2:/var/fdb
       - ./init-fdb.sh:/init-fdb.sh:ro
     entrypoint: [bash, /init-fdb.sh]
   minio:
@@ -30,7 +30,9 @@ services:
     volumes:
       - objects:/data
   minio-init:
-    image: cgr.dev/chainguard/minio-client:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.minio-init
     depends_on: [minio]
     environment:
       LOCAL_S3_USER: ${LOCAL_S3_USER}
@@ -45,6 +47,7 @@ services:
       - nats-data:/data
   mail:
     image: shippintech-mail:2613565
+    command: [--config, /var/lib/shippin.tech/config.json]
     restart: unless-stopped
     hostname: mail.local.test
     depends_on:
@@ -53,6 +56,8 @@ services:
       nats: {condition: service_started}
     environment:
       shippin.tech_HOSTNAME: mail.local.test
+      shippin.tech_PUBLIC_URL: http://127.0.0.1:28080
+      shippin.tech_RECOVERY_ADMIN: ${LOCAL_RECOVERY_ADMIN:-}
       shippin.tech_SCALE_S3_ENDPOINT: http://minio:9000
       shippin.tech_SCALE_S3_ACCESS_KEY: ${LOCAL_S3_USER}
       shippin.tech_SCALE_S3_SECRET_KEY: ${LOCAL_S3_PASSWORD}
@@ -60,20 +65,19 @@ services:
       shippin.tech_SCALE_S3_REGION: us-east-1
       shippin.tech_SCALE_NATS_ADDRESS: nats:4222
     volumes:
-      - fdb-config:/var/fdb:ro
-      - ../config.json:/etc/shippin.tech/config.json:ro
+      - fdb-config-v2:/var/fdb:ro
       - mail-data:/var/lib/shippin.tech
     ports:
-      - 127.0.0.1:18080:8080
-      - 127.0.0.1:11443:443
-      - 127.0.0.1:1025:25
-      - 127.0.0.1:1465:465
-      - 127.0.0.1:1587:587
-      - 127.0.0.1:1993:993
+      - 127.0.0.1:28080:8080
+      - 127.0.0.1:21443:443
+      - 127.0.0.1:21025:25
+      - 127.0.0.1:21465:465
+      - 127.0.0.1:21587:587
+      - 127.0.0.1:21993:993
 volumes:
-  fdb-config:
-  fdb-data:
-  fdb-logs:
+  fdb-config-v2:
+  fdb-data-v2:
+  fdb-logs-v2:
   objects:
   nats-data:
   mail-data:

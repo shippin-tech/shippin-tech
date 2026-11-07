@@ -494,6 +494,11 @@ impl ParseHttp for Server {
                         .await
                         .map(|resource| resource.into_http_response());
                 }
+                if req.method() == Method::GET
+                    && let Some(response) = crate::portal::portal_response(req.uri().path()).await
+                {
+                    return Ok(response);
+                }
             }
             "calendar" => {
                 // Limit anonymous requests
@@ -526,6 +531,11 @@ impl ParseHttp for Server {
                         .with_header(CONTENT_ENCODING, "gzip")
                         .with_binary_body(RSVP_PAGE)
                         .with_no_store());
+                }
+                if req.method() == Method::GET
+                    && let Some(response) = crate::portal::portal_response(req.uri().path()).await
+                {
+                    return Ok(response);
                 }
             }
             "autodiscover" | "Autodiscover" | "AutoDiscover" => {

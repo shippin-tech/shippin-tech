@@ -1,0 +1,3 @@
+FROM cgr.dev/chainguard/minio-client:latest AS client
+FROM alpine:3.22
+COPY --from=client /usr/bin/mc /usr/local/bin/mc
