@@ -1,0 +1,31 @@
+name: Export local Docker test image
+on:
+  workflow_dispatch:
+    inputs:
+      digest:
+        description: Published scale image digest (sha256)
+        required: true
+        type: string
+permissions:
+  contents: read
+  packages: read
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Export image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_DIGEST: ${{ inputs.digest }}
+        run: |
+          [[ "$IMAGE_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]] || exit 2
+          image="ghcr.io/${GITHUB_REPOSITORY,,}-scale@$IMAGE_DIGEST"
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker pull "$image"
+          docker tag "$image" shippintech-mail:2613565
+          docker save shippintech-mail:2613565 | gzip > mail-image.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mail-docker-image
+          path: mail-image.tar.gz
+          retention-days: 3

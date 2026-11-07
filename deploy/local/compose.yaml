@@ -1,0 +1,79 @@
+name: shippintech-local
+services:
+  foundationdb:
+    image: foundationdb/foundationdb:7.4.6
+    environment:
+      FDB_NETWORKING_MODE: container
+    volumes:
+      - fdb-config:/var/fdb
+      - fdb-data:/var/fdb/data
+      - fdb-logs:/var/fdb/logs
+    healthcheck:
+      test: [CMD-SHELL, "fdbcli --exec 'status' --timeout 3 >/dev/null 2>&1"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+  fdb-init:
+    image: foundationdb/foundationdb:7.4.6
+    depends_on:
+      foundationdb: {condition: service_healthy}
+    volumes:
+      - fdb-config:/var/fdb
+      - ./init-fdb.sh:/init-fdb.sh:ro
+    entrypoint: [bash, /init-fdb.sh]
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    environment:
+      MINIO_ROOT_USER: ${LOCAL_S3_USER:?Create .env first}
+      MINIO_ROOT_PASSWORD: ${LOCAL_S3_PASSWORD:?Create .env first}
+    command: server /data --console-address :9001
+    volumes:
+      - objects:/data
+  minio-init:
+    image: cgr.dev/chainguard/minio-client:latest
+    depends_on: [minio]
+    environment:
+      LOCAL_S3_USER: ${LOCAL_S3_USER}
+      LOCAL_S3_PASSWORD: ${LOCAL_S3_PASSWORD}
+    entrypoint: [/bin/sh, -c]
+    command:
+      - 'until mc alias set local http://minio:9000 "$$LOCAL_S3_USER" "$$LOCAL_S3_PASSWORD" >/dev/null 2>&1; do sleep 2; done; mc mb --ignore-existing local/shippin-local'
+  nats:
+    image: nats:2
+    command: [--jetstream, --store_dir, /data]
+    volumes:
+      - nats-data:/data
+  mail:
+    image: shippintech-mail:2613565
+    restart: unless-stopped
+    hostname: mail.local.test
+    depends_on:
+      fdb-init: {condition: service_completed_successfully}
+      minio-init: {condition: service_completed_successfully}
+      nats: {condition: service_started}
+    environment:
+      shippin.tech_HOSTNAME: mail.local.test
+      shippin.tech_SCALE_S3_ENDPOINT: http://minio:9000
+      shippin.tech_SCALE_S3_ACCESS_KEY: ${LOCAL_S3_USER}
+      shippin.tech_SCALE_S3_SECRET_KEY: ${LOCAL_S3_PASSWORD}
+      shippin.tech_SCALE_S3_BUCKET: shippin-local
+      shippin.tech_SCALE_S3_REGION: us-east-1
+      shippin.tech_SCALE_NATS_ADDRESS: nats:4222
+    volumes:
+      - fdb-config:/var/fdb:ro
+      - ../config.json:/etc/shippin.tech/config.json:ro
+      - mail-data:/var/lib/shippin.tech
+    ports:
+      - 127.0.0.1:18080:8080
+      - 127.0.0.1:11443:443
+      - 127.0.0.1:1025:25
+      - 127.0.0.1:1465:465
+      - 127.0.0.1:1587:587
+      - 127.0.0.1:1993:993
+volumes:
+  fdb-config:
+  fdb-data:
+  fdb-logs:
+  objects:
+  nats-data:
+  mail-data:
