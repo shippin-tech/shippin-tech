@@ -10,6 +10,8 @@
 		type MetricsStatus,
 		type StreamState
 	} from '$lib/adapter/metrics';
+	import { publishSignals, publishStatusSignal } from '$lib/adapter/signal';
+	import { metricSignals } from '$lib/portal/signal';
 	import { account } from '$lib/adapter/session';
 	import PortalView from '$lib/catalog/portal/PortalView.svelte';
 
@@ -30,9 +32,11 @@
 		samples = [];
 		if (!account()) {
 			metrics = 'signed-out';
+			publishStatusSignal('metrics', 'metrics.session.signed-out', 'failed');
 			return;
 		}
 		metrics = 'pending';
+		publishStatusSignal('metrics', 'metrics.stream.connecting', 'pending');
 
 		function stop() {
 			source?.close();
@@ -48,6 +52,7 @@
 				try {
 					const next = parseMetricsPayload(String((event as MessageEvent).data));
 					samples = [...samples, ...next];
+					publishSignals(metricSignals(next));
 					state = reduceMetricsStream(state, { type: 'opened' });
 				} catch {
 					fail(true, 'retries');
@@ -64,6 +69,11 @@
 			state = reduceMetricsStream(state, { type: 'error', retryable, reason });
 			if (state.kind === 'failed') {
 				metrics = reason === 'token' ? 'failed' : reason === 'rejected' ? 'rejected' : 'disconnected';
+				publishStatusSignal(
+					'metrics',
+					reason === 'token' ? 'metrics.stream.token-failed' : reason === 'rejected' ? 'metrics.stream.rejected' : 'metrics.stream.disconnected',
+					'failed'
+				);
 				return;
 			}
 			if (state.kind !== 'reconnecting') return;
@@ -83,6 +93,7 @@
 			token = next.token;
 			const url = metricsStreamUrl(token, names);
 			if (next.status !== 'ready' || !url) return;
+			publishStatusSignal('metrics', 'metrics.stream.open', 'open');
 			state = reduceMetricsStream(state, { type: 'connect' });
 			listen(url);
 		});

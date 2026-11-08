@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import '../app.css';
 	import Theme from '$lib/catalog/theme/Theme.svelte';
+	import Logo from '$lib/catalog/brand/Logo';
 	import type { ThemeChoice } from '$lib/catalog/theme/variants';
 
 	let { children } = $props();
@@ -34,9 +35,10 @@
 
 <a class="skip" href="#content">Skip to content</a>
 <header>
-	<a class="mark" href="/portal">shippin</a>
+	<a class="mark" href="/portal" aria-label="Shippin portal home"><Logo /></a>
 	<nav aria-label="Main navigation">
 		<a href="/portal" aria-current={page.url.pathname.startsWith('/portal') ? 'page' : undefined}>Portal</a>
+		<a href="/platform" aria-current={page.url.pathname.startsWith('/platform') ? 'page' : undefined}>Platform</a>
 		<a href="/mail" aria-current={page.url.pathname.startsWith('/mail') ? 'page' : undefined}>Mail</a>
 		<a href="/files" aria-current={page.url.pathname.startsWith('/files') ? 'page' : undefined}>Drive</a>
 		<a href="/docs" aria-current={page.url.pathname.startsWith('/docs') ? 'page' : undefined}>Docs</a>
@@ -59,10 +61,12 @@
 		padding: var(--space-3);
 	}
 	.mark {
-		color: var(--color-brand);
-		font-weight: 700;
 		text-decoration: none;
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.75rem;
 	}
+	.mark :global(svg) { inline-size: 11.25rem; block-size: auto; max-inline-size: 100%; }
 	nav { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 	nav a {
 		min-height: 2.75rem;

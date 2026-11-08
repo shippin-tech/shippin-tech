@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { reduceTraceStream, requestLiveTracing } from '$lib/adapter/trace';
+	import { publishSignals, publishStatusSignal } from '$lib/adapter/signal';
 	import { account } from '$lib/adapter/session';
 	import LiveTracingPanel from '$lib/catalog/portal/LiveTracingPanel.svelte';
+	import { traceSignals } from '$lib/portal/signal';
 	import {
 		appendTrace,
 		parseTracePayload,
@@ -34,11 +36,13 @@
 		source.addEventListener('trace', (event) => {
 			try {
 				const next = parseTracePayload(String((event as MessageEvent).data));
+				publishSignals(traceSignals(next));
 				const buffer: TraceBuffer = appendTrace({ events, dropped, anchor: events[0]?.timestamp ?? null }, next);
 				events = buffer.events;
 				dropped = buffer.dropped;
 				stream = reduceTraceStream(stream, { type: 'opened' });
 				phase = 'open';
+				publishStatusSignal('tracing', 'tracing.stream.open', 'open', { dropped: buffer.dropped });
 			} catch {
 				fail(true, 'retries');
 			}
@@ -52,6 +56,11 @@
 		stream = reduceTraceStream(stream, { type: 'error', retryable, reason });
 		if (stream.kind === 'failed') {
 			phase = reason === 'rejected' ? 'rejected' : reason === 'token' ? 'failed' : 'disconnected';
+			publishStatusSignal(
+				'tracing',
+				reason === 'rejected' ? 'tracing.stream.rejected' : reason === 'token' ? 'tracing.stream.token-failed' : 'tracing.stream.disconnected',
+				'failed'
+			);
 			return;
 		}
 		if (stream.kind !== 'reconnecting') return;
@@ -72,18 +81,26 @@
 		stream = { kind: 'idle' };
 		if (!account()) {
 			phase = 'signed-out';
+			publishStatusSignal('tracing', 'tracing.session.signed-out', 'failed');
 			return;
 		}
 		phase = 'connecting';
+		publishStatusSignal('tracing', 'tracing.stream.connecting', 'pending');
 		requestLiveTracing().then((next) => {
 			if (next.status !== 'ready') {
 				phase = next.status === 'signed-out' ? 'signed-out' : next.status === 'rejected' ? 'rejected' : 'failed';
+				publishStatusSignal(
+					'tracing',
+					next.status === 'signed-out' ? 'tracing.session.signed-out' : next.status === 'rejected' ? 'tracing.stream.rejected' : 'tracing.stream.token-failed',
+					'failed'
+				);
 				return;
 			}
 			token = next.token;
 			const url = tracingStreamUrl(token, keywords, filters);
 			if (!url) {
 				phase = 'failed';
+				publishStatusSignal('tracing', 'tracing.stream.invalid-token', 'failed');
 				return;
 			}
 			stream = reduceTraceStream(stream, { type: 'connect' });
@@ -95,6 +112,7 @@
 		halt();
 		token = '';
 		phase = 'idle';
+		publishStatusSignal('tracing', 'tracing.stream.stopped', 'cancelled');
 	}
 </script>
 

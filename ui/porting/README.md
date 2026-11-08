@@ -26,6 +26,15 @@ Current working ownership:
 
 Paths in this table are relative to `ui/src/lib` for library files and `ui/src/routes` for routes. Catalog components receive transport callbacks; adapters own engine requests.
 
+Canonical signal foundation: portal dashboards, live tracing, delivery tracing and scripted AI events now emit a shared signal contract (`ui/src/lib/portal/signal.ts`) and publish through `ui/src/lib/adapter/signal.ts`. This keeps dashboards, observability panels, operator workflows and external webhook sinks on one event shape while C4/W3 continue.
+P1 registry controls now use server-side query pagination/filter/sort with deep-link URL state (`q`, `sort`, `dir`, `lim`, `pos`) in `routes/(portal)/portal/[...view]/+page.svelte` and `catalog/portal/RegistryEditor.svelte`, so reload/return navigation preserves list position and query intent.
+Platform control now has a Svelte ledger surface at `/platform` backed by `ui/porting/platform-disposition.csv`, including disposition/group filtering and deployable managed-service blueprint triggers for mail/workspace integrations.
+The platform planner now supports managed vs self-host deployment requests using `deploy/control-plan.template.json` lanes, with generated project names, payload preview, and signal/webhook emission so operator and AI workflows share one deploy request contract.
+The deployment planner also carries service-tier policy (`free`, `small-business`, `enterprise`) with explicit limits and pause/block behavior; free-tier requests enforce the capped model (2 Postgres, 5 GB storage, 5 active projects, workspace enabled) and emit blocked/pause signals when exceeded.
+Workspace surfaces (`/mail`, `/files`, `/calendar`, `/contacts`, `/docs`) now expose direct deployment-trigger actions and signal feeds, so operators can queue managed/self-host rollout intent from the product area they are using and review emitted deployment events without leaving the UI.
+Bootstrap setup now posts real `x:Bootstrap/set` updates through `ui/src/lib/adapter/bootstrap.ts` from both `/setup` and the portal gate, so setup completion and returned credentials are handled by the same Svelte workflow instead of a static placeholder result.
+The platform control page now includes a live WebUI absorption board (`PortingBoard.svelte`) built from `ui/porting/webui-files.json` and `ui/porting/work-packages.json`, giving grouped remaining-work visibility by package/status directly inside the Svelte control surface.
+
 Observed against the local Docker installation on 2026-11-07: OAuth login; domain create/edit/delete through reloads; membership-map aliases; settings-view singleton save/reload/restore; Group variant creation, domain choice, numeric quota map and keyed email aliases; User/Group static filtering; group deletion; spam-classification input and real result score/tags; delivery token and real event stream completing with DNS failure for a reserved `.invalid` domain. Trace completion does not mean delivery succeeded. These representative checks do not certify every object or action.
 
 Run from `ui/`:

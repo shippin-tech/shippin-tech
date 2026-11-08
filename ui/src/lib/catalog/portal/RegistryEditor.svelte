@@ -2,13 +2,34 @@
 	import { AlertDialog } from 'bits-ui';
 	import RecordTable from './RecordTable.svelte';
 	import SchemaField from './SchemaField.svelte';
+	import type { RegistryListControls } from '$lib/adapter/portal';
 	import { defaultsFor, recordPatch, recordSchema, type PortalSchema, type ReferenceLoader } from '$lib/portal/schema';
 	import type { PortalView } from '$lib/portal/catalog';
 	type Change = { create: Record<string, Record<string, unknown>> } | { update: Record<string, Record<string, unknown>> } | { destroy: string[] };
-	let { record, schema, records, rows, save, references }: {
-		record: PortalView; schema: PortalSchema; records: Record<string, unknown>[];
-		rows: Record<string, string>[]; save: (change: Change, id: string) => Promise<string>;
+	let {
+		record,
+		schema,
+		records,
+		rows,
+		save,
+		references,
+		controls = { filterText: '', sortBy: '', sortAscending: true, limit: 25, position: 0 },
+		total = null,
+		hasPrev = false,
+		hasNext = false,
+		onquerychange
+	}: {
+		record: PortalView;
+		schema: PortalSchema;
+		records: Record<string, unknown>[];
+		rows: Record<string, string>[];
+		save: (change: Change, id: string) => Promise<string>;
 		references: ReferenceLoader;
+		controls?: RegistryListControls;
+		total?: number | null;
+		hasPrev?: boolean;
+		hasNext?: boolean;
+		onquerychange?: (next: Partial<RegistryListControls>) => void;
 	} = $props();
 	let selectedId = $state('');
 	let creating = $state(false);
@@ -17,6 +38,7 @@
 	let notice = $state('');
 	let failed = $state(false);
 	let deleting = $state(false);
+	let filterText = $state('');
 	const singleton = $derived(schema.objects[record.object]?.type === 'singleton');
 	const picked = $derived(singleton ? records[0] : records.find((item) => item.id === selectedId));
 	const variants = $derived(schema.schemas[record.object]?.variants ?? []);
@@ -29,8 +51,12 @@
 	const canCreate = $derived(variants.length > 0 || Object.values(schema.fields[record.object]?.properties ?? {}).some((property) => property.update !== 'serverSet'));
 	const patch = $derived(recordPatch(schema, schemaName, picked ?? {}, draft, creating));
 	const dirty = $derived(Object.keys(patch).length > 0);
+	const sortBy = $derived(controls.sortBy || record.columns[0]?.name || '');
 	$effect(() => {
 		if (!creating) draft = JSON.parse(JSON.stringify(picked ?? {}));
+	});
+	$effect(() => {
+		filterText = controls.filterText;
 	});
 	function select(index: number) {
 		if (busy || (dirty && !confirm('Discard unsaved changes?'))) return;
@@ -69,6 +95,24 @@
 			deleting = false;
 		}
 	}
+	function applyFilter() {
+		onquerychange?.({ filterText, position: 0 });
+	}
+	function setSort(name: string) {
+		onquerychange?.({ sortBy: name, position: 0 });
+	}
+	function setDirection(ascending: boolean) {
+		onquerychange?.({ sortAscending: ascending, position: 0 });
+	}
+	function setLimit(next: number) {
+		onquerychange?.({ limit: next, position: 0 });
+	}
+	function previous() {
+		onquerychange?.({ position: Math.max(0, controls.position - controls.limit) });
+	}
+	function next() {
+		onquerychange?.({ position: controls.position + controls.limit });
+	}
 </script>
 
 <svelte:head><title>{record.listTitle || record.object} · shippin</title></svelte:head>
@@ -76,7 +120,58 @@
 	<header><div><h1>{form?.title || record.listTitle || record.object}</h1><p>{form?.subtitle || record.listSubtitle || record.description}</p></div>
 		{#if canCreate && !singleton && record.columns.length}<button type="button" onclick={create} disabled={busy}>Create {record.object.replace(/^x:/, '')}</button>{/if}
 	</header>
+	{#if record.columns.length && !singleton}
+		<section class="list-controls" aria-label="Registry list controls">
+			<form class="search" onsubmit={(event) => { event.preventDefault(); applyFilter(); }}>
+				<label>
+					Search
+					<input
+						type="search"
+						value={filterText}
+						oninput={(event) => (filterText = event.currentTarget.value)}
+						placeholder="Filter server results"
+						disabled={busy}
+					/>
+				</label>
+				<button type="submit" disabled={busy}>Apply</button>
+			</form>
+			<label>
+				Sort
+				<select value={sortBy} onchange={(event) => setSort(event.currentTarget.value)} disabled={busy}>
+					{#each record.columns as column (column.name)}
+						<option value={column.name}>{column.label}</option>
+					{/each}
+				</select>
+			</label>
+			<label>
+				Direction
+				<select value={controls.sortAscending ? 'asc' : 'desc'} onchange={(event) => setDirection(event.currentTarget.value === 'asc')} disabled={busy}>
+					<option value="asc">Ascending</option>
+					<option value="desc">Descending</option>
+				</select>
+			</label>
+			<label>
+				Page size
+				<select value={String(controls.limit)} onchange={(event) => setLimit(Number(event.currentTarget.value))} disabled={busy}>
+					<option value="25">25</option>
+					<option value="50">50</option>
+					<option value="100">100</option>
+					<option value="200">200</option>
+				</select>
+			</label>
+		</section>
+	{/if}
 	{#if record.columns.length}<RecordTable columns={record.columns} {rows} phase="ready" selected={records.findIndex((item) => item.id === selectedId)} onselect={select} />{/if}
+	{#if record.columns.length && !singleton}
+		<nav class="paging" aria-label="Registry pages">
+			<button type="button" onclick={previous} disabled={busy || !hasPrev}>Previous</button>
+			<p>
+				Showing {Math.min(controls.position + 1, total ?? controls.position + rows.length)}-{controls.position + rows.length}
+				{#if total != null} of {total}{/if}
+			</p>
+			<button type="button" onclick={next} disabled={busy || !hasNext}>Next</button>
+		</nav>
+	{/if}
 	{#if notice}<p role={failed ? 'alert' : 'status'}>{notice}</p>{/if}
 	{#if creating || picked}
 		<form onsubmit={(event) => { event.preventDefault(); void submit(); }} aria-busy={busy}>
@@ -115,6 +210,11 @@
 	h1, h2, p { margin: 0; }
 	h2 { font-size: var(--step-m); }
 	.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--space-3); }
+	.list-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: var(--space-2); align-items: end; }
+	.list-controls .search { display: flex; gap: var(--space-2); align-items: end; }
+	.list-controls .search label { flex: 1; }
+	label { display: grid; gap: var(--space-1); }
+	.paging { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
 	.help, header p { color: var(--color-muted); font-size: .875rem; margin-block: var(--space-1); }
 	.actions { justify-content: start; }
 	button { background: var(--color-card); color: var(--color-text); border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--space-2) var(--space-3); }

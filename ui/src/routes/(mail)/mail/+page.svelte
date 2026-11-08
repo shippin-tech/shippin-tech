@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Mailbox from '$lib/catalog/mailbox/Mailbox.svelte';
+	import WorkspaceDeployPanel from '$lib/catalog/platform/WorkspaceDeployPanel.svelte';
 	import { loadFolders, loadMessages, type Folder, type Message } from '$lib/adapter/mail';
 
 	let folders = $state<Folder[]>([]);
@@ -39,6 +40,14 @@
 			notice = err instanceof Error ? err.message : 'Mail could not be loaded.';
 		}
 	});
+
 </script>
 
-<Mailbox {folders} {messages} {selectedId} {notice} onselect={select} />
+<section class="workspace">
+	<WorkspaceDeployPanel blueprint="mail" resource="workspace-mail" title="Queue mail deployment" />
+	<Mailbox {folders} {messages} {selectedId} {notice} onselect={select} />
+</section>
+
+<style>
+	.workspace { display: grid; gap: var(--space-2); }
+</style>

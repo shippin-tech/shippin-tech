@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { nextAfterDiscover } from '../src/lib/adapter/discover-call';
 import { classifyMetrics } from '../src/lib/adapter/metrics-call';
+import { mergeRegistryFilter, sanitizeRegistryLimit, sanitizeRegistryPosition } from '../src/lib/adapter/portal';
 import { cell, registryGet, usingFor } from '../src/lib/adapter/portal-call';
 import { COPY_BLOCKED, copyLabel, writeClipboard } from '../src/lib/portal/copy';
 import { recordPatch, type PortalSchema } from '../src/lib/portal/schema';
@@ -92,5 +93,15 @@ describe('schema record writes', () => {
 		const draft = { id: 'changed', name: 'changed', config: { '@type': 'Automatic', nested: ['one', 'two'] } };
 		expect(recordPatch(schema, 'example', original, draft, false)).toEqual({ config: draft.config });
 		expect(recordPatch(schema, 'example', {}, draft, true)).toEqual({ name: 'changed', config: draft.config });
+	});
+});
+
+describe('registry listing controls', () => {
+	it('sanitizes paging values and merges static filter with text search', () => {
+		expect(sanitizeRegistryLimit(500)).toBe(200);
+		expect(sanitizeRegistryLimit(0)).toBe(1);
+		expect(sanitizeRegistryPosition(-2)).toBe(0);
+		expect(mergeRegistryFilter(undefined, '  ')).toBeUndefined();
+		expect(mergeRegistryFilter({ '@type': 'individual' }, 'alice')).toEqual({ '@type': 'individual', text: 'alice' });
 	});
 });

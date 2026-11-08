@@ -1,6 +1,17 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { loadRegistry, loadPortalSchema, writeRegistry, rowCells } from '$lib/adapter/portal';
+	import {
+		loadRegistry,
+		loadPortalSchema,
+		loadRegistryPage,
+		sanitizeRegistryLimit,
+		sanitizeRegistryPosition,
+		writeRegistry,
+		rowCells,
+		type RegistryListControls,
+		type RegistryListPage
+	} from '$lib/adapter/portal';
 	import type { RegistryChange } from '$lib/adapter/writes-call';
 	import type { PortalSchema, ReferenceOption } from '$lib/portal/schema';
 	import RegistryEditor from '$lib/catalog/portal/RegistryEditor.svelte';
@@ -15,10 +26,15 @@
 
 	const view = $derived(page.params.view ?? '');
 	const record = $derived(findView(view));
+	const filterText = $derived(page.url.searchParams.get('q') ?? '');
+	const sortBy = $derived(page.url.searchParams.get('sort') ?? '');
+	const sortAscending = $derived(page.url.searchParams.get('dir') !== 'desc');
+	const limit = $derived(sanitizeRegistryLimit(Number(page.url.searchParams.get('lim'))));
+	const position = $derived(sanitizeRegistryPosition(Number(page.url.searchParams.get('pos'))));
 	let schema = $state<PortalSchema | null>(null);
 	let records = $state<Record<string, unknown>[]>([]);
-
 	let rows = $state<Record<string, string>[]>([]);
+	let listing = $state<RegistryListPage | null>(null);
 	let phase = $state<'pending' | 'signed-out' | 'ready' | 'error'>('pending');
 	let notice = $state('');
 	const referenceCache = new Map<string, Promise<ReferenceOption[]>>();
@@ -61,6 +77,21 @@
 		return { phase: 'error', notice: message };
 	}
 
+	function syncListing(next: Partial<RegistryListControls>) {
+		const url = new URL(page.url);
+		const q = (next.filterText ?? filterText).trim();
+		const sort = (next.sortBy ?? sortBy).trim();
+		const asc = next.sortAscending ?? sortAscending;
+		const lim = sanitizeRegistryLimit(next.limit ?? limit);
+		const pos = sanitizeRegistryPosition(next.position ?? position);
+		if (q) url.searchParams.set('q', q); else url.searchParams.delete('q');
+		if (sort) url.searchParams.set('sort', sort); else url.searchParams.delete('sort');
+		if (sort && !asc) url.searchParams.set('dir', 'desc'); else url.searchParams.delete('dir');
+		if (lim !== 25) url.searchParams.set('lim', String(lim)); else url.searchParams.delete('lim');
+		if (pos > 0) url.searchParams.set('pos', String(pos)); else url.searchParams.delete('pos');
+		void goto(`${url.pathname}${url.search}`, { replaceState: true, noScroll: true, keepFocus: true, invalidateAll: false });
+	}
+
 	$effect(() => {
 		const id = view;
 		const record = findView(id);
@@ -78,12 +109,30 @@
 		}
 		phase = 'pending';
 		const names = namesFor(id);
+		const selectedSort = sortBy || record.columns[0]?.name || '';
 		loadPortalSchema().then(async (serverSchema) => {
-				const list = id === 'x:Action' ? [] : await loadRegistry(record.object, serverSchema.lists[id]?.filtersStatic, serverSchema.objects[record.object]?.type === 'singleton' ? ['singleton'] : undefined);
+				const nextListing = id === 'x:Action'
+					? {
+						items: [],
+						controls: { filterText: '', sortBy: '', sortAscending: true, limit: 25, position: 0 },
+						total: 0,
+						hasPrev: false,
+						hasNext: false
+					}
+					: await loadRegistryPage(record.object, {
+						filter: serverSchema.lists[id]?.filtersStatic,
+						filterText,
+						sortBy: selectedSort,
+						sortAscending,
+						limit,
+						position,
+						ids: serverSchema.objects[record.object]?.type === 'singleton' ? ['singleton'] : undefined
+					});
 				if (cancelled) return;
 				schema = serverSchema;
-				records = list;
-				rows = list.map((row) => rowCells(row, names));
+				listing = nextListing;
+				records = nextListing.items;
+				rows = nextListing.items.map((row) => rowCells(row, names));
 				phase = 'ready';
 			})
 			.catch((err: unknown) => {
@@ -105,10 +154,19 @@
 		const savedId = await writeRegistry(target.object, change, id);
 		referenceCache.clear();
 		try {
-			const list = await loadRegistry(target.object, currentSchema?.lists[targetView]?.filtersStatic, currentSchema?.objects[target.object]?.type === 'singleton' ? ['singleton'] : undefined);
+			const nextListing = await loadRegistryPage(target.object, {
+				filter: currentSchema?.lists[targetView]?.filtersStatic,
+				filterText,
+				sortBy: sortBy || target.columns[0]?.name || '',
+				sortAscending,
+				limit,
+				position,
+				ids: currentSchema?.objects[target.object]?.type === 'singleton' ? ['singleton'] : undefined
+			});
 			if (view === targetView) {
-				records = list;
-				rows = list.map((row) => rowCells(row, namesFor(targetView)));
+				listing = nextListing;
+				records = nextListing.items;
+				rows = nextListing.items.map((row) => rowCells(row, namesFor(targetView)));
 			}
 		} catch (error) {
 			// The mutation was confirmed: remove the editor so retry cannot create a duplicate.
@@ -134,7 +192,19 @@
 {:else}
 	{#key view}
 		{#if phase === 'ready' && record && schema}
-			<RegistryEditor {record} {schema} {records} {rows} {save} {references} />
+			<RegistryEditor
+				{record}
+				{schema}
+				{records}
+				{rows}
+				{save}
+				{references}
+				controls={listing?.controls}
+				total={listing?.total}
+				hasPrev={listing?.hasPrev ?? false}
+				hasNext={listing?.hasNext ?? false}
+				onquerychange={syncListing}
+			/>
 		{:else}
 			<PortalView {view} {rows} {phase} {notice} />
 		{/if}
