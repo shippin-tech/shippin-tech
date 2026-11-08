@@ -9,7 +9,10 @@
         "ui/src/lib/adapter/actions.ts"
       ],
       "status": "implemented-representative-proof",
-      "remaining": "Spam-classification execution verified; DMARC and full permission cases open."
+      "remaining": "Spam-classification execution verified; DMARC and full permission cases open.",
+      "work_packages": [
+        "P4"
+      ]
     },
     {
       "source": "assets/webui/assets/AdminPanel-DhmcW4yN.js",
@@ -20,7 +23,11 @@
         "ui/src/lib/catalog/portal/ReferenceField.svelte"
       ],
       "status": "partial",
-      "remaining": "Representative CRUD verified. Paging, filters/sorting, item links, blobs, specialized editors, per-role controls and other object journeys open."
+      "remaining": "Representative CRUD verified. Paging, filters/sorting, item links, blobs, specialized editors, per-role controls and other object journeys open.",
+      "work_packages": [
+        "P1",
+        "P2"
+      ]
     },
     {
       "source": "assets/webui/assets/badge-BFFEYUJm.js",
@@ -30,7 +37,10 @@
         "ui/package.json"
       ],
       "status": "partial",
-      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open."
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/BootstrapWizard-DqwPyluo.js",
@@ -40,7 +50,10 @@
         "ui/src/lib/adapter/bootstrap.ts"
       ],
       "status": "partial",
-      "remaining": "Docker initialized via bootstrap.py. Full browser wizard and credential-display parity open."
+      "remaining": "Docker initialized via bootstrap.py. Full browser wizard and credential-display parity open.",
+      "work_packages": [
+        "P3"
+      ]
     },
     {
       "source": "assets/webui/assets/button-CyPT_HBb.js",
@@ -50,7 +63,10 @@
         "ui/package.json"
       ],
       "status": "partial",
-      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open."
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/calendar-Dl8i27yr.js",
@@ -60,7 +76,10 @@
         "ui/package.json"
       ],
       "status": "partial",
-      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open."
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/card-ByxhIVvB.js",
@@ -70,7 +89,10 @@
         "ui/package.json"
       ],
       "status": "partial",
-      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open."
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/client-DZEVMWQz.js",
@@ -81,7 +103,12 @@
         "ui/src/lib/adapter/session.ts"
       ],
       "status": "partial",
-      "remaining": "Real OAuth/JMAP verified. Account switching, paging, blobs, expiry and permission parity open."
+      "remaining": "Real OAuth/JMAP verified. Account switching, paging, blobs, expiry and permission parity open.",
+      "work_packages": [
+        "P1",
+        "P2",
+        "P3"
+      ]
     },
     {
       "source": "assets/webui/assets/collapsible-DzuJqKL0.js",
@@ -91,7 +118,10 @@
         "ui/package.json"
       ],
       "status": "partial",
-      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open."
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/DashboardView-C1roqzWz.js",
@@ -101,7 +131,10 @@
         "ui/src/lib/catalog/portal/DashboardPanel.svelte"
       ],
       "status": "partial",
-      "remaining": "Enterprise live metrics and node/filter parity unverified."
+      "remaining": "Enterprise live metrics and node/filter parity unverified.",
+      "work_packages": [
+        "P4"
+      ]
     },
     {
       "source": "assets/webui/assets/DeliveryTracePage-CZs7z0nn.js",
@@ -112,7 +145,10 @@
         "ui/src/lib/adapter/delivery.ts"
       ],
       "status": "implemented-representative-proof",
-      "remaining": "Real event stream completed for reserved invalid domain. Successful SMTP/TLS/DANE cases and detailed visual parity open."
+      "remaining": "Real event stream completed for reserved invalid domain. Successful SMTP/TLS/DANE cases and detailed visual parity open.",
+      "work_packages": [
+        "P4"
+      ]
     },
     {
       "source": "assets/webui/assets/dist-BKCc23zt.js",
@@ -121,7 +157,10 @@
         "ui/package.json"
       ],
       "status": "runtime-replaced",
-      "remaining": "Dependency runtime replaced; feature parity tracked separately."
+      "remaining": "Dependency runtime replaced; feature parity tracked separately.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/format-uBNNbuo5.js",
@@ -131,7 +170,11 @@
         "ui/src/lib/portal/delivery.ts"
       ],
       "status": "partial",
-      "remaining": "Basic labels exist; all size/duration/date formats open."
+      "remaining": "Basic labels exist; all size/duration/date formats open.",
+      "work_packages": [
+        "P2",
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/icons-nBy1wc7w.js",
@@ -140,7 +183,10 @@
         "ui/src/lib/catalog"
       ],
       "status": "partial",
-      "remaining": "Icon and visual parity open."
+      "remaining": "Icon and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/index-7cDRjdpB.js",
@@ -151,7 +197,13 @@
         "ui/src/lib/token"
       ],
       "status": "partial",
-      "remaining": "Svelte entry/styles deployed; fixed-screen and visual parity open."
+      "remaining": "Svelte entry/styles deployed; fixed-screen and visual parity open.",
+      "work_packages": [
+        "P1",
+        "P3",
+        "P5",
+        "R1"
+      ]
     },
     {
       "source": "assets/webui/assets/index-CmZR2p5P.css",
@@ -162,7 +214,10 @@
         "ui/src/lib/token"
       ],
       "status": "partial",
-      "remaining": "Svelte entry/styles deployed; fixed-screen and visual parity open."
+      "remaining": "Svelte entry/styles deployed; fixed-screen and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/input-DDh05rfP.js",
@@ -172,7 +227,10 @@
         "ui/package.json"
       ],
       "status": "partial",
-      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open."
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/inter-cyrillic-ext-wght-normal-BOeWTOD4.woff2",
@@ -181,7 +239,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/inter-cyrillic-wght-normal-DqGufNeO.woff2",
@@ -190,7 +251,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/inter-greek-ext-wght-normal-DlzME5K_.woff2",
@@ -199,7 +263,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/inter-greek-wght-normal-CkhJZR-_.woff2",
@@ -208,7 +275,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2",
@@ -217,7 +287,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/inter-latin-wght-normal-Dx4kXJAl.woff2",
@@ -226,7 +299,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/inter-vietnamese-wght-normal-CBcvBZtf.woff2",
@@ -235,7 +311,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/jetbrains-mono-cyrillic-ext-wght-normal-EocZY2iu.woff2",
@@ -244,7 +323,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/jetbrains-mono-cyrillic-wght-normal-D73BlboJ.woff2",
@@ -253,7 +335,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/jetbrains-mono-greek-wght-normal-Bw9x6K1M.woff2",
@@ -262,7 +347,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/jetbrains-mono-latin-ext-wght-normal-DBQx-q_a.woff2",
@@ -271,7 +359,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/jetbrains-mono-latin-wght-normal-B9CIFXIH.woff2",
@@ -280,7 +371,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/jetbrains-mono-vietnamese-wght-normal-Bt-aOZkq.woff2",
@@ -289,7 +383,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/jmapErrors-DzuHzs3H.js",
@@ -300,7 +397,12 @@
         "ui/src/lib/adapter/actions.ts"
       ],
       "status": "partial",
-      "remaining": "Method/set failures and property names displayed; full localized field-error parity open."
+      "remaining": "Method/set failures and property names displayed; full localized field-error parity open.",
+      "work_packages": [
+        "P1",
+        "P3",
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/jmapUtils-BRWTc_iM.js",
@@ -309,7 +411,10 @@
         "ui/src/lib/adapter/portal-call.ts"
       ],
       "status": "partial",
-      "remaining": "Capabilities and cells exist; complete traversal parity open."
+      "remaining": "Capabilities and cells exist; complete traversal parity open.",
+      "work_packages": [
+        "P1"
+      ]
     },
     {
       "source": "assets/webui/assets/jsx-runtime-BhAlOjtF.js",
@@ -318,7 +423,10 @@
         "ui/package.json"
       ],
       "status": "runtime-replaced",
-      "remaining": "React runtime replaced by Svelte; no functional parity implied."
+      "remaining": "React runtime replaced by Svelte; no functional parity implied.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/label-CM-p6Ed8.js",
@@ -328,7 +436,10 @@
         "ui/package.json"
       ],
       "status": "partial",
-      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open."
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/LiveTracingPage-BbeVPf9D.js",
@@ -338,7 +449,10 @@
         "ui/src/lib/catalog/portal/LiveTracingPanel.svelte"
       ],
       "status": "partial",
-      "remaining": "Enterprise stream and permission/lifecycle cases unverified."
+      "remaining": "Enterprise stream and permission/lifecycle cases unverified.",
+      "work_packages": [
+        "P4"
+      ]
     },
     {
       "source": "assets/webui/assets/MarkdownRenderer-D1Irlngp.js",
@@ -347,7 +461,10 @@
         "ui/src/lib/catalog/portal/SchemaField.svelte"
       ],
       "status": "pending",
-      "remaining": "No equivalent markdown renderer; descriptions are plain text."
+      "remaining": "No equivalent markdown renderer; descriptions are plain text.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/mutations-CojN7Mws.js",
@@ -359,7 +476,11 @@
         "ui/src/lib/catalog/portal/SchemaField.svelte"
       ],
       "status": "partial",
-      "remaining": "CRUD, keyed maps/lists and action verified. Blobs and specialized mutation workflows open."
+      "remaining": "CRUD, keyed maps/lists and action verified. Blobs and specialized mutation workflows open.",
+      "work_packages": [
+        "P1",
+        "P2"
+      ]
     },
     {
       "source": "assets/webui/assets/objects-BMCuJm01.js",
@@ -369,7 +490,10 @@
         "ui/src/lib/catalog/portal/RegistryEditor.svelte"
       ],
       "status": "partial",
-      "remaining": "Representative reads/writes verified. Query pagination, filters and invalidation coverage open."
+      "remaining": "Representative reads/writes verified. Query pagination, filters and invalidation coverage open.",
+      "work_packages": [
+        "P1"
+      ]
     },
     {
       "source": "assets/webui/assets/OtpAuthField-DmxMF0QG.js",
@@ -379,7 +503,10 @@
         "ui/src/routes/(account)/login/+page.svelte"
       ],
       "status": "partial",
-      "remaining": "OTP login exists; enrollment, QR/recovery and real MFA proof open."
+      "remaining": "OTP login exists; enrollment, QR/recovery and real MFA proof open.",
+      "work_packages": [
+        "P3"
+      ]
     },
     {
       "source": "assets/webui/assets/plus-jakarta-sans-cyrillic-ext-wght-normal-lLTsRRxN.woff2",
@@ -388,7 +515,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/plus-jakarta-sans-latin-ext-wght-normal-DmpS2jIq.woff2",
@@ -397,7 +527,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/plus-jakarta-sans-latin-wght-normal-eXO_dkmS.woff2",
@@ -406,7 +539,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/plus-jakarta-sans-vietnamese-wght-normal-qRpaaN48.woff2",
@@ -415,7 +551,10 @@
         "ui/src/lib/token"
       ],
       "status": "retained-asset",
-      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open."
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/popover-DHIYljkq.js",
@@ -425,7 +564,10 @@
         "ui/package.json"
       ],
       "status": "partial",
-      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open."
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/schemaStore-CkCqaJbK.js",
@@ -436,7 +578,10 @@
         "ui/src/lib/adapter/portal.ts"
       ],
       "status": "partial",
-      "remaining": "Editing uses live schema. Navigation uses build-time catalog; drift/capability handling open."
+      "remaining": "Editing uses live schema. Navigation uses build-time catalog; drift/capability handling open.",
+      "work_packages": [
+        "P1"
+      ]
     },
     {
       "source": "assets/webui/assets/select-djzeV50X.js",
@@ -446,7 +591,10 @@
         "ui/package.json"
       ],
       "status": "partial",
-      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open."
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/assets/sha2-B6xCAIQP.js",
@@ -455,7 +603,10 @@
         "ui/src/lib/adapter/oauth.ts"
       ],
       "status": "runtime-replaced",
-      "remaining": "Web Crypto used; complete identity parity open."
+      "remaining": "Web Crypto used; complete identity parity open.",
+      "work_packages": [
+        "P3"
+      ]
     },
     {
       "source": "assets/webui/assets/sse-D6xFfUUY.js",
@@ -465,7 +616,10 @@
         "ui/src/routes/(portal)/portal/LiveTracing.svelte"
       ],
       "status": "partial",
-      "remaining": "Delivery lifecycle implemented; tracing/metrics lifecycle proof open."
+      "remaining": "Delivery lifecycle implemented; tracing/metrics lifecycle proof open.",
+      "work_packages": [
+        "P4"
+      ]
     },
     {
       "source": "assets/webui/assets/TraceDetailView-MajjBv1N.js",
@@ -474,7 +628,10 @@
         "ui/src/lib/catalog/portal/TraceDetail.svelte"
       ],
       "status": "partial",
-      "remaining": "Archived trace route integration open."
+      "remaining": "Archived trace route integration open.",
+      "work_packages": [
+        "P4"
+      ]
     },
     {
       "source": "assets/webui/assets/TraceTimeline-D-kokpJu.js",
@@ -483,7 +640,10 @@
         "ui/src/lib/catalog/portal/TraceTimeline.svelte"
       ],
       "status": "partial",
-      "remaining": "Archived/live detail integration and source parity open."
+      "remaining": "Archived/live detail integration and source parity open.",
+      "work_packages": [
+        "P4"
+      ]
     },
     {
       "source": "assets/webui/assets/useEventStream-CFNJLHvS.js",
@@ -493,7 +653,10 @@
         "ui/src/routes/(portal)/portal/LiveTracing.svelte"
       ],
       "status": "partial",
-      "remaining": "Delivery closes on completion/cancel/unmount/error/timeout; shared retry/token renewal open."
+      "remaining": "Delivery closes on completion/cancel/unmount/error/timeout; shared retry/token renewal open.",
+      "work_packages": [
+        "P4"
+      ]
     },
     {
       "source": "assets/webui/assets/useTranslation-D-irC-Yp.js",
@@ -502,7 +665,10 @@
         "ui/src/lib/portal/actions.ts"
       ],
       "status": "pending",
-      "remaining": "English copy exists; original translation and locale coverage unported."
+      "remaining": "English copy exists; original translation and locale coverage unported.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/favicon.ico",
@@ -511,7 +677,10 @@
         "ui/src/app.html"
       ],
       "status": "pending",
-      "remaining": "Original retained; branding and favicon wiring parity open."
+      "remaining": "Original retained; branding and favicon wiring parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/index.html",
@@ -520,7 +689,13 @@
         "ui/src/app.html"
       ],
       "status": "runtime-replaced",
-      "remaining": "Svelte HTML entry deployed; routing and fixed screens tracked separately."
+      "remaining": "Svelte HTML entry deployed; routing and fixed screens tracked separately.",
+      "work_packages": [
+        "P1",
+        "P3",
+        "P5",
+        "R1"
+      ]
     },
     {
       "source": "assets/webui/logo.svg",
@@ -529,7 +704,10 @@
         "ui/src/app.html"
       ],
       "status": "pending",
-      "remaining": "Original retained; branding and favicon wiring parity open."
+      "remaining": "Original retained; branding and favicon wiring parity open.",
+      "work_packages": [
+        "P5"
+      ]
     },
     {
       "source": "assets/webui/oauth-client.json",
@@ -539,7 +717,10 @@
         "Dockerfile"
       ],
       "status": "partial",
-      "remaining": "Metadata retained; legacy application-bundle/OAuth cutover open."
+      "remaining": "Metadata retained; legacy application-bundle/OAuth cutover open.",
+      "work_packages": [
+        "P3"
+      ]
     },
     {
       "source": "assets/webui/shippintech-app.json",
@@ -549,7 +730,10 @@
         "Dockerfile"
       ],
       "status": "partial",
-      "remaining": "Metadata retained; legacy application-bundle/OAuth cutover open."
+      "remaining": "Metadata retained; legacy application-bundle/OAuth cutover open.",
+      "work_packages": [
+        "R1"
+      ]
     }
   ]
 }

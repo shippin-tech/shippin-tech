@@ -2,6 +2,19 @@
 
 The port is incomplete. [webui-files.json](webui-files.json) accounts for all 57 original files, including 34 JavaScript chunks, with source hashes, current Svelte owners and specific remaining work. Runtime replacement and retained fonts are not functional-parity claims. The copied React control panel under `platform/web` is still reference code.
 
+The canonical remaining-work queue is [work-packages.json](work-packages.json). Each package has existing code owners, named workflow batches, prerequisites and acceptance checks. Every original file links to its packages. The older dated plans retain history; this queue governs grouping and dependencies for the remaining work.
+
+| Group | Packages and sequence | Completion boundary |
+| --- | --- | --- |
+| Original portal | P1 shared registry/navigation → P2 editors/blobs/Sievepad; P3 identity/MFA/setup → P4 actions/traces/metrics; P5 final visual/localization/accessibility parity | Original portal workflows and supported-edition behavior verified, beyond representative CRUD |
+| Platform absorption and instance control | C1 integrate baseline and enumerate source routes → C2 tenant/installation/target binding → C3 dedicated, shared, hybrid and lifecycle batches → C4 source feature families ported to Svelte | Bound instance controls and runtime read-back; every imported platform route accounted for |
+| Connected workspace | W1 mail/calendar/contacts → W2 Drive → W3 Docs/network | Real service journeys, persistent content, sharing and isolation |
+| Release | R1 after P5, C4 and W3 | Compatibility, packaging, upgrade/rollback and final cutover |
+
+Platform absorption remains the current priority: **C1 is the next platform package**. **P1 is the next original-portal package** and does not need to wait for the entire platform port. Workspace expansion follows the platform gate. P3 can proceed independently; C2 needs its identity boundary. C4 also needs P1, and P4 needs P1/P3. The JSON records all dependency edges, rather than implying every group is a single linear chain.
+
+Complete one named workflow batch across its route, adapter and presentation before the full test/build/Docker loop. Use earlier targeted diagnostics only for a concrete blocker. Then verify the real journey, record evidence, commit and push that batch. A package is done only after all its batches and acceptance checks pass. Accessibility and error behavior apply during each batch; P5 is the final audit. Shared chunks link to multiple packages without creating duplicate implementations. A file count or a passing inventory check is not a completion threshold.
+
 Current working ownership:
 
 | Behavior | Presentation | Route / transport |

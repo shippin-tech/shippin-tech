@@ -178,6 +178,22 @@
     {
       "kind": "code",
       "ref": "platform/internal/servers/endpoint.go"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/porting/work-packages.json"
+    },
+    {
+      "kind": "code",
+      "ref": "ui/scripts/check-webui-inventory.mjs"
+    },
+    {
+      "kind": "code",
+      "ref": ".ai/modules/plans/data/2026-11-07-ui-workspace-plan.md"
+    },
+    {
+      "kind": "code",
+      "ref": ".ai/modules/plans/data/2026-11-07-platform-absorption.md"
     }
   ],
   "concerns": [
@@ -186,11 +202,12 @@
     "The original bundle is compiled, not source; parity requires an inventory and behavior proof rather than one-to-one chunk conversion.",
     "The wider network, tenant identity authority, editor service, and their contracts have not been established by the inspected repository evidence.",
     "The Svelte root build is already installed by runtime Dockerfiles; /admin and /account remain separately reserved legacy mounts.",
-    "The workspace contains uncommitted changes that must be preserved."
+    "The workspace contains uncommitted changes that must be preserved.",
+    "A source-file inventory alone is not an executable queue; shared chunks need explicit work-package assignment, dependency checks and workflow-level completion criteria."
   ],
   "context": "Existing Svelte routes, adapters, catalog, context kernels and historical plans should become a single maintainable source of truth, with the portal migration and the connected workspace distinguished by actual dependencies and proofs.",
   "current_state": "Local Docker serves the current Svelte source. Shared typed registry CRUD, User/Group variants, static filters, singleton settings views, object references, membership-map sets, keyed object lists, numeric maps, parameterized actions/results and real delivery tracing are implemented with representative browser persistence proof. All 57 original webui files have current owners and remaining-work dispositions under ui/porting. False control-plane promotion/rollback mappings were removed. The full portal, platform React migration, tenant/installation bindings, dedicated/shared/hybrid orchestration, Drive and Docs are incomplete.",
-  "target_design": "One SvelteKit UI, one domain context owner per feature, one shared session and transport boundary, reusable presentation catalog and tokens, a behavior-traced portal migration, and workspace integrations proven against actual owned services. The accompanying Markdown records the proposed tree and eight gated packages.",
+  "target_design": "One SvelteKit UI with existing code owners and shared transports. Remaining execution is grouped in ui/porting/work-packages.json: 13 packages across original portal, platform absorption/control, connected workspace and release, each with named batches, prerequisites and acceptance criteria. ui/porting/webui-files.json assigns every original file to those packages. The accompanying Markdown retains the broader scope and proposed folder structure; it is not a second queue.",
   "changes": [
     "Inventory the original portal and current implementation, then reconcile conflicting scope and historical plans.",
     "Establish canonical nested domain kernels, feature threads, adapter ownership and import checks without duplicating existing implementations.",
@@ -233,6 +250,13 @@
       "proves": "Svelte and TypeScript compile, unit contracts pass, all original assets have owned dispositions, and the current source builds into the local Docker UI.",
       "expected": "No Svelte diagnostics; unit tests pass; 57 files inventoried; Docker build succeeds.",
       "result": "Svelte check: 0 errors, 0 warnings. Vitest: 2 files, 7 tests passed. Inventory: 57 original files accounted for. Docker source build passed."
+    },
+    {
+      "name": "remaining-work-package-coverage",
+      "command": "cd ui; node scripts/check-webui-inventory.mjs",
+      "proves": "All original files have valid package assignments; package code owners exist, dependency graph has no cycles, next packages are eligible and completed packages cannot omit evidence or prerequisites. This validates planning coverage, not feature completion.",
+      "expected": "57 source files accounted for and 13 valid work packages; exit 0.",
+      "result": "Passed: 57 original files accounted for; 13 work packages have valid owners, assignments and acyclic dependencies. Planning coverage only; functional parity remains incomplete."
     }
   ],
   "status": "draft"

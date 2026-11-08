@@ -1,0 +1,334 @@
+{
+  "version": 1,
+  "scope": "Remaining original portal, imported platform, workspace and release work; work packages do not assert completion.",
+  "focus": "Platform absorption remains the current priority; portal dependencies can be completed without waiting for the whole platform port.",
+  "next_by_track": {
+    "platform": "C1",
+    "portal": "P1"
+  },
+  "execution_policy": {
+    "unit": "One complete workflow batch with its route, adapter, presentation, errors and source trace. A package may require several named batches.",
+    "verification_threshold": "Finish the named workflow batch before the full test/build/Docker loop. Use targeted diagnostics earlier only to resolve a concrete implementation blocker.",
+    "completion": "Run relevant checks and real Docker/API journey, record evidence and remaining gaps, then commit and push the coherent batch. Mark a package done only after all its batches and acceptance checks pass.",
+    "overlap": "Each behavior has one package owner. Shared source files may reference multiple packages; do not build duplicate transports or UI.",
+    "gates": "Dependencies include technical prerequisites and the requested platform-before-workspace sequence. Visual/accessibility/error standards apply during every batch, with P5 as the final portal audit."
+  },
+  "packages": [
+    {
+      "id": "P1",
+      "track": "portal",
+      "title": "Shared registry and navigation",
+      "status": "queued",
+      "depends_on": [],
+      "code_owners": [
+        "ui/src/lib/adapter/portal.ts",
+        "ui/src/lib/portal/schema.ts",
+        "ui/src/lib/catalog/portal",
+        "ui/src/routes/(portal)/portal"
+      ],
+      "batches": [
+        "Use the active schema for navigation and capability drift; preserve original view and field links.",
+        "Complete server-side pagination, dynamic filters/sorting and reference lookup pagination as one list workflow.",
+        "Complete record and item-action navigation without introducing another registry UI."
+      ],
+      "acceptance": [
+        "Multiple pages and filtered/sorted results match actual server queries; reference choices do not silently truncate.",
+        "Deep links and return navigation work through reload; unsupported views and server errors are explicit."
+      ]
+    },
+    {
+      "id": "P2",
+      "track": "portal",
+      "title": "Typed editors, blobs and Sievepad",
+      "status": "queued",
+      "depends_on": [
+        "P1"
+      ],
+      "code_owners": [
+        "ui/src/lib/catalog/portal",
+        "ui/src/lib/adapter",
+        "ui/src/lib/portal/schema.ts"
+      ],
+      "batches": [
+        "Finish size/duration/date, enum-map keys and specialized original field editors; keep typed wire values and stable list keys.",
+        "Implement registry blob upload/download and failures against the engine contract.",
+        "Complete original Sievepad edit/validate/save workflows using the shared transports."
+      ],
+      "acceptance": [
+        "Nested edits and blobs persist through reload; server-owned properties are preserved and rejected writes retain drafts.",
+        "A Sieve script can be edited, validated and reopened with real validation failures shown."
+      ]
+    },
+    {
+      "id": "P3",
+      "track": "portal",
+      "title": "Identity, MFA and browser setup",
+      "status": "queued",
+      "depends_on": [],
+      "code_owners": [
+        "ui/src/lib/adapter/auth.ts",
+        "ui/src/lib/adapter/oauth.ts",
+        "ui/src/lib/adapter/session.ts",
+        "ui/src/lib/catalog/login",
+        "ui/src/lib/catalog/portal/BootstrapWizard.svelte",
+        "ui/src/routes/(account)",
+        "ui/src/routes/(setup)"
+      ],
+      "batches": [
+        "Complete discovery/registration, PKCE callback, account selection, expiry, sign-out and return navigation.",
+        "Complete OTP enrollment/recovery and login with real MFA accounts.",
+        "Finish the browser bootstrap wizard with complete variant fields, one-time credentials and restart behavior."
+      ],
+      "acceptance": [
+        "Clean disposable browser setup produces usable permanent credentials and disables temporary setup access.",
+        "Normal/MFA login, expiry and sign-out pass real positive and negative journeys; no cross-account session reuse."
+      ]
+    },
+    {
+      "id": "P4",
+      "track": "portal",
+      "title": "Actions, delivery and observability",
+      "status": "queued",
+      "depends_on": [
+        "P1",
+        "P3"
+      ],
+      "code_owners": [
+        "ui/src/lib/adapter/actions.ts",
+        "ui/src/lib/adapter/delivery.ts",
+        "ui/src/lib/adapter/trace.ts",
+        "ui/src/lib/adapter/metrics.ts",
+        "ui/src/lib/catalog/portal",
+        "ui/src/routes/(portal)/portal"
+      ],
+      "batches": [
+        "Verify every real action variant, permission failure and returned result, including DMARC.",
+        "Complete delivery stage details, successful SMTP/TLS outcomes, cancellation and disconnect behavior.",
+        "Connect archived trace/detail routes and finish live metrics/tracing filters, node selection and stream lifecycles."
+      ],
+      "acceptance": [
+        "Actions show actual method results; delivery and trace streams close on completion, navigation, cancellation and failure.",
+        "Supported-edition telemetry works against real services; unavailable editions retain explicit disabled states."
+      ]
+    },
+    {
+      "id": "P5",
+      "track": "portal",
+      "title": "Visual, accessibility and localization parity",
+      "status": "queued",
+      "depends_on": [
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "code_owners": [
+        "ui/src/lib/catalog",
+        "ui/src/lib/token",
+        "ui/src/routes/"
+      ],
+      "batches": [
+        "Apply keyboard, focus, responsive and accessible error behavior in every earlier batch; finish the full parity audit here.",
+        "Restore original locale/translation coverage, description rendering, icons, branding and font subsets."
+      ],
+      "acceptance": [
+        "Original capability and visual matrix has a disposition and behavioral evidence for every original screen.",
+        "Keyboard, narrow-screen and accessibility checks pass; text and formatting match the chosen locale."
+      ]
+    },
+    {
+      "id": "C1",
+      "track": "platform",
+      "title": "Imported platform integration and source route ledger",
+      "status": "queued",
+      "depends_on": [],
+      "code_owners": [
+        "platform/internal",
+        "platform/api/openapi",
+        "platform/web/src/features",
+        "platform/config",
+        "platform/docs",
+        ".ai/modules/plans/data/2026-11-07-platform-disposition.csv"
+      ],
+      "batches": [
+        "Review the imported baseline and remaining reference dispositions without recopying maintained files.",
+        "Enumerate every source platform route/action with roles, API and destination owner; create feature-family port batches from this ledger.",
+        "Run the existing Go service and database in a documented disposable topology; establish the real identity/API boundary with Svelte."
+      ],
+      "acceptance": [
+        "All imported source routes and pending references have dispositions and no feature is silently dropped.",
+        "Go API authentication and tenant authorization work in the disposable deployment; no fabricated identity/API contract."
+      ]
+    },
+    {
+      "id": "C2",
+      "track": "platform",
+      "title": "Tenant, installation and target ownership",
+      "status": "queued",
+      "depends_on": [
+        "C1",
+        "P3"
+      ],
+      "code_owners": [
+        "platform/internal/servers",
+        "platform/internal/deployments",
+        "platform/internal/auth",
+        "platform/internal/authz",
+        "platform/api/openapi"
+      ],
+      "batches": [
+        "Define and implement explicit platform tenant, mail tenant, installation and deployment target bindings.",
+        "Bind credentials and authorization to the selected installation; distinguish desired placement from observed running state."
+      ],
+      "acceptance": [
+        "Two tenants cannot read or mutate each other's bindings, credentials or targets.",
+        "A selected installation resolves to its owned mail service; a failed or stale binding cannot silently target another installation."
+      ]
+    },
+    {
+      "id": "C3",
+      "track": "platform",
+      "title": "Dedicated, shared and hybrid runtime lifecycle",
+      "status": "queued",
+      "depends_on": [
+        "C2"
+      ],
+      "code_owners": [
+        "platform/internal/deployments",
+        "platform/internal/servers",
+        "platform/api/openapi",
+        "deploy"
+      ],
+      "batches": [
+        "Dedicated batch: provision an owned isolated installation, configure credentials and confirm provider/mail read-back.",
+        "Shared batch: provision a mail tenant/domain/account on the assigned installation and prove tenant isolation.",
+        "Hybrid batch: implement explicit per-tenant placement and reviewed movement between supported placements.",
+        "Lifecycle batch: reconcile actual state, upgrades, rollback, deletion, backup/recovery and failures through existing review/provider boundaries."
+      ],
+      "acceptance": [
+        "Each placement mode passes its own real provision/use/failure/cleanup journey; a saved request is never reported as a running service.",
+        "Migration, rollback and recovery retain the intended tenant data and enforce the exact authorized target."
+      ]
+    },
+    {
+      "id": "C4",
+      "track": "platform",
+      "title": "Svelte port of the imported platform feature families",
+      "status": "queued",
+      "depends_on": [
+        "C1",
+        "C2",
+        "C3",
+        "P1"
+      ],
+      "code_owners": [
+        "platform/web/src/features",
+        "platform/api/openapi",
+        "ui/src/lib/adapter",
+        "ui/src/routes/"
+      ],
+      "batches": [
+        "Port complete feature-family workflows from the C1 source route ledger, starting with identity/setup and infrastructure/hosts.",
+        "Complete tenants/projects/workspaces, catalog/deployment controls and the remaining source admin/customer/integration families.",
+        "Use shared Svelte tokens and adapters; retire reference React routes only after their source workflow proves parity."
+      ],
+      "acceptance": [
+        "Every source platform route/action is accounted for in Svelte with real role/error/API behavior.",
+        "Instance controls operate on the bound target and display actual observed state; no mail reload presented as fleet lifecycle."
+      ]
+    },
+    {
+      "id": "W1",
+      "track": "workspace",
+      "title": "Mail, calendar and contacts",
+      "status": "queued",
+      "depends_on": [
+        "P2",
+        "P3",
+        "C4"
+      ],
+      "code_owners": [
+        "ui/src/lib/adapter/mail.ts",
+        "ui/src/lib/adapter/calendar.ts",
+        "ui/src/lib/adapter/groupware.ts",
+        "ui/src/lib/catalog",
+        "ui/src/routes/"
+      ],
+      "batches": [
+        "Complete mail search/paging, safe bodies, attachments, draft/compose/reply/forward/send and folders.",
+        "Complete calendar and contact create/edit/delete and their permissions with the same session."
+      ],
+      "acceptance": [
+        "Real compose/send/receive/search and attachment journeys pass across reload.",
+        "Calendar/contact mutations persist and cross-account denial is verified."
+      ]
+    },
+    {
+      "id": "W2",
+      "track": "workspace",
+      "title": "Drive file lifecycle",
+      "status": "queued",
+      "depends_on": [
+        "W1"
+      ],
+      "code_owners": [
+        "ui/src/lib/adapter/groupware.ts",
+        "ui/src/lib/catalog/file",
+        "ui/src/routes/(files)"
+      ],
+      "batches": [
+        "Complete hierarchy, upload/download, move/delete, quotas, sharing, conflict and pagination against FileNode/blob APIs."
+      ],
+      "acceptance": [
+        "File content and location persist after reload; quota, conflict and sharing boundaries hold for two accounts."
+      ]
+    },
+    {
+      "id": "W3",
+      "track": "workspace",
+      "title": "Documents and wider-network integration",
+      "status": "queued",
+      "depends_on": [
+        "W2"
+      ],
+      "code_owners": [
+        "ui/src/lib/ai-runtime/docs",
+        "ui/src/routes/(docs)",
+        "platform/api/openapi"
+      ],
+      "batches": [
+        "Establish the actual document editor/storage/collaboration and network identity contracts from owned services.",
+        "Implement document create/edit/reopen, sharing and conflicts through the established service adapters."
+      ],
+      "acceptance": [
+        "Real editor and network journeys pass with tenant authorization and recovery; an unavailable contract remains an explicit dependency."
+      ]
+    },
+    {
+      "id": "R1",
+      "track": "release",
+      "title": "Compatibility, packaging and cutover",
+      "status": "queued",
+      "depends_on": [
+        "P5",
+        "C4",
+        "W3"
+      ],
+      "code_owners": [
+        "Dockerfile",
+        "deploy",
+        "crates/http/src/portal.rs",
+        "crates/http/src/request.rs",
+        "ui/porting"
+      ],
+      "batches": [
+        "Complete legacy /admin and /account deep-link/OAuth compatibility and versioned packaging.",
+        "Prove install/upgrade/rollback, original route coverage, isolation and recovery; retire duplicate runtime/context only after these gates."
+      ],
+      "acceptance": [
+        "Clean install and upgrade preserve routes, credentials and data; rollback is reproducible.",
+        "Every original webui and imported platform capability has passing proof or an explicit supported-edition disposition."
+      ]
+    }
+  ]
+}

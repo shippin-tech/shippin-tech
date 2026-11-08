@@ -4,6 +4,39 @@ import { fileURLToPath } from 'node:url';
 import { resolve, relative } from 'node:path';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const inventory = JSON.parse(await readFile(resolve(root, 'ui/porting/webui-files.json'), 'utf8'));
+const queue = JSON.parse(await readFile(resolve(root, 'ui/porting/work-packages.json'), 'utf8'));
+const packages = new Map();
+for (const packet of queue.packages) {
+  if (packages.has(packet.id)) throw new Error(`Duplicate work package: ${packet.id}`);
+  if (!packet.track || !packet.title || !packet.code_owners?.length || !packet.batches?.length || !packet.acceptance?.length) {
+    throw new Error(`Incomplete work package: ${packet.id}`);
+  }
+  if (!['queued', 'in-progress', 'done'].includes(packet.status)) throw new Error(`Invalid package status: ${packet.id}`);
+  for (const owner of packet.code_owners) await stat(resolve(root, owner));
+  packages.set(packet.id, packet);
+}
+const visited = new Set();
+const visiting = new Set();
+function visit(id) {
+  const packet = packages.get(id);
+  if (!packet) throw new Error(`Unknown work package: ${id}`);
+  if (visiting.has(id)) throw new Error(`Cyclic work-package dependency: ${id}`);
+  if (visited.has(id)) return;
+  visiting.add(id);
+  for (const dependency of packet.depends_on) visit(dependency);
+  visiting.delete(id);
+  visited.add(id);
+  if (packet.status === 'done' && (!packet.evidence?.length || packet.depends_on.some((dependency) => packages.get(dependency).status !== 'done'))) {
+    throw new Error(`Completed package lacks evidence or completed dependencies: ${id}`);
+  }
+}
+for (const id of packages.keys()) visit(id);
+for (const [track, id] of Object.entries(queue.next_by_track)) {
+  const packet = packages.get(id);
+  if (!packet || packet.track !== track || packet.status === 'done' || packet.depends_on.some((dependency) => packages.get(dependency).status !== 'done')) {
+    throw new Error(`Next package is not eligible in track ${track}: ${id}`);
+  }
+}
 async function files(dir) {
   return (await Promise.all((await readdir(dir, { withFileTypes: true })).map(async (entry) => {
     const path = resolve(dir, entry.name);
@@ -18,8 +51,11 @@ for (const entry of inventory.files) {
   const hash = createHash('sha256').update(await readFile(resolve(root, entry.source))).digest('hex');
   if (hash !== entry.sha256) throw new Error(`Source changed; review port disposition: ${entry.source}`);
   if (!entry.owners.length || !entry.status || !entry.remaining) throw new Error(`Missing disposition: ${entry.source}`);
+  if (!entry.work_packages?.length || entry.work_packages.some((id) => !packages.has(id))) {
+    throw new Error(`Missing or unknown work-package assignment: ${entry.source}`);
+  }
   for (const owner of entry.owners) await stat(resolve(root, owner));
 }
 const missing = [...actual].filter((source) => !seen.has(source));
 if (missing.length) throw new Error(`Uninventoried webui files: ${missing.join(', ')}`);
-console.log(`${seen.size} original files accounted for. This checks inventory coverage, not functional parity.`);
+console.log(`${seen.size} original files accounted for; ${packages.size} work packages have valid owners, assignments and acyclic dependencies. This checks planning coverage, not functional parity.`);
