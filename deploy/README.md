@@ -35,10 +35,10 @@ util-linux (`flock`). Each server runs one mail node from a prebuilt image.
 6. Run the exact digest command shown in the successful workflow summary:
 
    ```sh
-   bash update.sh ghcr.io/OWNER/REPO-scale@sha256:DIGEST
+   bash update.sh ghcr.io/shippinai/shipping-tech-scale@sha256:DIGEST
    ```
 
-The actual image name is lowercase. A `:sha-<full-40-character-commit>` tag
+The image name is always lowercase (`ghcr.io/shippinai/shipping-tech-scale`). A `:sha-<full-40-character-commit>` tag
 is also accepted. Use the same digest on all servers. No `latest` tag is used.
 
 Ports bind to loopback initially. Inspect bootstrap output and complete the
