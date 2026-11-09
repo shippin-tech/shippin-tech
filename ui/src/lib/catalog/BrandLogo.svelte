@@ -2,12 +2,13 @@
 	export {};
 </script>
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="98.5 77.55 96.4 96.4" width="96" height="96" aria-hidden="true" focusable="false" class="brand-logo"><path fill="#db2d54" d="M149.1 84.7h-4.8l-44.8 25.9v8.3l44.8 25.9h4.8l44.8-25.9v-8.3l-44.8-25.9zm32.9 30h-35.3V94.4l35.3 20.3zm-35.3 20.4-35.3-20.4 27-15.6v20.2l6.3 3.6h22.9l-20.9 12.2zM99.5 129.9v11l44.8 25.9h4.8l44.8-25.9v-11l-47.2 27.3zM187.3 166.8l6.6-3.8v-11l-25.7 14.8zM99.5 163l6.6 3.8h19.1L99.5 152z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" role="img" aria-label="ShippinTECH" class="brand-logo"><rect x="1.5" y="1.5" width="61" height="61" rx="14" fill="#7dd3fc"/><path fill="#e6a77c" d="M1.5 22 11 18.5 32 40l21-21.5 9.5 3.5V48a14 14 0 0 1-14 14.5H15.5A14 14 0 0 1 1.5 48z"/><path fill="none" stroke="#0b1020" stroke-width="3" stroke-linejoin="round" d="M1.5 22 11 18.5 32 40l21-21.5 9.5 3.5"/><path fill="#f2c46d" stroke="#0b1020" stroke-width="2" stroke-linejoin="round" d="M32 29l3.2 9.8L45 42l-9.8 3.2L32 55l-3.2-9.8L19 42l9.8-3.2z"/><rect x="1.5" y="1.5" width="61" height="61" rx="14" fill="none" stroke="#0b1020" stroke-width="3"/><text x="76" y="43" font-family="ui-monospace, 'Cascadia Mono', Consolas, monospace" font-size="30" font-weight="700" letter-spacing="1"><tspan fill="currentColor">Shippin</tspan><tspan fill="#22d3ee">TECH</tspan></text></svg>
 
 <style>
 	.brand-logo {
-		inline-size: 2rem;
-		block-size: 2rem;
+		inline-size: 11.25rem;
+		block-size: auto;
 		max-inline-size: 100%;
+		color: inherit;
 	}
 </style>

@@ -25,7 +25,7 @@
 	let mode = $state<'managed' | 'self-host'>('managed');
 	let tier = $state<ServiceTierId>('free');
 	let lane = $state(laneOptions[0]?.id ?? 'dedicated_stack_per_client');
-	let tenant = $state('acme');
+	let tenant = $state('shippintech');
 	let environment = $state('prod');
 	let domain = $state('mail.example.org');
 	let targetHost = $state('host-a');

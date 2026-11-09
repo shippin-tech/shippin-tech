@@ -1,8 +1,1 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-	<rect width="64" height="64" rx="14" fill="#101B15" />
-	<g transform="translate(4 10) scale(1.8)">
-		<path d="M21.4651 0.568359C17.8193 0.902835 16.0047 3.00167 15.3191 4.06363L4.66602 22.5183H17.5182L30.1949 0.568359H21.4651Z" fill="#F68330" />
-		<path d="M17.5265 22.5187L0 3.9302C0 3.9302 19.8177 -1.39633 21.7493 15.2188L17.5265 22.5187Z" fill="#F68330" />
-		<path d="M14.9255 4.75055L9.54883 14.0657L17.5177 22.5196L21.7405 15.2029C21.0715 9.49174 18.287 6.37276 14.9255 4.74219" fill="#F35E32" />
-	</g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="1.5" y="1.5" width="61" height="61" rx="14" fill="#7dd3fc"/><path fill="#e6a77c" d="M1.5 22 11 18.5 32 40l21-21.5 9.5 3.5V48a14 14 0 0 1-14 14.5H15.5A14 14 0 0 1 1.5 48z"/><path fill="none" stroke="#0b1020" stroke-width="3" stroke-linejoin="round" d="M1.5 22 11 18.5 32 40l21-21.5 9.5 3.5"/><path fill="#f2c46d" stroke="#0b1020" stroke-width="2" stroke-linejoin="round" d="M32 29l3.2 9.8L45 42l-9.8 3.2L32 55l-3.2-9.8L19 42l9.8-3.2z"/><rect x="1.5" y="1.5" width="61" height="61" rx="14" fill="none" stroke="#0b1020" stroke-width="3"/></svg>
