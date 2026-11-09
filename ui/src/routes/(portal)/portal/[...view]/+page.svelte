@@ -31,6 +31,7 @@
 	const sortAscending = $derived(page.url.searchParams.get('dir') !== 'desc');
 	const limit = $derived(sanitizeRegistryLimit(Number(page.url.searchParams.get('lim'))));
 	const position = $derived(sanitizeRegistryPosition(Number(page.url.searchParams.get('pos'))));
+	const selectedId = $derived(page.url.searchParams.get('id') ?? '');
 	let schema = $state<PortalSchema | null>(null);
 	let records = $state<Record<string, unknown>[]>([]);
 	let rows = $state<Record<string, string>[]>([]);
@@ -89,6 +90,12 @@
 		if (sort && !asc) url.searchParams.set('dir', 'desc'); else url.searchParams.delete('dir');
 		if (lim !== 25) url.searchParams.set('lim', String(lim)); else url.searchParams.delete('lim');
 		if (pos > 0) url.searchParams.set('pos', String(pos)); else url.searchParams.delete('pos');
+		void goto(`${url.pathname}${url.search}`, { replaceState: true, noScroll: true, keepFocus: true, invalidateAll: false });
+	}
+
+	function syncSelectedId(id: string) {
+		const url = new URL(page.url);
+		if (id) url.searchParams.set('id', id); else url.searchParams.delete('id');
 		void goto(`${url.pathname}${url.search}`, { replaceState: true, noScroll: true, keepFocus: true, invalidateAll: false });
 	}
 
@@ -199,6 +206,8 @@
 				{rows}
 				{save}
 				{references}
+				{selectedId}
+				onselectid={syncSelectedId}
 				controls={listing?.controls}
 				total={listing?.total}
 				hasPrev={listing?.hasPrev ?? false}

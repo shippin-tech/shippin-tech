@@ -13,6 +13,8 @@
 		rows,
 		save,
 		references,
+		selectedId = '',
+		onselectid,
 		controls = { filterText: '', sortBy: '', sortAscending: true, limit: 25, position: 0 },
 		total = null,
 		hasPrev = false,
@@ -25,13 +27,15 @@
 		rows: Record<string, string>[];
 		save: (change: Change, id: string) => Promise<string>;
 		references: ReferenceLoader;
+		selectedId?: string;
+		onselectid?: (id: string) => void;
 		controls?: RegistryListControls;
 		total?: number | null;
 		hasPrev?: boolean;
 		hasNext?: boolean;
 		onquerychange?: (next: Partial<RegistryListControls>) => void;
 	} = $props();
-	let selectedId = $state('');
+	let selected = $state('');
 	let creating = $state(false);
 	let draft = $state<Record<string, unknown>>({});
 	let busy = $state(false);
@@ -40,7 +44,7 @@
 	let deleting = $state(false);
 	let filterText = $state('');
 	const singleton = $derived(schema.objects[record.object]?.type === 'singleton');
-	const picked = $derived(singleton ? records[0] : records.find((item) => item.id === selectedId));
+	const picked = $derived(singleton ? records[0] : records.find((item) => item.id === selected));
 	const variants = $derived(schema.schemas[record.object]?.variants ?? []);
 	const filters = $derived(schema.lists[record.view]?.filtersStatic ?? {});
 	const schemaName = $derived(recordSchema(schema, record.object, draft));
@@ -58,15 +62,20 @@
 	$effect(() => {
 		filterText = controls.filterText;
 	});
+	$effect(() => {
+		selected = selectedId;
+	});
 	function select(index: number) {
 		if (busy || (dirty && !confirm('Discard unsaved changes?'))) return;
 		creating = false;
-		selectedId = String(records[index].id);
+		selected = String(records[index].id);
+		onselectid?.(selected);
 		notice = '';
 	}
 	function create() {
 		if (dirty && !confirm('Discard unsaved changes?')) return;
-		selectedId = '';
+		selected = '';
+		onselectid?.('');
 		const type = filters['@type'] ?? variants[0]?.name;
 		const initial = type ? { '@type': type } : {};
 		draft = { ...defaultsFor(schema, recordSchema(schema, record.object, initial)), ...filters, ...initial };
@@ -85,7 +94,8 @@
 			const change: Change = destroy ? { destroy: [id] } : creating ? { create: { [id]: data } } : { update: { [id]: patch } };
 			const savedId = await save(change, id);
 			creating = false;
-			selectedId = destroy ? '' : savedId;
+			selected = destroy ? '' : savedId;
+			onselectid?.(selected);
 			notice = destroy ? 'Deleted successfully' : 'Saved successfully';
 		} catch (error) {
 			failed = true;
@@ -161,7 +171,7 @@
 			</label>
 		</section>
 	{/if}
-	{#if record.columns.length}<RecordTable columns={record.columns} {rows} phase="ready" selected={records.findIndex((item) => item.id === selectedId)} onselect={select} />{/if}
+	{#if record.columns.length}<RecordTable columns={record.columns} {rows} phase="ready" selected={records.findIndex((item) => item.id === selected)} onselect={select} />{/if}
 	{#if record.columns.length && !singleton}
 		<nav class="paging" aria-label="Registry pages">
 			<button type="button" onclick={previous} disabled={busy || !hasPrev}>Previous</button>
