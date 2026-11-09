@@ -22,7 +22,7 @@
 </script>
 
 <svelte:head>
-	<title>Sign in · shippin</title>
+	<title>Sign in · ShippinTECH</title>
 </svelte:head>
 
 <p>{alert || 'Signing in'}</p>

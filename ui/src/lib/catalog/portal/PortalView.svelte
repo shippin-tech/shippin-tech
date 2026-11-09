@@ -63,7 +63,7 @@
 </script>
 
 <svelte:head>
-	<title>{title} · shippin</title>
+	<title>{title} · ShippinTECH</title>
 </svelte:head>
 
 <article>

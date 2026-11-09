@@ -72,9 +72,13 @@
 	}
 </script>
 
+<svelte:head>
+	<title>ShippinTECH</title>
+</svelte:head>
+
 <a class="skip" href="#content">Skip to content</a>
 <header>
-	<a class="mark" href="/portal" aria-label="Shippin portal home">
+	<a class="mark" href="/portal" aria-label="ShippinTECH portal home">
 		<BrandLogo />
 	</a>
 	<nav aria-label="Main navigation">

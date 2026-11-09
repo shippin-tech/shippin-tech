@@ -125,7 +125,7 @@
 	}
 </script>
 
-<svelte:head><title>{record.listTitle || record.object} · shippin</title></svelte:head>
+<svelte:head><title>{record.listTitle || record.object} · ShippinTECH</title></svelte:head>
 <article>
 	<header><div><h1>{form?.title || record.listTitle || record.object}</h1><p>{form?.subtitle || record.listSubtitle || record.description}</p></div>
 		{#if canCreate && !singleton && record.columns.length}<button type="button" onclick={create} disabled={busy}>Create {record.object.replace(/^x:/, '')}</button>{/if}
