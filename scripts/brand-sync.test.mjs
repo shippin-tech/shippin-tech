@@ -56,6 +56,7 @@ test('pixel font rejects missing glyphs and ragged rows', () => {
 
 test('brand/custom overrides manifest values and assets without touching defaults', () => {
 	const dir = fixture();
+	mkdirSync(join(dir, 'brand/custom'), { recursive: true });
 	writeFileSync(join(dir, 'brand/custom/brand.json'), JSON.stringify({ name: 'AcmeMail', nameParts: ['Acme', 'Mail'], domain: 'acme.example', colors: { accent: '#ff0000' } }));
 	mkdirSync(join(dir, 'brand/custom/assets'), { recursive: true });
 	writeFileSync(join(dir, 'brand/custom/assets/mark.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>');
