@@ -1,9 +1,11 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { page } from '$app/state';
 	import { layouts } from '$lib/portal/catalog';
 	import Search from './Search.svelte';
 
 	let { active = '', children }: { active?: string; children: Snippet } = $props();
+	const onSecurity = $derived(page.url.pathname.replace(/\/+$/, '') === '/portal/security');
 
 	function current(view: string): boolean {
 		if (active === view) return true;
@@ -19,6 +21,9 @@
 	<div class="side">
 	<Search />
 	<nav aria-label="Portal">
+		<ul class="pinned">
+			<li><a href="/portal/security" aria-current={onSecurity ? 'page' : undefined}>Security baseline</a></li>
+		</ul>
 		{#each layouts as layout (layout.name)}
 			<details open={open(layout.items)}>
 				<summary>{layout.name}</summary>
@@ -101,6 +106,8 @@
 		align-content: start;
 	}
 	.view { min-inline-size: 0; }
+	.pinned { list-style: none; margin: 0 0 var(--space-2); padding: 0; }
+	.pinned a { font-weight: 600; }
 	@media (max-width: 56rem) {
 		.shell { grid-template-columns: minmax(0, 1fr); }
 	}
