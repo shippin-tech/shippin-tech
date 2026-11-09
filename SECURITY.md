@@ -150,7 +150,7 @@ We believe in recognizing security researchers who help keep shippin.tech secure
 ## Security Updates
 
 **Stay Informed:**
-- Subscribe to our [GitHub releases](https://github.com/shippinAI/shippin.tech/releases) for security updates
+- Subscribe to our [GitHub releases](https://github.com/shippin-tech/shippin-tech/releases) for security updates
 - Join our community channels for security announcements
 - Enable GitHub notifications for security advisories
 

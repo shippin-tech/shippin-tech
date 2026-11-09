@@ -24,7 +24,7 @@ Potential impact:
 
 ### Resources
 
-- [shippin.tech Security Policy](https://github.com/shippinAI/shippin.tech/blob/main/SECURITY.md)
+- [shippin.tech Security Policy](https://github.com/shippin-tech/shippin-tech/blob/main/SECURITY.md)
 - [CVE Scoring Calculator](https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator)
 - [Rust Security Advisory Database](https://rustsec.org/)
 

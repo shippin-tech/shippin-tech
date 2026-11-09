@@ -42,7 +42,7 @@ Once you are a vouched contributor:
 
 We as members, contributors, and leaders pledge to make participation in our community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation. We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
 
-You can read the full Code of Conduct [here](https://github.com/shippinAI/.github/blob/main/CODE_OF_CONDUCT.md).
+You can read the full Code of Conduct [here](https://github.com/shippin-tech/.github/blob/main/CODE_OF_CONDUCT.md).
 
 ## Licensing
 

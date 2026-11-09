@@ -12,7 +12,7 @@
 set -e
 set -u
 
-readonly BASE_URL="https://github.com/shippinAI/shippin-tech/releases/latest/download"
+readonly BASE_URL="https://github.com/shippin-tech/shippin-tech/releases/latest/download"
 
 main() {
     downloader --check

@@ -2,7 +2,7 @@
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
 if [[ $# != 1 || ! "$1" =~ ^ghcr\.io/[a-z0-9._/-]+(@sha256:[a-f0-9]{64}|:sha-[a-f0-9]{40})$ ]]; then
-  echo 'Usage: bash update.sh ghcr.io/shippinai/shipping-tech-scale@sha256:<digest> (or :sha-<full-commit>)' >&2
+  echo 'Usage: bash update.sh ghcr.io/shippin-tech/shippin-tech-scale@sha256:<digest> (or :sha-<full-commit>)' >&2
   exit 2
 fi
 [[ -f server.env && -f config.json && -f fdb.cluster ]] || {

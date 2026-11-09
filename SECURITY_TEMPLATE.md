@@ -123,7 +123,7 @@ For questions or concerns regarding this advisory, please contact:
 **Security Team:** hello@support.shippin.tech  
 **Website:** https://support.shippin.tech
 
-To report security vulnerabilities in shippin.tech, please follow our [responsible disclosure policy](https://github.com/shippinAI/shippin.tech/security/policy).
+To report security vulnerabilities in shippin.tech, please follow our [responsible disclosure policy](https://github.com/shippin-tech/shippin-tech/security/policy).
 
 ## Disclaimer
 
