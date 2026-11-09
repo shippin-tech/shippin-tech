@@ -2,9 +2,9 @@
 	import { brand } from '$lib/brand/brand.generated';
 </script>
 
-<span class="lockup" role="img" aria-label={brand.name}>
-	<span class="glyph">{@html brand.markSvg}</span>
-	<span class="word">{brand.nameParts[0]}<b>{brand.nameParts[1]}</b></span>
+<span class="lockup">
+	<span class="glyph" aria-hidden="true">{@html brand.markSvg}</span>
+	<span class="word">{@html brand.wordmarkSvg}</span>
 </span>
 
 <style>
@@ -20,13 +20,11 @@
 		inline-size: 2rem;
 		block-size: 2rem;
 	}
-	.word {
-		font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
-		font-weight: 700;
-		font-size: 1.2rem;
-		letter-spacing: 0.02em;
-	}
-	.word b {
-		color: var(--brand-accent, #22d3ee);
+	/* Pixel wordmark: 9 cell rows (7 cap + 2 descender). 1.45rem tall puts the cap height near 1.15rem. */
+	.word :global(svg) {
+		display: block;
+		block-size: 1.45rem;
+		inline-size: auto;
+		color: inherit;
 	}
 </style>
