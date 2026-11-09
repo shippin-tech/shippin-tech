@@ -1,3 +1,5 @@
+﻿import { brand } from '../brand/brand.generated';
+
 export const UNCONFIGURED =
 	'Sign-in is not configured: the identity provider does not support client metadata documents and no OAuth client id is configured for this application.';
 
@@ -28,7 +30,7 @@ export function registrationBody(redirectUri: string, scope: string) {
 		token_endpoint_auth_method: 'none',
 		grant_types: ['authorization_code', 'refresh_token'],
 		response_types: ['code'],
-		client_name: 'ShippinTECH Web Interface',
+		client_name: brand.oauthClientName,
 		scope
 	};
 }

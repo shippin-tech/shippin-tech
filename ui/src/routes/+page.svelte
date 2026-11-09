@@ -1,5 +1,9 @@
+<script lang="ts">
+	import { brand } from '$lib/brand/brand.generated';
+</script>
+
 <section class="hero">
-	<p class="brand">shippin.tech</p>
+	<p class="brand">{brand.domain}</p>
 	<h1>Mail server administration.</h1>
 	<p class="lede">Manage domains, accounts and settings for this mail installation.</p>
 	<div class="actions">

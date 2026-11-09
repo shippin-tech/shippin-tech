@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { brand } from '$lib/brand/brand.generated';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
@@ -73,7 +74,7 @@
 			return { phase: 'error', notice: 'This feature requires an Enterprise license.' };
 		}
 		if (message.toLowerCase().includes('bootstrap mode')) {
-			return { phase: 'error', notice: `Welcome to ShippinTECH. ${message}` };
+			return { phase: 'error', notice: `Welcome to ${brand.name}. ${message}` };
 		}
 		return { phase: 'error', notice: message };
 	}

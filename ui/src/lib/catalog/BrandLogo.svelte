@@ -1,14 +1,32 @@
-<script lang="ts">
-	export {};
+﻿<script lang="ts">
+	import { brand } from '$lib/brand/brand.generated';
 </script>
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" role="img" aria-label="ShippinTECH" class="brand-logo"><rect x="1.5" y="1.5" width="61" height="61" rx="14" fill="#7dd3fc"/><path fill="#e6a77c" d="M1.5 22 11 18.5 32 40l21-21.5 9.5 3.5V48a14 14 0 0 1-14 14.5H15.5A14 14 0 0 1 1.5 48z"/><path fill="none" stroke="#0b1020" stroke-width="3" stroke-linejoin="round" d="M1.5 22 11 18.5 32 40l21-21.5 9.5 3.5"/><path fill="#f2c46d" stroke="#0b1020" stroke-width="2" stroke-linejoin="round" d="M32 29l3.2 9.8L45 42l-9.8 3.2L32 55l-3.2-9.8L19 42l9.8-3.2z"/><rect x="1.5" y="1.5" width="61" height="61" rx="14" fill="none" stroke="#0b1020" stroke-width="3"/><text x="76" y="43" font-family="ui-monospace, 'Cascadia Mono', Consolas, monospace" font-size="30" font-weight="700" letter-spacing="1"><tspan fill="currentColor">Shippin</tspan><tspan fill="#22d3ee">TECH</tspan></text></svg>
+<span class="lockup" role="img" aria-label={brand.name}>
+	<span class="glyph">{@html brand.markSvg}</span>
+	<span class="word">{brand.nameParts[0]}<b>{brand.nameParts[1]}</b></span>
+</span>
 
 <style>
-	.brand-logo {
-		inline-size: 11.25rem;
-		block-size: auto;
-		max-inline-size: 100%;
+	.lockup {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
 		color: inherit;
+		white-space: nowrap;
+	}
+	.glyph :global(svg) {
+		display: block;
+		inline-size: 2rem;
+		block-size: 2rem;
+	}
+	.word {
+		font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+		font-weight: 700;
+		font-size: 1.2rem;
+		letter-spacing: 0.02em;
+	}
+	.word b {
+		color: var(--brand-accent, #22d3ee);
 	}
 </style>

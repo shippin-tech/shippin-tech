@@ -1,4 +1,6 @@
-export const WELCOME = 'Welcome to ShippinTECH';
+﻿import { brand } from '../brand/brand.generated';
+
+export const WELCOME = `Welcome to ${brand.name}`;
 export const INTRO = "Let's get your server set up.";
 export const BACK = 'Back';
 export const NEXT = 'Next';
@@ -12,10 +14,10 @@ export const EMPTY_FORM = 'Setup form is empty. The server did not return any bo
 export const COMPLETE = 'Setup complete';
 export const CREDENTIALS =
 	'Your administrator account has been created. Write these down now: the password will not be shown again.';
-export const CONFIGURED = 'ShippinTECH has been configured successfully.';
+export const CONFIGURED = `${brand.name} has been configured successfully.`;
 export const NEXT_STEP = 'Next step:';
 export const RESTART =
-	'restart ShippinTECH for the new configuration to take effect. Once restarted, sign in with the credentials above to continue administering your server.';
+	`restart ${brand.name} for the new configuration to take effect. Once restarted, sign in with the credentials above to continue administering your server.`;
 
 const HIDDEN = new Set(['id', 'blobId', '@type']);
 

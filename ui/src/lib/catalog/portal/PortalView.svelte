@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { brand } from '$lib/brand/brand.generated';
 	import { findView } from '$lib/portal/view';
 	import DashboardPanel from './DashboardPanel.svelte';
 	import RecordForm from './RecordForm.svelte';
@@ -63,7 +64,7 @@
 </script>
 
 <svelte:head>
-	<title>{title} · ShippinTECH</title>
+	<title>{title} · {brand.name}</title>
 </svelte:head>
 
 <article>

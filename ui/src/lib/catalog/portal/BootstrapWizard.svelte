@@ -206,7 +206,6 @@
 	}
 	h1, h2, p { margin: 0; }
 	.brand { display: inline-flex; align-items: center; }
-	.brand :global(svg) { inline-size: min(100%, 11.25rem); block-size: auto; }
 	.fields {
 		display: grid;
 		gap: var(--y-2xs);

@@ -1,4 +1,5 @@
 @import './lib/token/color.css';
+@import './lib/token/brand.generated.css';
 @import './lib/token/fluid.css';
 @import './lib/token/motion.css';
 @import './lib/token/interaction.css';

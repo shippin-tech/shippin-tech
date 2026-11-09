@@ -109,12 +109,7 @@
 		border-radius: var(--radius);
 		color: var(--color-text);
 	}
-	.brand {
-		margin: 0;
-		display: inline-flex;
-		align-items: center;
-	}
-	.brand :global(svg) { inline-size: min(100%, 11.25rem); block-size: auto; }
+	.brand { margin: 0; display: inline-flex; align-items: center; }
 	h1,
 	.sub,
 	.alert {

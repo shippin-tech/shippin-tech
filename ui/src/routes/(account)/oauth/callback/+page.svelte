@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { brand } from '$lib/brand/brand.generated';
 	import { goto } from '$app/navigation';
 	import { exchangeAuthorizationCode } from '$lib/adapter/oauth';
 	import { consumeReturnPath } from '$lib/adapter/session';
@@ -22,7 +23,7 @@
 </script>
 
 <svelte:head>
-	<title>Sign in · ShippinTECH</title>
+	<title>Sign in · {brand.name}</title>
 </svelte:head>
 
 <p>{alert || 'Signing in'}</p>

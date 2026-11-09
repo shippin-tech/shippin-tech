@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { brand } from '$lib/brand/brand.generated';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
@@ -73,12 +74,12 @@
 </script>
 
 <svelte:head>
-	<title>ShippinTECH</title>
+	<title>{brand.name}</title>
 </svelte:head>
 
 <a class="skip" href="#content">Skip to content</a>
 <header>
-	<a class="mark" href="/portal" aria-label="ShippinTECH portal home">
+	<a class="mark" href="/portal" aria-label="{brand.name} portal home">
 		<BrandLogo />
 	</a>
 	<nav aria-label="Main navigation">
@@ -109,13 +110,8 @@
 		gap: var(--space-3);
 		padding: var(--space-3);
 	}
-	.mark {
-		text-decoration: none;
-		display: inline-flex;
-		align-items: center;
-		min-height: 2.75rem;
-	}
-	.mark :global(svg) { inline-size: 11.25rem; block-size: auto; max-inline-size: 100%; }
+	.mark { text-decoration: none; display: inline-flex; align-items: center; min-height: 2.75rem; }
+	.mark :global(svg) { max-inline-size: 100%; }
 	nav { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 	nav a {
 		font: inherit;
