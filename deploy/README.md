@@ -1,5 +1,22 @@
 # Pull-based test deployments
 
+## Optional landing site (submodule)
+
+The shippin.tech landing page lives in its own repo, `shippintech/landing`,
+mounted at `landing/`. It is **off by default**: a normal clone or
+`git submodule update --init` does not fetch it (`update = none` in
+`.gitmodules`).
+
+```sh
+# Pull it in
+git submodule update --init --checkout landing
+# Leave it out again
+git submodule deinit -f landing
+```
+
+See `landing/README.md` for the Astro site and the signup API.
+
+
 For a local Docker test installation on this workstation, use
 [the persistent local stack](local/README.md). It includes the mail server,
 FoundationDB, object storage and NATS, initial account setup, and a real
