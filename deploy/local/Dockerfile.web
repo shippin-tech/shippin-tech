@@ -4,6 +4,7 @@ COPY ui/package.json ui/package-lock.json ui/
 RUN cd ui && npm ci
 COPY resources/schema/schema.json.gz resources/schema/schema.json.gz
 COPY assets/webui/assets/*.woff2 assets/webui/assets/
+COPY deploy/control-plan.template.json deploy/control-plan.template.json
 COPY ui/ ui/
 RUN cd ui && npm run build
 FROM nginx:alpine
