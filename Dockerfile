@@ -5,6 +5,7 @@ COPY resources/schema/schema.json.gz resources/schema/schema.json.gz
 RUN cd ui && npm ci
 COPY ui/ ui/
 COPY assets/webui/assets/*.woff2 assets/webui/assets/
+COPY deploy/control-plan.template.json deploy/control-plan.template.json
 RUN cd ui && npm run build
 
 FROM --platform=$BUILDPLATFORM docker.io/lukemathwalker/cargo-chef:latest-rust-slim-trixie AS chef
