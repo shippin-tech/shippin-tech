@@ -2,7 +2,7 @@
 
 ## Optional landing site (submodule)
 
-The shippin.tech landing page lives in its own repo, `shippintech/landing`,
+The shippin.tech landing page lives in its own repo, `shippin-tech/landing`,
 mounted at `landing/`. It is **off by default**: a normal clone or
 `git submodule update --init` does not fetch it (`update = none` in
 `.gitmodules`).
