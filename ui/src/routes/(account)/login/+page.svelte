@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { authBody, postAuth, type AuthFields, type OAuthQuery } from '$lib/adapter/auth';
 	import { requestDiscover } from '$lib/adapter/discover';
+	import { rememberReturnPath } from '$lib/adapter/session';
 	import Login from '$lib/catalog/login/Login.svelte';
 	import type { LoginVariant } from '$lib/catalog/login/variants';
 
@@ -35,6 +37,10 @@
 		resource: params.getAll('resource')
 	});
 	let closed = $state(false);
+
+	onMount(() => {
+		rememberReturnPath(params.get('return'));
+	});
 
 	const failure = 'Temporary server failure. If the problem persists, contact your administrator.';
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { exchangeAuthorizationCode } from '$lib/adapter/oauth';
+	import { consumeReturnPath } from '$lib/adapter/session';
 
 	let alert = $state('');
 
@@ -8,7 +9,7 @@
 		let cancelled = false;
 		exchangeAuthorizationCode()
 			.then(() => {
-				if (!cancelled) goto('/portal');
+				if (!cancelled) goto(consumeReturnPath('/portal'));
 			})
 			.catch((err: unknown) => {
 				if (cancelled) return;

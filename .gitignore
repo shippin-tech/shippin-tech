@@ -13,6 +13,8 @@ run.sh
 !.gitattributes
 !.github
 !.cargo
+!ui/.storybook/
+!ui/.storybook/**
 !/platform/.agents/
 !/platform/.agents/**
 !/platform/.dockerignore
@@ -35,3 +37,6 @@ deploy/server.env.*
 !deploy/server.env.example
 deploy/fdb.cluster
 deploy/deployments.log
+
+*storybook.log
+storybook-static
