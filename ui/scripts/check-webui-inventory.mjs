@@ -48,7 +48,10 @@ const seen = new Set();
 for (const entry of inventory.files) {
   if (seen.has(entry.source) || !actual.has(entry.source)) throw new Error(`Duplicate or missing source: ${entry.source}`);
   seen.add(entry.source);
-  const hash = createHash('sha256').update(await readFile(resolve(root, entry.source))).digest('hex');
+  // Hash with line endings normalised so Windows (CRLF) and Linux (LF) checkouts agree.
+  const bytes = await readFile(resolve(root, entry.source));
+  const text = /\.(js|css|html|svg|json|txt)$/.test(entry.source);
+  const hash = createHash('sha256').update(text ? bytes.toString('utf8').replaceAll('\r\n', '\n') : bytes).digest('hex');
   if (hash !== entry.sha256) throw new Error(`Source changed; review port disposition: ${entry.source}`);
   if (!entry.owners.length || !entry.status || !entry.remaining) throw new Error(`Missing disposition: ${entry.source}`);
   if (!entry.work_packages?.length || entry.work_packages.some((id) => !packages.has(id))) {

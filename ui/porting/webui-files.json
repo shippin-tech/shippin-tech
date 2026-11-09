@@ -16,7 +16,7 @@
     },
     {
       "source": "assets/webui/assets/AdminPanel-DhmcW4yN.js",
-      "sha256": "84de180809be0c84a0750714b57ef22aa25c3f703b80caa38142ac819a4dbc6f",
+      "sha256": "16a49ba113399d2ab77276f8df17d172a1f073d6ef1d8094afcdfd05e5aa03d3",
       "owners": [
         "ui/src/lib/catalog/portal/RegistryEditor.svelte",
         "ui/src/lib/catalog/portal/SchemaField.svelte",
@@ -44,7 +44,7 @@
     },
     {
       "source": "assets/webui/assets/BootstrapWizard-DqwPyluo.js",
-      "sha256": "83a56000ee777550f845485d3525f6fc803de05d19480a4608abb235eccf1bc5",
+      "sha256": "7091d27ef22887f547ac5a2df95ce9de59e4fdec3a1c281cb7139c3ceefd7f8f",
       "owners": [
         "ui/src/lib/catalog/portal/BootstrapWizard.svelte",
         "ui/src/lib/adapter/bootstrap.ts"
@@ -125,7 +125,7 @@
     },
     {
       "source": "assets/webui/assets/DashboardView-C1roqzWz.js",
-      "sha256": "10b4af662f086b168c9c461d65670286bded25062473baedaebc1f772282fc94",
+      "sha256": "b4b9b3995c22e71b39fe94495544b62bb28bcffa85f3876098a362aeda730892",
       "owners": [
         "ui/src/routes/(portal)/portal/Dashboard.svelte",
         "ui/src/lib/catalog/portal/DashboardPanel.svelte"
@@ -190,7 +190,7 @@
     },
     {
       "source": "assets/webui/assets/index-7cDRjdpB.js",
-      "sha256": "b07d76be4f25d80a55270d859ac1d0fa062cb0c5d86fccef712fbca360d15563",
+      "sha256": "79269544bc2d765d64f7245f2b18b1dc130602a0ca0960890b81ad636d6ea105",
       "owners": [
         "ui/src/app.html",
         "ui/src/routes/+layout.svelte",
@@ -207,7 +207,7 @@
     },
     {
       "source": "assets/webui/assets/index-CmZR2p5P.css",
-      "sha256": "043d2fcd56cd9979ec3e056cbc0f7c824e9255f40ee1c0a4251866708e7b2677",
+      "sha256": "ebd4d2b70664a8c203684c24ffd31c1e17475eb77be0307eaef61920f7c4c762",
       "owners": [
         "ui/src/app.html",
         "ui/src/routes/+layout.svelte",
@@ -390,7 +390,7 @@
     },
     {
       "source": "assets/webui/assets/jmapErrors-DzuHzs3H.js",
-      "sha256": "64e60287a5007fd66b09d06d40c4eff32d751e650200553a752220259c8f5fa0",
+      "sha256": "8dc5dccdfc91ade13e97f5a3a34976a2e0c60c620bbb8ecb15b458f791acbd79",
       "owners": [
         "ui/src/lib/adapter/jmap.ts",
         "ui/src/lib/adapter/portal.ts",
@@ -456,7 +456,7 @@
     },
     {
       "source": "assets/webui/assets/MarkdownRenderer-D1Irlngp.js",
-      "sha256": "a44cfcb6e3820489161ac3a28943ddee191440dcaa4931a43e04b8bded32f88d",
+      "sha256": "c296e3af4f5199f948fba9a4fa3bcd371738baee56cfb4f9b25fa0649ec8967a",
       "owners": [
         "ui/src/lib/catalog/portal/SchemaField.svelte"
       ],
@@ -468,7 +468,7 @@
     },
     {
       "source": "assets/webui/assets/mutations-CojN7Mws.js",
-      "sha256": "8a03ca20a25998c6496c549c29a89899c197cadc47b5f806e5cdf9e9e673a788",
+      "sha256": "0e9c6fa32fe13f3b24740a4cbb66cc664b46aeb5a15db86c11914a73abbeb53f",
       "owners": [
         "ui/src/lib/adapter/writes-call.ts",
         "ui/src/lib/adapter/portal.ts",
@@ -497,7 +497,7 @@
     },
     {
       "source": "assets/webui/assets/OtpAuthField-DmxMF0QG.js",
-      "sha256": "2ff21ad35260f513a5a5768dab5018078dc35c2b71555213ac2f561412bbd470",
+      "sha256": "88d3a9cb41439b6768bdd060ed4880b5ed223abc95acee00e673be1746663bf4",
       "owners": [
         "ui/src/lib/catalog/login/Login.svelte",
         "ui/src/routes/(account)/login/+page.svelte"
@@ -558,7 +558,7 @@
     },
     {
       "source": "assets/webui/assets/popover-DHIYljkq.js",
-      "sha256": "f8229511ab22275b864e3c406c88ff63d797f2911a2cab680c3334b8d3bef46d",
+      "sha256": "4d9dcc7b6a699078448bb85a8e4aeabecbc22564bf704bf0d2cbab24202856b6",
       "owners": [
         "ui/src/lib/catalog",
         "ui/package.json"
@@ -585,7 +585,7 @@
     },
     {
       "source": "assets/webui/assets/select-djzeV50X.js",
-      "sha256": "98203e4c63ddb0dc719c1b10f74cd366f7ddc050e9996752e1f4ca193ffa429b",
+      "sha256": "f99ba2e57b43763bfc1825bcfc07eb46a1b1529f05cb1d89f253282b53d8359f",
       "owners": [
         "ui/src/lib/catalog",
         "ui/package.json"
@@ -684,7 +684,7 @@
     },
     {
       "source": "assets/webui/index.html",
-      "sha256": "aca1234ba4eaae2a9172ed2892516bd96fe4a416bef1229eb7b537b84154c745",
+      "sha256": "19990b4e8a3cb3c60a8a32194c396ad01ae3ecca515e63d2560e2202ebe67f18",
       "owners": [
         "ui/src/app.html"
       ],
@@ -699,7 +699,7 @@
     },
     {
       "source": "assets/webui/logo.svg",
-      "sha256": "37d58f56b6d6243697c75c6f9b183965a65e42ed89ca13e9a4271034afbb3df9",
+      "sha256": "c65cc5a512a80150a59eb8bf28a528132c724a35ccf0cd77b7520540e953bc70",
       "owners": [
         "ui/src/app.html"
       ],
@@ -711,7 +711,7 @@
     },
     {
       "source": "assets/webui/oauth-client.json",
-      "sha256": "052ab911339e3f1cc4c142f5247b38f1a9a59aecfd86bb6f6d0775955af6f125",
+      "sha256": "472109f5ba4f7e8b48fc34d5e4ff39062c88c11609c6e3c0514f739d656f1c79",
       "owners": [
         "ui/src/lib/adapter/oauth.ts",
         "Dockerfile"
