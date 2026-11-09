@@ -1,7 +1,10 @@
 name: Test container build
 
-# Manual only while the project is pre-release: no image build per push.
+# Pre-release: an image is built only for a tagged version (v*) or on demand.
+# Plain pushes to main never start a build.
 on:
+  push:
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
