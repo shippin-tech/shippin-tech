@@ -8,7 +8,6 @@ on:
     paths-ignore:
       - '**.md'
       - '.ai/**'
-      - 'deploy/**'
   workflow_dispatch:
 
 permissions:
@@ -51,6 +50,8 @@ jobs:
         run: |
           node scripts/brand-sync.mjs --check
           node --test scripts/brand-sync.test.mjs
+      - name: Host auto-updater behaves (fake docker)
+        run: bash -n deploy/update.sh && bash deploy/auto-update.test.sh
       - run: npm ci
         working-directory: ui
       - run: node scripts/check-webui-inventory.mjs

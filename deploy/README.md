@@ -58,6 +58,41 @@ util-linux (`flock`). Each server runs one mail node from a prebuilt image.
 The image name is always lowercase (`ghcr.io/shippin-tech/shippin-tech-scale`). A `:sha-<full-40-character-commit>` tag
 is also accepted. Use the same digest on all servers. No `latest` tag is used.
 
+## Automatic updates from the release channel
+
+Pushing a version tag (`git tag v0.1.2; git push origin v0.1.2`) builds the
+image and tags it `:sha-<commit>`, `:v0.1.2` and `:release`. A host that runs
+`auto-update.sh` follows `:release` and needs no further commands. Install it
+once, as root, from the instance directory (the one holding `update.sh`,
+`compose.yaml` and `server.env`):
+
+```sh
+curl -fsSLO https://raw.githubusercontent.com/shippin-tech/shippin-tech/main/deploy/auto-update.sh
+sudo bash auto-update.sh install
+```
+
+Every five minutes a systemd timer pulls `:release`, resolves it to an
+immutable `@sha256` digest and, only if that digest differs from the running
+one, runs `update.sh` with it. `server.env` and `deployments.log` therefore
+always name the exact image that is live, never a moving tag. If the new
+image fails its health check the script redeploys the previous image, logs
+`FAILED <digest>` in `deployments.log` and writes the digest to
+`.update-skip` so the timer does not retry it. Fix the build, push a new
+version tag, and the next check picks it up.
+
+The three commands you might ever need, all run in the instance directory:
+
+```sh
+bash auto-update.sh status     # running image, channel, timer, last deployments
+sudo bash auto-update.sh check # check right now instead of waiting
+bash auto-update.sh retry      # allow a digest that failed earlier to be tried again
+```
+
+`SHIPPIN_CHANNEL=beta` in `server.env` follows a different tag. Manual
+`bash update.sh <digest>` still works and the timer respects whatever it
+finds in `server.env` afterwards. `sudo bash auto-update.sh uninstall`
+removes the timer without touching the running node.
+
 Ports bind to loopback initially. Inspect bootstrap output and complete the
 application's accounts/domains/listeners setup before exposing the server:
 
@@ -128,8 +163,9 @@ image in `server.env`. It retains `server.env.previous` and appends to
 for inspection but does not save the failed image selection.
 
 Redeploy a previous digest explicitly with `bash update.sh <previous-image>`.
-There is no automatic rollback: old binaries may not understand data written
-by new builds. Back up FoundationDB and S3 consistently before schema changes.
+`update.sh` itself never rolls back; only the `auto-update.sh` timer redeploys
+the previous image after a failed health check. Old binaries may not
+understand data written by new builds. Back up FoundationDB and S3 consistently before schema changes.
 Restoring an image does not restore data. Preserve the node-data volume and
 do not run `docker compose down -v` during updates.
 
