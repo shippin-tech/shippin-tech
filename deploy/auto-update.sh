@@ -41,6 +41,26 @@ local_digest() {
     | grep -m1 -F "${base}@sha256:" || true
 }
 
+# The image carries the host-side deploy scripts. Take compose.yaml, update.sh and
+# this script from the image about to be deployed, so the host never runs stale
+# tooling against a new server. server.env, config.json and fdb.cluster are never touched.
+refresh_scripts() {
+  local image=$1 cid dir f
+  dir=$(mktemp -d ./.deploy-new.XXXXXX)
+  if cid=$(docker create "$image" 2>/dev/null) && docker cp "${cid}:/usr/share/shippin.tech/deploy/." "$dir" 2>/dev/null; then
+    for f in compose.yaml update.sh auto-update.sh; do
+      if [[ -f "$dir/$f" ]] && ! cmp -s "$dir/$f" "$f"; then
+        cp "$dir/$f" "$f.new" && chmod --reference="$f" "$f.new" 2>/dev/null; mv -f "$f.new" "$f"
+        log "refreshed $f from the image"
+      fi
+    done
+  else
+    log "image carries no deploy scripts; keeping the ones on disk"
+  fi
+  [[ -n "${cid:-}" ]] && docker rm "$cid" >/dev/null 2>&1 || true
+  rm -rf -- "$dir"
+}
+
 project_name() { local p; p=$(env_value COMPOSE_PROJECT_NAME); printf '%s\n' "${p:-shippin}"; }
 unit_name() { printf 'shippin-update-%s\n' "$(project_name | tr -c 'A-Za-z0-9._-\n' '-')"; }
 
@@ -62,6 +82,7 @@ do_check() {
     log "skipping ${latest#*@}: it failed a health check earlier (bash auto-update.sh retry to try again)"
     return 0
   fi
+  refresh_scripts "$latest"
   log "updating to ${latest#*@}"
   if bash update.sh "$latest"; then
     log "healthy on ${latest#*@}"

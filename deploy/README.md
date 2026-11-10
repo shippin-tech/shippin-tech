@@ -37,7 +37,10 @@ util-linux (`flock`). Each server runs one mail node from a prebuilt image.
    Do not use `resources/scale/docker-compose.yml` for persistent servers:
    it stores FoundationDB and MinIO data in temporary memory-backed storage.
 3. Copy `server.env.example` to `server.env`. Set real endpoints/credentials
-   and a unique, stable `MAIL_HOSTNAME` on each host. Set a unique
+   and a unique, stable `MAIL_HOSTNAME` on each host. Set `RECOVERY_ADMIN` to
+   `admin:<long random password>`: this is the permanent administrator login
+   for the portal (sign in as `admin`). It is accepted in every server mode
+   and only changes when you change it here. Set a unique
    `COMPOSE_PROJECT_NAME` per instance to isolate containers/networks/volumes.
    Nodes in one cluster
    share FoundationDB, S3 and NATS. Separate test clusters need separate data.
@@ -93,13 +96,22 @@ bash auto-update.sh retry      # allow a digest that failed earlier to be tried 
 finds in `server.env` afterwards. `sudo bash auto-update.sh uninstall`
 removes the timer without touching the running node.
 
-Ports bind to loopback initially. Inspect bootstrap output and complete the
-application's accounts/domains/listeners setup before exposing the server:
+Ports bind to loopback initially. Sign in at `/login` as the `RECOVERY_ADMIN`
+user and complete the application's accounts/domains/listeners setup before
+exposing the server:
 
 ```sh
 docker compose --env-file server.env logs --tail 100 mail
 docker compose --env-file server.env ps
 ```
+
+The server keeps its own settings file at `/var/lib/shippin.tech/config.json`
+inside the `node-data` volume. `update.sh` seeds it from `./config.json` the
+first time and then refuses to report a node healthy while that file is
+missing. If you ever see a "bootstrap mode - temporary administrator account"
+banner in the logs or the portal shows the setup wizard, the file is gone:
+run `bash update.sh <the image from server.env>` and it is seeded again. Do
+not use the random key from the banner; `RECOVERY_ADMIN` always works.
 
 Set `MAIL_BIND` and `HTTPS_BIND` to the desired server interface and rerun the
 update command when ready. Keep 8080 private. Configure domain DNS, firewall,

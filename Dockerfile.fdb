@@ -79,6 +79,8 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     chown shippin.tech:shippin.tech /etc/shippin.tech /var/lib/shippin.tech && \
     setcap 'cap_net_bind_service=+ep' /usr/local/bin/shippin.tech
 COPY --from=portal --chown=shippin.tech:shippin.tech /src/ui/build /usr/share/shippin.tech/portal
+# The host-side deploy scripts ride along so auto-update.sh can refresh them from the image.
+COPY deploy/compose.yaml deploy/update.sh deploy/auto-update.sh deploy/server.env.example deploy/README.md /usr/share/shippin.tech/deploy/
 
 USER shippin.tech
 WORKDIR /var/lib/shippin.tech

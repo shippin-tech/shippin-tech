@@ -19,6 +19,9 @@ cat > bin/docker <<'EOF'
 case "$1 $2" in
   "pull "*) echo "pull $3" >> "$FAKE_LOG"; [[ -f "$FAKE_PULL_FAIL" ]] && exit 1; exit 0 ;;
   "image inspect") ref=${@: -1}; awk -v r="$ref" '$1 == r { print $2 }' "$FAKE_MAP"; exit 0 ;;
+  "create "*) echo "create $2" >> "$FAKE_LOG"; echo fakecid; exit 0 ;;
+  "cp "*) [[ -d "$FAKE_IMAGE_DEPLOY" ]] || exit 1; cp -r "$FAKE_IMAGE_DEPLOY/." "$3"; echo "cp" >> "$FAKE_LOG"; exit 0 ;;
+  "rm "*) exit 0 ;;
 esac
 exit 1
 EOF
@@ -31,7 +34,7 @@ awk '!/^SHIPPIN_IMAGE=/' server.env > server.env.tmp; printf 'SHIPPIN_IMAGE=%s\n
 exit 0
 EOF
 chmod +x bin/docker update.sh
-export PATH="$work/bin:$PATH" FAKE_LOG="$work/calls.log" FAKE_MAP="$work/map" FAKE_FAIL="$work/fail" FAKE_PULL_FAIL="$work/pullfail"
+export PATH="$work/bin:$PATH" FAKE_LOG="$work/calls.log" FAKE_MAP="$work/map" FAKE_FAIL="$work/fail" FAKE_PULL_FAIL="$work/pullfail" FAKE_IMAGE_DEPLOY="$work/image-deploy"
 
 reset() { : > "$FAKE_LOG"; : > "$FAKE_FAIL"; rm -f .update-skip deployments.log "$FAKE_PULL_FAIL"; printf 'COMPOSE_PROJECT_NAME=node-a\nSHIPPIN_IMAGE=%s\n' "$1" > server.env; }
 expect() { if [[ "$2" == *"$1"* ]]; then echo "ok   $3"; else echo "FAIL $3"; echo "---"; echo "$2"; echo "---"; exit 1; fi; }
@@ -84,4 +87,26 @@ expect "pull $BASE:beta" "$(cat "$FAKE_LOG")" "SHIPPIN_CHANNEL selects the tag"
 # status never needs docker
 out=$(bash auto-update.sh status 2>&1)
 expect "channel:   $BASE:beta" "$out" "status prints the channel"
+
+# deploy scripts are refreshed from the image before update.sh runs; server.env is left alone
+reset "$BASE@$OLD"; printf '%s %s@%s\n' "$BASE:release" "$BASE" "$NEW" > "$FAKE_MAP"
+mkdir -p "$FAKE_IMAGE_DEPLOY"
+printf '# new compose from image\n' > "$FAKE_IMAGE_DEPLOY/compose.yaml"
+cp update.sh "$FAKE_IMAGE_DEPLOY/update.sh"
+printf 'RECOVERY_ADMIN=should-not-be-copied\n' > "$FAKE_IMAGE_DEPLOY/server.env.example"
+printf '# old compose\n' > compose.yaml
+out=$(bash auto-update.sh check 2>&1)
+expect "create $BASE@$NEW" "$(cat "$FAKE_LOG")" "scripts come from the exact digest being deployed"
+expect "refreshed compose.yaml" "$out" "changed compose.yaml is replaced"
+refute "refreshed update.sh" "$out" "identical update.sh is left alone"
+expect "# new compose from image" "$(cat compose.yaml)" "compose.yaml content is the image's"
+refute "should-not-be-copied" "$(cat server.env)" "server.env is never touched"
+expect $'create\ncp\nupdate ' "$(grep -E '^(create|cp|update )' "$FAKE_LOG" | sed 's/^create .*/create/')" "refresh runs before update.sh"
+rm -rf "$FAKE_IMAGE_DEPLOY"
+
+# an image without deploy scripts (older build) is tolerated
+reset "$BASE@$OLD"; printf '%s %s@%s\n' "$BASE:release" "$BASE" "$NEW" > "$FAKE_MAP"
+out=$(bash auto-update.sh check 2>&1)
+expect "carries no deploy scripts" "$out" "older image: refresh skipped with a note"
+expect "update $BASE@$NEW" "$(cat "$FAKE_LOG")" "older image: update still runs"
 echo "all auto-update tests passed"
