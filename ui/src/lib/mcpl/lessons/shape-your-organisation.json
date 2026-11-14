@@ -1,0 +1,19 @@
+{
+  "id": "shape-your-organisation",
+  "title": "Shape your organisation",
+  "audience": "owner",
+  "steps": [
+    {
+      "id": "make-a-team",
+      "say": "Make a team. It gets its own address that reaches everyone on it.",
+      "where": "/shippin/org/teams",
+      "doneWhen": "org.team.created"
+    },
+    {
+      "id": "fill-the-team",
+      "say": "Tick the people who belong on it.",
+      "where": "/shippin/org/teams",
+      "doneWhen": "org.member.changed"
+    }
+  ]
+}

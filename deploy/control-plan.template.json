@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "status": "design-only",
+  "description": "Deployment placement requirements, not executable rollout actions. Mail reload and app-bundle updates do not provision or roll back instances.",
+  "name": "shippin-enterprise-control-plan",
+  "lanes": [
+    {
+      "id": "dedicated_stack_per_client",
+      "label": "Dedicated stack per client",
+      "projectNamePattern": "shippin-<client>-<env>",
+      "requiresUniquePortsOnSharedHost": true,
+      "requiresUniqueHostname": true
+    },
+    {
+      "id": "shared_cluster_multi_tenant",
+      "label": "Shared cluster multi-tenant",
+      "projectNamePattern": "shippin-shared-<env>",
+      "requiresUniquePortsOnSharedHost": false,
+      "requiresUniqueHostname": true
+    },
+    {
+      "id": "hybrid",
+      "label": "Hybrid",
+      "projectNamePattern": "shippin-<lane>-<client>-<env>",
+      "requiresUniquePortsOnSharedHost": true,
+      "requiresUniqueHostname": true
+    }
+  ]
+}

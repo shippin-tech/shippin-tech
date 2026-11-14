@@ -1,0 +1,746 @@
+
+
+use crate::auth::permissions::DefaultPermissions;
+use aws_lc_rs::{
+    rand::SystemRandom,
+    signature::{ECDSA_P256_SHA256_FIXED_SIGNING, EcdsaKeyPair},
+};
+use registry::{
+    schema::{
+        enums::*,
+        prelude::{ObjectType, SocketAddr},
+        structs::*,
+    },
+    types::{duration::Duration, error::Error, list::List, map::Map},
+};
+use std::str::FromStr;
+use store::{
+    rand::{RngExt, distr::Alphanumeric, rng},
+    registry::{
+        bootstrap::Bootstrap,
+        write::{RegistryWrite, RegistryWriteResult},
+    },
+};
+
+pub const WEBUI_LATEST_URL: &str =
+    "https://github.com/shippin.techlabs/webui/releases/latest/download/webui.zip";
+pub const WEBUI_PINNED_URL: &str =
+    "https://github.com/shippin.techlabs/webui/releases/download/v1.0.11/webui.zip";
+pub const WEBUI_MAX_MAJOR_VERSION: u32 = 1;
+
+pub const ASN_IPV4: &str =
+    "https://github.com/sapics/ip-location-db/releases/download/latest/origin-asn-ipv4.csv";
+pub const ASN_IPV6: &str =
+    "https://github.com/sapics/ip-location-db/releases/download/latest/origin-asn-ipv6.csv";
+pub const GEO_IPV4: &str =
+    "https://github.com/sapics/ip-location-db/releases/download/latest/user-country-ipv4.csv";
+pub const GEO_IPV6: &str =
+    "https://github.com/sapics/ip-location-db/releases/download/latest/user-country-ipv6.csv";
+
+pub trait BootstrapDefaults {
+    fn insert_safe_defaults(&mut self) -> impl Future<Output = ()> + Send;
+}
+
+impl BootstrapDefaults for Bootstrap {
+    async fn insert_safe_defaults(&mut self) {
+        if let Err(error) = insert_safe_defaults(self).await {
+            self.errors.push(Error::Internal {
+                object_id: None,
+                error,
+            });
+        }
+    }
+}
+
+async fn insert_safe_defaults(bp: &mut Bootstrap) -> trc::Result<()> {
+    let is_recovery_mode = bp.registry.is_recovery_mode();
+    let is_bootstrap_mode = bp.registry.is_bootstrap_mode();
+
+    // The legacy /admin and /account bundle is no longer installed: its download
+    // address does not exist, and the built-in web app now serves both paths.
+
+    if is_bootstrap_mode {
+        #[cfg(not(any(feature = "dev_mode", feature = "test_mode")))]
+        if bp.registry.count_object(ObjectType::SystemSettings).await? == 0 {
+            bp.registry
+                .write(RegistryWrite::insert(
+                    &SystemSettings {
+                        default_hostname: bp.registry.local_hostname().to_string(),
+                        ..Default::default()
+                    }
+                    .into(),
+                ))
+                .await?;
+        }
+
+        return Ok(());
+    }
+
+    if is_recovery_mode {
+        return Ok(());
+    }
+
+    if bp.registry.count_object(ObjectType::MtaQueueQuota).await? == 0 {
+        bp.registry
+            .write(RegistryWrite::insert(
+                &MtaQueueQuota {
+                    description: "Global queue quota".to_string().into(),
+                    enable: true,
+                    messages: 100000.into(),
+                    size: 10737418240.into(),
+                    ..Default::default()
+                }
+                .into(),
+            ))
+            .await?;
+    }
+
+    if bp
+        .registry
+        .count_object(ObjectType::MtaInboundThrottle)
+        .await?
+        == 0
+    {
+        for object in [
+            MtaInboundThrottle {
+                description: "Sender IP throttle".to_string(),
+                enable: true,
+                key: Map::new(vec![MtaInboundThrottleKey::RemoteIp]),
+                rate: Rate {
+                    count: 5,
+                    period: Duration::from_millis(1000),
+                },
+                ..Default::default()
+            },
+            MtaInboundThrottle {
+                description: "Sender address to recipient throttle".to_string(),
+                enable: true,
+                key: Map::new(vec![
+                    MtaInboundThrottleKey::SenderDomain,
+                    MtaInboundThrottleKey::Rcpt,
+                ]),
+                rate: Rate {
+                    count: 25,
+                    period: Duration::from_millis(60 * 60 * 1000),
+                },
+                ..Default::default()
+            },
+        ] {
+            bp.registry
+                .write(RegistryWrite::insert(&object.into()))
+                .await?;
+        }
+    }
+
+    if bp
+        .registry
+        .count_object(ObjectType::MtaVirtualQueue)
+        .await?
+        == 0
+        && bp
+            .registry
+            .count_object(ObjectType::MtaDeliverySchedule)
+            .await?
+            == 0
+    {
+        for (id, object) in [
+            MtaVirtualQueue {
+                description: "Local delivery queue".to_string().into(),
+                name: "local".into(),
+                threads_per_node: 25,
+            },
+            MtaVirtualQueue {
+                description: "Remote delivery queue".to_string().into(),
+                name: "remote".into(),
+                threads_per_node: 50,
+            },
+            MtaVirtualQueue {
+                description: "Delivery Status Notification delivery queue"
+                    .to_string()
+                    .into(),
+                name: "dsn".into(),
+                threads_per_node: 5,
+            },
+            MtaVirtualQueue {
+                description: "DMARC and TLS report delivery queue".to_string().into(),
+                name: "report".into(),
+                threads_per_node: 5,
+            },
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            bp.registry
+                .write(RegistryWrite::insert_with_id(
+                    (id as u64).into(),
+                    &object.into(),
+                ))
+                .await?;
+        }
+
+        for (id, object) in [
+            MtaDeliverySchedule {
+                name: "local".into(),
+                description: "Local delivery schedule".to_string().into(),
+                expiry: MtaDeliveryExpiration::Ttl(MtaDeliveryExpirationTtl {
+                    expire: Duration::from_millis(3 * 24 * 60 * 60 * 1000),
+                }),
+                notify: MtaDeliveryScheduleIntervalsOrDefault::Default,
+                retry: MtaDeliveryScheduleIntervalsOrDefault::Default,
+                queue_id: 0u64.into(),
+            },
+            MtaDeliverySchedule {
+                name: "remote".into(),
+                description: "Remote delivery schedule".to_string().into(),
+                expiry: MtaDeliveryExpiration::Ttl(MtaDeliveryExpirationTtl {
+                    expire: Duration::from_millis(3 * 24 * 60 * 60 * 1000),
+                }),
+                notify: MtaDeliveryScheduleIntervalsOrDefault::Default,
+                retry: MtaDeliveryScheduleIntervalsOrDefault::Default,
+                queue_id: 1u64.into(),
+            },
+            MtaDeliverySchedule {
+                name: "dsn".into(),
+                description: "Delivery Status Notification delivery schedule"
+                    .to_string()
+                    .into(),
+                expiry: MtaDeliveryExpiration::Attempts(MtaDeliveryExpirationAttempts {
+                    max_attempts: 10,
+                }),
+                notify: MtaDeliveryScheduleIntervalsOrDefault::Default,
+                retry: MtaDeliveryScheduleIntervalsOrDefault::Custom(
+                    MtaDeliveryScheduleIntervals {
+                        intervals: List::from_iter([
+                            MtaDeliveryScheduleInterval {
+                                duration: Duration::from_millis(15 * 60 * 1000),
+                            },
+                            MtaDeliveryScheduleInterval {
+                                duration: Duration::from_millis(30 * 60 * 1000),
+                            },
+                            MtaDeliveryScheduleInterval {
+                                duration: Duration::from_millis(60 * 60 * 1000),
+                            },
+                            MtaDeliveryScheduleInterval {
+                                duration: Duration::from_millis(2 * 60 * 60 * 1000),
+                            },
+                        ]),
+                    },
+                ),
+                queue_id: 2u64.into(),
+            },
+            MtaDeliverySchedule {
+                name: "report".into(),
+                description: "DMARC and TLS report delivery schedule".to_string().into(),
+                expiry: MtaDeliveryExpiration::Attempts(MtaDeliveryExpirationAttempts {
+                    max_attempts: 8,
+                }),
+                notify: MtaDeliveryScheduleIntervalsOrDefault::Default,
+                retry: MtaDeliveryScheduleIntervalsOrDefault::Custom(
+                    MtaDeliveryScheduleIntervals {
+                        intervals: List::from_iter([
+                            MtaDeliveryScheduleInterval {
+                                duration: Duration::from_millis(30 * 60 * 1000),
+                            },
+                            MtaDeliveryScheduleInterval {
+                                duration: Duration::from_millis(60 * 60 * 1000),
+                            },
+                            MtaDeliveryScheduleInterval {
+                                duration: Duration::from_millis(2 * 60 * 60 * 1000),
+                            },
+                        ]),
+                    },
+                ),
+                queue_id: 3u64.into(),
+            },
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            bp.registry
+                .write(RegistryWrite::insert_with_id(
+                    (id as u64).into(),
+                    &object.into(),
+                ))
+                .await?;
+        }
+    }
+
+    if bp.registry.count_object(ObjectType::MtaTlsStrategy).await? == 0 {
+        for object in [
+            MtaTlsStrategy {
+                name: "invalid-tls".into(),
+                description: "Allow invalid TLS certificates".to_string().into(),
+                allow_invalid_certs: true,
+                ..Default::default()
+            },
+            MtaTlsStrategy {
+                name: "default".into(),
+                description: "Default TLS settings".to_string().into(),
+                allow_invalid_certs: false,
+                ..Default::default()
+            },
+        ] {
+            bp.registry
+                .write(RegistryWrite::insert(&object.into()))
+                .await?;
+        }
+    }
+
+    if bp.registry.count_object(ObjectType::MtaRoute).await? == 0 {
+        for object in [
+            MtaRoute::Mx(MtaRouteMx {
+                description: "MX delivery route".to_string().into(),
+                ip_lookup_strategy: MtaIpStrategy::V4ThenV6,
+                max_multihomed: 2,
+                max_mx_hosts: 2,
+                name: "mx".into(),
+            }),
+            MtaRoute::Local(MtaRouteCommon {
+                description: "Local delivery route".to_string().into(),
+                name: "local".into(),
+            }),
+        ] {
+            bp.registry
+                .write(RegistryWrite::insert(&object.into()))
+                .await?;
+        }
+    }
+
+    if bp
+        .registry
+        .count_object(ObjectType::MtaConnectionStrategy)
+        .await?
+        == 0
+    {
+        bp.registry
+            .write(RegistryWrite::insert(
+                &MtaConnectionStrategy {
+                    name: "default".into(),
+                    description: "Default connection strategy".to_string().into(),
+                    ..Default::default()
+                }
+                .into(),
+            ))
+            .await?;
+    }
+
+    if bp.registry.count_object(ObjectType::OidcProvider).await? == 0 {
+        let pkcs8_doc =
+            EcdsaKeyPair::generate_pkcs8(&ECDSA_P256_SHA256_FIXED_SIGNING, &SystemRandom::new())
+                .map_err(|err| {
+                    trc::EventType::Server(trc::ServerEvent::Startup)
+                        .into_err()
+                        .reason(err)
+                        .caused_by(trc::location!())
+                })?;
+        let signature_pem = pem::encode(&pem::Pem::new("PRIVATE KEY", pkcs8_doc.as_ref()));
+
+        bp.registry
+            .write(RegistryWrite::insert(
+                &OidcProvider {
+                    encryption_key: SecretKey::Value(SecretKeyValue {
+                        secret: rng()
+                            .sample_iter(Alphanumeric)
+                            .take(64)
+                            .map(char::from)
+                            .collect::<String>(),
+                    }),
+                    signature_key: SecretText::Text(SecretTextValue {
+                        secret: signature_pem,
+                    }),
+                    signature_algorithm: JwtSignatureAlgorithm::Es256,
+                    ..Default::default()
+                }
+                .into(),
+            ))
+            .await?;
+
+        // Generate a Web Push VAPID signing key (RFC 9749)
+        if bp.registry.count_object(ObjectType::Jmap).await? == 0 {
+            match crate::network::webpush::generate_pkcs8_pem() {
+                Ok(web_push_pem) => {
+                    bp.registry
+                        .write(RegistryWrite::insert(
+                            &Jmap {
+                                web_push_key: SecretTextOptional::Text(SecretTextValue {
+                                    secret: web_push_pem,
+                                }),
+                                ..Default::default()
+                            }
+                            .into(),
+                        ))
+                        .await?;
+                }
+                Err(err) => {
+                    trc::event!(
+                        Server(trc::ServerEvent::Startup),
+                        Details = "Failed to generate Web Push VAPID key",
+                        Reason = err
+                    );
+                }
+            }
+        }
+    }
+
+    if bp.registry.count_object(ObjectType::Role).await? == 0 {
+        let permissions = DefaultPermissions::default();
+        let mut role_ids = Vec::with_capacity(4);
+
+        for role in [
+            Role {
+                description: "User".into(),
+                enabled_permissions: Map::new(permissions.user),
+                ..Default::default()
+            },
+            Role {
+                description: "Group".into(),
+                enabled_permissions: Map::new(permissions.group),
+                ..Default::default()
+            },
+            Role {
+                description: "Tenant Administrator".into(),
+                enabled_permissions: Map::new(permissions.tenant),
+                ..Default::default()
+            },
+            Role {
+                description: "System Administrator".into(),
+                enabled_permissions: Map::new(permissions.superuser),
+                ..Default::default()
+            },
+        ] {
+            match bp
+                .registry
+                .write(RegistryWrite::insert(&role.into()))
+                .await?
+            {
+                RegistryWriteResult::Success(id) => role_ids.push(id),
+                err => {
+                    bp.build_error(
+                        ObjectType::Role.singleton(),
+                        format!("Failed to insert default role: {err}"),
+                    );
+                }
+            }
+        }
+
+        if bp.registry.count_object(ObjectType::Authentication).await? == 0 && role_ids.len() == 4 {
+            bp.registry
+                .write(RegistryWrite::insert(
+                    &Authentication {
+                        default_user_role_ids: Map::new(vec![role_ids[0]]),
+                        default_group_role_ids: Map::new(vec![role_ids[1]]),
+                        default_tenant_role_ids: Map::new(vec![role_ids[2], role_ids[0]]),
+                        default_admin_role_ids: Map::new(vec![role_ids[3], role_ids[0]]),
+                        ..Default::default()
+                    }
+                    .into(),
+                ))
+                .await?;
+        }
+    }
+
+    if bp
+        .registry
+        .count_object(ObjectType::NetworkListener)
+        .await?
+        == 0
+    {
+        for (protocol, name, port, tls_implicit) in [
+            (NetworkListenerProtocol::Smtp, "smtp", 25, false),
+            (NetworkListenerProtocol::Smtp, "submissions", 465, true),
+            (NetworkListenerProtocol::Imap, "imaps", 993, true),
+            (NetworkListenerProtocol::Pop3, "pop3s", 995, true),
+            (NetworkListenerProtocol::ManageSieve, "sieve", 4190, false),
+            (NetworkListenerProtocol::Http, "https", 443, true),
+            (NetworkListenerProtocol::Http, "http", 8080, false),
+        ] {
+            bp.registry
+                .write(RegistryWrite::insert(
+                    &NetworkListener {
+                        bind: Map::new(vec![
+                            SocketAddr::from_str(&format!("[::]:{port}")).unwrap(),
+                        ]),
+                        name: name.to_string(),
+                        protocol,
+                        use_tls: true,
+                        tls_implicit,
+                        ..Default::default()
+                    }
+                    .into(),
+                ))
+                .await?;
+        }
+    }
+
+    #[cfg(not(any(feature = "dev_mode", feature = "test_mode")))]
+    if bp.registry.count_object(ObjectType::Asn).await? == 0 {
+        bp.registry
+            .write(RegistryWrite::insert(
+                &Asn::Resource(AsnResource {
+                    asn_urls: Map::new(vec![ASN_IPV4.into(), ASN_IPV6.into()]),
+                    geo_urls: Map::new(vec![GEO_IPV4.into(), GEO_IPV6.into()]),
+                    max_size: 104857600,
+                    expires: Duration::from_millis(24 * 60 * 60 * 1000),
+                    timeout: Duration::from_millis(5 * 60 * 1000),
+                    ..Default::default()
+                })
+                .into(),
+            ))
+            .await?;
+    }
+
+    #[cfg(not(feature = "test_mode"))]
+    if bp.registry.count_object(ObjectType::TracingStore).await? == 0 {
+        bp.registry
+            .write(RegistryWrite::insert(&TracingStore::Default.into()))
+            .await?;
+    }
+
+    #[cfg(not(feature = "test_mode"))]
+    if bp.registry.count_object(ObjectType::MetricsStore).await? == 0 {
+        bp.registry
+            .write(RegistryWrite::insert(&MetricsStore::Default.into()))
+            .await?;
+    }
+
+    if bp.registry.count_object(ObjectType::Tracer).await? == 0 {
+        bp.registry
+            .write(RegistryWrite::insert(
+                &Tracer::Log(TracerLog {
+                    enable: true,
+                    ansi: false,
+                    prefix: "shippin.tech.log".into(),
+                    rotate: LogRotateFrequency::Daily,
+                    path: "/var/log/shippin.tech".into(),
+                    ..Default::default()
+                })
+                .into(),
+            ))
+            .await?;
+    }
+
+    #[cfg(not(feature = "test_mode"))]
+    {
+        use store::write::BatchBuilder;
+        use types::id::Id;
+
+        if bp.registry.count_object(ObjectType::SpamRule).await? == 0
+            && bp
+                .registry
+                .object::<SpamSettings>(Id::singleton())
+                .await?
+                .is_none_or(|spam| spam.spam_filter_rules_url.is_some())
+        {
+            let mut batch = BatchBuilder::new();
+            batch.schedule_task(Task::SpamFilterMaintenance(TaskSpamFilterMaintenance {
+                maintenance_type: TaskSpamFilterMaintenanceType::UpdateRules,
+                status: TaskStatus::now(),
+            }));
+            bp.data_store.write(batch.build_all()).await?;
+        }
+    }
+
+    #[cfg(all(feature = "s3", feature = "nats"))]
+    insert_missing_scale_layout(bp).await?;
+
+    Ok(())
+}
+
+/// The scale image's environment names the S3 bucket and the NATS address.
+/// Both are required. A partial set is not written, and an existing singleton
+/// is left as it is so a second node does not replace the first node's record.
+#[cfg(all(feature = "s3", feature = "nats"))]
+#[derive(Debug, PartialEq, Eq)]
+pub enum ScaleLayoutEnv {
+    Absent,
+    Incomplete,
+    Ready(ScaleLayout),
+}
+
+#[cfg(all(feature = "s3", feature = "nats"))]
+#[derive(Debug, PartialEq, Eq)]
+pub struct ScaleLayout {
+    pub endpoint: String,
+    pub access_key: String,
+    pub secret_key: String,
+    pub bucket: String,
+    pub region: String,
+    pub nats_address: String,
+}
+
+#[cfg(all(feature = "s3", feature = "nats"))]
+pub fn scale_layout_from_env() -> ScaleLayoutEnv {
+    scale_layout_from_values(
+        std::env::var("shippin.tech_SCALE_S3_ENDPOINT").ok(),
+        std::env::var("shippin.tech_SCALE_S3_ACCESS_KEY").ok(),
+        std::env::var("shippin.tech_SCALE_S3_SECRET_KEY").ok(),
+        std::env::var("shippin.tech_SCALE_NATS_ADDRESS").ok(),
+        std::env::var("shippin.tech_SCALE_S3_BUCKET").ok(),
+        std::env::var("shippin.tech_SCALE_S3_REGION").ok(),
+    )
+}
+
+#[cfg(all(feature = "s3", feature = "nats"))]
+pub fn scale_layout_from_values(
+    endpoint: Option<String>,
+    access_key: Option<String>,
+    secret_key: Option<String>,
+    nats_address: Option<String>,
+    bucket: Option<String>,
+    region: Option<String>,
+) -> ScaleLayoutEnv {
+    let any = endpoint.is_some()
+        || access_key.is_some()
+        || secret_key.is_some()
+        || nats_address.is_some();
+    match (endpoint, access_key, secret_key, nats_address) {
+        (Some(endpoint), Some(access_key), Some(secret_key), Some(nats_address)) => {
+            ScaleLayoutEnv::Ready(ScaleLayout {
+                endpoint,
+                access_key,
+                secret_key,
+                bucket: bucket.unwrap_or_else(|| "shippin.tech".to_string()),
+                region: region.unwrap_or_else(|| "eu-central-1".to_string()),
+                nats_address,
+            })
+        }
+        _ if any => ScaleLayoutEnv::Incomplete,
+        _ => ScaleLayoutEnv::Absent,
+    }
+}
+
+#[cfg(all(feature = "s3", feature = "nats"))]
+async fn insert_missing_scale_layout(bp: &mut Bootstrap) -> trc::Result<()> {
+    let layout = match scale_layout_from_env() {
+        ScaleLayoutEnv::Absent => return Ok(()),
+        ScaleLayoutEnv::Incomplete => {
+            trc::event!(
+                Server(trc::ServerEvent::Startup),
+                Details = "Scale layout env is incomplete. Set shippin.tech_SCALE_S3_ENDPOINT, shippin.tech_SCALE_S3_ACCESS_KEY, shippin.tech_SCALE_S3_SECRET_KEY, and shippin.tech_SCALE_NATS_ADDRESS together."
+            );
+            return Ok(());
+        }
+        ScaleLayoutEnv::Ready(layout) => layout,
+    };
+
+    if bp.registry.count_object(ObjectType::BlobStore).await? == 0 {
+        let object = BlobStore::S3(S3Store {
+            access_key: PublicStringOptional::Value(PublicStringValue {
+                value: layout.access_key,
+            }),
+            bucket: layout.bucket,
+            region: S3StoreRegion::Custom(S3StoreCustomRegion {
+                custom_endpoint: layout.endpoint,
+                custom_region: layout.region,
+            }),
+            secret_key: SecretKeyOptional::Value(SecretKeyValue {
+                secret: layout.secret_key,
+            }),
+            allow_invalid_certs: true,
+            ..Default::default()
+        });
+        let result = bp
+            .registry
+            .write(RegistryWrite::insert(&object.into()))
+            .await?;
+        if !matches!(result, RegistryWriteResult::Success(_))
+            && bp.registry.count_object(ObjectType::BlobStore).await? == 0
+        {
+            bp.build_error(
+                ObjectType::BlobStore.singleton(),
+                format!("Failed to insert scale blob store: {result}"),
+            );
+        }
+    }
+
+    if bp.registry.count_object(ObjectType::Coordinator).await? == 0 {
+        let object = Coordinator::Nats(NatsCoordinator {
+            addresses: Map::new(vec![layout.nats_address]),
+            use_tls: false,
+            ..Default::default()
+        });
+        let result = bp
+            .registry
+            .write(RegistryWrite::insert(&object.into()))
+            .await?;
+        if !matches!(result, RegistryWriteResult::Success(_))
+            && bp.registry.count_object(ObjectType::Coordinator).await? == 0
+        {
+            bp.build_error(
+                ObjectType::Coordinator.singleton(),
+                format!("Failed to insert scale coordinator: {result}"),
+            );
+        }
+    }
+
+    Ok(())
+}
+
+#[cfg(all(test, feature = "s3", feature = "nats"))]
+mod scale_layout_env_tests {
+    use super::{ScaleLayoutEnv, scale_layout_from_values};
+
+    fn values(
+        endpoint: Option<&str>,
+        access_key: Option<&str>,
+        secret_key: Option<&str>,
+        nats_address: Option<&str>,
+        bucket: Option<&str>,
+        region: Option<&str>,
+    ) -> ScaleLayoutEnv {
+        scale_layout_from_values(
+            endpoint.map(str::to_string),
+            access_key.map(str::to_string),
+            secret_key.map(str::to_string),
+            nats_address.map(str::to_string),
+            bucket.map(str::to_string),
+            region.map(str::to_string),
+        )
+    }
+
+    #[test]
+    fn scale_layout_env_is_all_or_nothing() {
+        assert_eq!(
+            values(None, None, None, None, None, None),
+            ScaleLayoutEnv::Absent
+        );
+        assert_eq!(
+            values(Some("http://minio:9000"), None, None, None, None, None),
+            ScaleLayoutEnv::Incomplete
+        );
+
+        match values(
+            Some("http://minio:9000"),
+            Some("minioadmin"),
+            Some("minioadmin"),
+            Some("nats:4222"),
+            None,
+            None,
+        ) {
+            ScaleLayoutEnv::Ready(layout) => {
+                assert_eq!(layout.endpoint, "http://minio:9000");
+                assert_eq!(layout.access_key, "minioadmin");
+                assert_eq!(layout.secret_key, "minioadmin");
+                assert_eq!(layout.bucket, "shippin.tech");
+                assert_eq!(layout.region, "eu-central-1");
+                assert_eq!(layout.nats_address, "nats:4222");
+            }
+            other => panic!("expected a complete layout, got {other:?}"),
+        }
+
+        match values(
+            Some("http://minio:9000"),
+            Some("minioadmin"),
+            Some("minioadmin"),
+            Some("nats:4222"),
+            Some("mail"),
+            Some("us-east-1"),
+        ) {
+            ScaleLayoutEnv::Ready(layout) => {
+                assert_eq!(layout.bucket, "mail");
+                assert_eq!(layout.region, "us-east-1");
+            }
+            other => panic!("expected a complete layout, got {other:?}"),
+        }
+    }
+}

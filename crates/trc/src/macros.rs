@@ -1,0 +1,28 @@
+
+
+#[macro_export]
+macro_rules! location {
+    () => {{ concat!(file!(), ":", line!()) }};
+}
+
+#[macro_export]
+macro_rules! bail {
+    ($err:expr $(,)?) => {
+        return Err($err);
+    };
+}
+
+#[macro_export]
+macro_rules! error {
+    ($err:expr $(,)?) => {
+        let err = $err;
+        let event_id = err.as_ref().to_id() as usize;
+
+        if $crate::Collector::is_metric(event_id) {
+            $crate::Collector::record_metric(*err.as_ref(), event_id, err.keys());
+        }
+        if $crate::Collector::has_interest(event_id) {
+            err.send();
+        }
+    };
+}

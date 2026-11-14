@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-03-control-plane-branch",
+  "title": "Svelte UI operational, control plane on a local branch",
+  "costar": {
+    "context": "The maintainer wants every application screen in Svelte and the control plane kept off the public line.",
+    "objective": "Prove the Svelte app runs, and put the control plane screens on local branch control-plane without pushing.",
+    "style": "Working SvelteKit routes and one local git branch.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "Public screens are login and calendar RSVP. The control plane is the unpushed branch."
+  },
+  "sources": [
+    {"kind": "code", "ref": "ui/src/routes/(account)/login/+page.svelte"},
+    {"kind": "code", "ref": "ui/src/routes/(calendar)/rsvp/+page.svelte"},
+    {"kind": "code", "ref": "ui/src/lib/ai-runtime/control-plane/kernel/instruction.md"},
+    {"kind": "code", "ref": "crates/jmap-proto/src/request/method.rs"},
+    {"kind": "code", "ref": "crates/registry/src/schema/structs.rs"},
+    {"kind": "code", "ref": "crates/http/src/api/mod.rs"},
+    {"kind": "code", "ref": "crates/scim/src/request.rs"},
+    {"kind": "code", "ref": ".cursor/rules/product-boundaries.mdc"}
+  ],
+  "concerns": [
+    "A branch in this public GitHub repo is public if it is pushed.",
+    "Tenant/set has no fixture, so a guessed quota write could store a bad record.",
+    "The engine still embeds the gzipped HTML pages, so the running binary does not yet serve the Svelte build.",
+    "Committing the whole ui tree onto the private branch and then checking out main would delete the public screens from the working tree."
+  ],
+  "context": "Login and RSVP already build. The control plane kernel is only markdown. Mail invite and alarm stay HTML because mail clients render HTML.",
+  "current_state": "ui/ is untracked on main. npm run build already exited 0. The control plane has no routes.",
+  "target_design": "Public Svelte screens stay uncommitted on main. Control plane routes, catalog, and adapter live only in a commit on local branch control-plane. That branch is not pushed. The control plane reads x:Tenant/get, x:Domain/get, x:Account/get, and GET /scim/ServiceProviderConfig. It does not send a quota write.",
+  "changes": [
+    "State in the product rule that the control plane is local branch control-plane.",
+    "Add Svelte routes under ui/src/routes/(admin)/admin for directory, domain, account, and scim.",
+    "Add catalog components and ui/src/lib/adapter/registry.ts.",
+    "Commit only those paths on branch control-plane.",
+    "Check out main so those paths leave the public working tree.",
+    "Open the public screens in a browser and confirm they render."
+  ],
+  "boundaries": [
+    "Do not push.",
+    "Do not commit the public UI onto main.",
+    "Do not rename Rust modules.",
+    "Do not send x:Tenant/set.",
+    "Mail bodies stay the HTML files the engine already parses.",
+    "Do not mark deployable-product done."
+  ],
+  "verification": [
+    {
+      "name": "svelte-check",
+      "command": "npm run check",
+      "proves": "The Svelte app, including the control plane routes, typechecks before the branch split.",
+      "expected": "exit 0 and 0 errors",
+      "result": "npm run check exited 0 with 0 errors while the control plane routes were present, and again on main after those files were removed."
+    },
+    {
+      "name": "branch-split",
+      "command": "git status --short && git log control-plane -1 --oneline && git branch -vv",
+      "proves": "The control plane commit exists only on the local branch and main's working tree no longer has those files.",
+      "expected": "control-plane is local, not tracking a remote; admin routes are absent on main",
+      "result": "Local main c704545 deletes the control plane paths. Branch control-plane e0d54c5 still has them and has no upstream. origin/main remains f30f333, which still contains those paths, because the deletion was not pushed."
+    }
+  ],
+  "status": "implemented"
+}

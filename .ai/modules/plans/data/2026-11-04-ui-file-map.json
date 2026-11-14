@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-04-ui-file-map",
+  "title": "UI file map for absorption into Svelte on the Rust engine",
+  "costar": {
+    "context": "The running product is the Rust server on port 8080 and the Svelte app on port 5174. The old webui zip is not in this tree and 404s on boot. Four HTML templates are still compiled into the binary. Most JMAP modules have no screen.",
+    "objective": "Name every UI file and every Rust module that still has to be authored as Svelte before this server can be hosted as cloud mail.",
+    "style": "A file map with one fate per path: absorb, keep as a mail body, or author because no file exists yet.",
+    "tone": "Direct.",
+    "audience": "The maintainer and the next coding agent.",
+    "response": "The map, with the absorption order. No new screens are built by this record."
+  },
+  "sources": [
+    {"kind": "code", "ref": "ui/src"},
+    {"kind": "code", "ref": "resources/html-templates"},
+    {"kind": "code", "ref": "crates/http/src/request.rs"},
+    {"kind": "code", "ref": "crates/common/src/config/groupware.rs"},
+    {"kind": "code", "ref": "crates/common/src/manager/defaults.rs"},
+    {"kind": "code", "ref": "crates/jmap/src"},
+    {"kind": "code", "ref": "crates/jmap/src/registry/mapping"}
+  ],
+  "concerns": [
+    "The webui zip at crates/common/src/manager/defaults.rs WEBUI_PINNED_URL is not in this repository. Inventing its internal files would be a false map.",
+    "Mail bodies are HTML on purpose. Treating calendar-invite.html and calendar-alarm.html as pages would put email templates into the app router.",
+    "Admin registry screens belong on the control-plane branch. Putting them on main violates the product rule that main does not carry ui/src/routes/(admin).",
+    "A Svelte list that returns empty is not proof the module is absorbed. Absorption means the screen calls that module's JMAP methods through ui/src/lib/adapter."
+  ],
+  "context": "Cloud mail is this same binary plus a Svelte client. The client already signs in and reads Mailbox/get and Email/get. The rest of the engine has no screen, or still has an HTML page the binary serves beside Svelte.",
+  "current_state": "ui/ has 13 Svelte components and 9 routes. Rust embeds login and calendar RSVP HTML. Rust parses calendar invite and alarm HTML as mail bodies. JMAP has 16 product modules with no catalog component. The /admin and /account bundle is a missing zip, not a set of files.",
+  "target_design": "One SvelteKit tree in ui/. Routes call ui/src/lib/adapter. Catalog components render and do not fetch. Mail bodies stay the HTML templates. Each JMAP module named below gets a catalog folder only when that screen is authored. The engine stops embedding login.html.min.gz and calendar-rsvp.html.min.gz after those Svelte routes are the ones the server serves.",
+  "changes": [
+    "Absorb resources/html-templates/login.html into ui/src/lib/catalog/login and ui/src/routes/(account)/login. Rust still serves the gzip from crates/http/src/request.rs on /login and /device.",
+    "Absorb resources/html-templates/calendar-rsvp.html into ui/src/lib/catalog/calendar-rsvp and ui/src/routes/(calendar)/rsvp. Rust still serves the gzip from crates/http/src/request.rs on /calendar/rsvp.",
+    "Keep resources/html-templates/calendar-invite.html and calendar-alarm.html as mail bodies. Their catalog folders stay notes. The bytes live in crates/common/src/config/groupware.rs.",
+    "Author the missing mailbox-client screens against the existing JMAP modules: thread, submission, sieve, vacation, identity, quota, principal, participant_identity, share_notification.",
+    "Author calendar-event and calendar-event-notification. The calendar route today only lists CalendarEvent/query.",
+    "Author addressbook. The contacts route today only lists ContactCard/query.",
+    "Leave blob, websocket, changes, and jmap api as protocol modules with no screen.",
+    "Author registry screens from crates/jmap/src/registry/mapping on the control-plane branch, not on main. The webui zip is not a source."
+  ],
+  "boundaries": [
+    "Mail message bodies and the invite and alarm templates stay HTML and CSS.",
+    "The missing webui zip is not vendored and its unseen files are not invented.",
+    "main does not gain ui/src/routes/(admin) or ui/src/lib/ai-runtime/control-plane.",
+    "No license file, no shippin.cloud host, no second mail server, no Remotion.",
+    "Catalog components do not import the adapter."
+  ],
+  "verification": [
+    {
+      "name": "html-templates-present",
+      "command": "Get-ChildItem resources/html-templates -Name",
+      "proves": "The four source templates and their minified bytes are the whole HTML UI in this tree. A missing name means the map skipped a file.",
+      "expected": "calendar-alarm.html, calendar-alarm.html.min, calendar-invite.html, calendar-invite.html.min, calendar-rsvp.html, calendar-rsvp.html.min, calendar-rsvp.html.min.gz, login.html, login.html.min, login.html.min.gz",
+      "result": "calendar-alarm.html, calendar-alarm.html.min, calendar-invite.html, calendar-invite.html.min, calendar-rsvp.html, calendar-rsvp.html.min, calendar-rsvp.html.min.gz, login.html, login.html.min, login.html.min.gz"
+    },
+    {
+      "name": "jmap-modules-present",
+      "command": "Get-ChildItem crates/jmap/src -Directory -Name",
+      "proves": "Every engine module the map assigns a screen or a protocol fate is on disk. An extra directory means the map is incomplete.",
+      "expected": "addressbook, api, blob, calendar, calendar_event, calendar_event_notification, changes, contact, email, file, identity, mailbox, participant_identity, principal, push, quota, registry, share_notification, sieve, submission, thread, vacation, websocket",
+      "result": "addressbook, api, blob, calendar, calendar_event, calendar_event_notification, changes, contact, email, file, identity, mailbox, participant_identity, principal, push, quota, registry, share_notification, sieve, submission, thread, vacation, websocket"
+    }
+  ],
+  "status": "draft"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "calendar",
+  "a2ui": "Calendar",
+  "variants": [
+    "month",
+    "agenda",
+    "event",
+    "event-form"
+  ],
+  "engine": "crates/jmap/src/calendar_event",
+  "routes": [
+    "/calendar"
+  ],
+  "emits": [
+    "calendar.event.created",
+    "calendar.event.updated",
+    "calendar.event.deleted",
+    "calendar.invite.sent",
+    "calendar.invite.answered",
+    "calendar.calendar.created"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/mail/kernel/instruction.md"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "panel",
+  "a2ui": "DomainPanel",
+  "variants": [
+    "signup",
+    "manage"
+  ],
+  "engine": "crates/http/src/shippin/panel.rs",
+  "routes": [
+    "/signup",
+    "/manage"
+  ],
+  "emits": [
+    "panel.domain.created",
+    "panel.dns.published",
+    "panel.mailbox.created",
+    "panel.mailbox.deleted",
+    "panel.alias.created",
+    "panel.catchall.changed",
+    "panel.domain.closed"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/panel/kernel/instruction.md"
+}

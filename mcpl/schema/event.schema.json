@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shippin.tech/mcpl/v0/event.schema.json",
+  "title": "MCPL v0 event",
+  "description": "The one envelope every UI event uses: product actions, metrics, traces and scripted (AI or lesson) events. An app event is emitted only after the action it names has succeeded on the server.",
+  "$defs": {
+    "eventType": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9][a-z0-9_-]*)+$",
+      "description": "Dotted name. App events use <area>.<object>.<past-tense verb>, for example mail.message.sent."
+    }
+  },
+  "type": "object",
+  "required": ["id", "timestamp", "channel", "source", "eventType", "resource", "status", "severity", "payload"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "channel": { "enum": ["app", "metrics", "tracing", "delivery", "scripted"] },
+    "source": { "enum": ["portal", "scripted-ai"] },
+    "eventType": { "$ref": "#/$defs/eventType" },
+    "resource": { "type": "string", "minLength": 1, "description": "What the event is about, such as a domain or a mailbox." },
+    "status": { "enum": ["pending", "open", "completed", "cancelled", "failed", "info"] },
+    "severity": { "enum": ["info", "warn", "error"] },
+    "traceId": { "type": "string" },
+    "tenantId": { "type": "string" },
+    "actor": { "type": "string" },
+    "payload": { "type": "object", "description": "Never secrets: no passwords, keys or message bodies." }
+  }
+}

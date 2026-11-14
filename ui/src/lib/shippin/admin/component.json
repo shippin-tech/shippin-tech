@@ -1,0 +1,18 @@
+{
+  "id": "admin",
+  "a2ui": "AdminPanel",
+  "variants": [
+    "management",
+    "settings",
+    "account",
+    "first-run"
+  ],
+  "engine": "crates/jmap/src/registry",
+  "routes": [
+    "/shippin/admin"
+  ],
+  "emits": [
+    "setup.administrator.created"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/admin/kernel/instruction.md"
+}

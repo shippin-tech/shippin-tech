@@ -1,0 +1,36 @@
+{
+  "id": "agent",
+  "a2ui": "AgentBar",
+  "variants": [
+    "bar"
+  ],
+  "engine": "crates/http/src/shippin/mcp.rs",
+  "routes": [
+    "/shippin/admin"
+  ],
+  "emits": [],
+  "kernel": "ui/src/lib/ai-runtime/admin/kernel/instruction.md",
+  "actions": [
+    {
+      "name": "screen.read",
+      "title": "See the operator's screen",
+      "description": "Says which admin page the operator has open, its heading, and the actions that can run there. Changes nothing.",
+      "route": "/shippin/admin",
+      "input": { "type": "object", "additionalProperties": false },
+      "writes": false
+    },
+    {
+      "name": "screen.go",
+      "title": "Open a page of the admin panel",
+      "description": "Opens a page of the admin panel on the operator's screen, such as /shippin/admin/keys, so they see where the work happens. Only admin panel pages. Changes nothing.",
+      "route": "/shippin/admin",
+      "input": {
+        "type": "object",
+        "properties": { "route": { "type": "string", "description": "The page, starting with /shippin/admin." } },
+        "required": ["route"],
+        "additionalProperties": false
+      },
+      "writes": false
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "run-your-team",
+  "title": "Run your team",
+  "audience": "admin",
+  "steps": [
+    {
+      "id": "make-a-team",
+      "say": "Make a team. It gets its own address that reaches everyone in it.",
+      "where": "/shippin/admin/people",
+      "doneWhen": "team.group.created"
+    },
+    {
+      "id": "add-a-person",
+      "say": "Add a person and put them on the team.",
+      "where": "/shippin/admin/people",
+      "doneWhen": "team.person.added"
+    },
+    {
+      "id": "set-a-limit",
+      "say": "Edit someone and set how much storage they can use.",
+      "where": "/shippin/admin/people",
+      "doneWhen": "team.person.updated"
+    }
+  ]
+}

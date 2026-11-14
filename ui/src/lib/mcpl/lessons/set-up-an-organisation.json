@@ -1,0 +1,13 @@
+{
+  "id": "set-up-an-organisation",
+  "title": "Set up an organisation",
+  "audience": "admin",
+  "steps": [
+    {
+      "id": "make-an-organisation",
+      "say": "Make an organisation. Give it its domains, the person who runs it, and how many people and how much storage it can have.",
+      "where": "/shippin/admin/orgs",
+      "doneWhen": "org.saved"
+    }
+  ]
+}

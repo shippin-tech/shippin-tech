@@ -1,0 +1,216 @@
+{
+  "tools": [
+    {
+      "name": "ai.connection.test",
+      "title": "Test the AI service",
+      "description": "Asks the saved AI service one short question and reports its answer. Changes no setting.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Test the AI service",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "route": "/shippin/admin/ai",
+      "writes": false,
+      "secret": [],
+      "component": "assistant",
+      "emits": "ai.connection.tested"
+    },
+    {
+      "name": "ai.settings.save",
+      "title": "Set up the AI service",
+      "description": "Fills in and saves the AI settings: the kind of service, its address, the model and whether people are offered the assistant. Never a key: when the service needs one, the operator pastes it into the Key field themselves, and an empty key keeps the one already saved.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "openai",
+              "anthropic"
+            ],
+            "description": "openai for any OpenAI-compatible address (Ollama too), anthropic for Anthropic's API."
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "The service's address, starting with https:// or http://."
+          },
+          "model": {
+            "type": "string",
+            "description": "The model's name."
+          },
+          "assistant": {
+            "type": "boolean",
+            "description": "Whether to offer the assistant to people on this server."
+          }
+        },
+        "required": [
+          "kind",
+          "endpoint",
+          "model"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Set up the AI service",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "route": "/shippin/admin/ai",
+      "writes": true,
+      "secret": [],
+      "component": "assistant",
+      "emits": "ai.settings.saved"
+    },
+    {
+      "name": "keys.author",
+      "title": "Make the missing service keys",
+      "description": "Gives every service that has no key yet its own key, made at random by the server. Services that already have one are left alone.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Make the missing service keys",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "route": "/shippin/admin/keys",
+      "writes": true,
+      "secret": [],
+      "component": "keys",
+      "emits": "keys.authored"
+    },
+    {
+      "name": "keys.list",
+      "title": "See each service's keys",
+      "description": "Shows each service's keys on the Keys page: where each came from, where it is kept and whether it is in use. Never a key's bytes. Changes nothing.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "See each service's keys",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "route": "/shippin/admin/keys",
+      "writes": false,
+      "secret": [],
+      "component": "keys"
+    },
+    {
+      "name": "keys.replace",
+      "title": "Replace a service key",
+      "description": "Replaces one service's key with a new one made at random, or read from an environment variable or a file on the server. Its secrets are sealed again under the new key and the old key is destroyed. A key to paste is never passed here: the operator pastes it on the Keys page themselves.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "ai",
+              "sso",
+              "google",
+              "domain-proof"
+            ],
+            "description": "Which service's key to replace."
+          },
+          "from": {
+            "type": "string",
+            "enum": [
+              "random",
+              "environmentVariable",
+              "file"
+            ],
+            "description": "Where the new key comes from. Default: random."
+          },
+          "name": {
+            "type": "string",
+            "description": "For environmentVariable: the variable's name."
+          },
+          "path": {
+            "type": "string",
+            "description": "For file: the full path of the file on the server."
+          }
+        },
+        "required": [
+          "service"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Replace a service key",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "route": "/shippin/admin/keys",
+      "writes": true,
+      "secret": [],
+      "component": "keys",
+      "emits": "keys.replaced"
+    },
+    {
+      "name": "screen.go",
+      "title": "Open a page of the admin panel",
+      "description": "Opens a page of the admin panel on the operator's screen, such as /shippin/admin/keys, so they see where the work happens. Only admin panel pages. Changes nothing.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "route": {
+            "type": "string",
+            "description": "The page, starting with /shippin/admin."
+          }
+        },
+        "required": [
+          "route"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Open a page of the admin panel",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "route": "/shippin/admin",
+      "writes": false,
+      "secret": [],
+      "component": "agent"
+    },
+    {
+      "name": "screen.read",
+      "title": "See the operator's screen",
+      "description": "Says which admin page the operator has open, its heading, and the actions that can run there. Changes nothing.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "See the operator's screen",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "route": "/shippin/admin",
+      "writes": false,
+      "secret": [],
+      "component": "agent"
+    }
+  ]
+}

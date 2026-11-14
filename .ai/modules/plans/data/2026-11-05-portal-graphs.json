@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-graphs",
+  "title": "Render the portal and the delivery trace as Svelte Flow graphs",
+  "costar": {
+    "context": "The maintainer said the conversion was being done halfway. The portal lists and the metrics refusal are not the app. The app they built needs Svelte Flow graphs, and those graphs have to be the absorbed portal, with one catalog and one set of routes.",
+    "objective": "Replace the empty-shell graph with graphs whose nodes are the portal layouts and the delivery-trace phases from assets/webui.",
+    "style": "One plan, then the shared graph and the two portal graphs.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "Management, Settings, and Account are Svelte Flow graphs on the dashboard. Delivery tests is the portal phase graph, from MX Lookup through DANE Verify. Node links open the portal screen."
+  },
+  "sources": [
+    {"kind": "code", "ref": "ui/src/lib/flow/Graph.svelte"},
+    {"kind": "code", "ref": "ui/src/lib/flow/GraphMount.svelte"},
+    {"kind": "code", "ref": "ui/src/lib/flow/CatalogNode.svelte"},
+    {"kind": "code", "ref": "ui/src/lib/flow/mail/nodes.ts"},
+    {"kind": "code", "ref": "ui/src/lib/portal/catalog.ts"},
+    {"kind": "code", "ref": "assets/webui/assets/DeliveryTracePage-CZs7z0nn.js"},
+    {"kind": "code", "ref": ".cursor/rules/product-boundaries.mdc"}
+  ],
+  "concerns": [
+    "@xyflow/svelte cannot be imported during SSR. GraphMount must keep the dynamic import.",
+    "The same view name appears in more than one layout. Node ids have to include the layout name or Svelte Flow collapses them.",
+    "fitView on the delivery diagonal pushed MX Lookup off the canvas. A phase chain is one horizontal row and the view starts at the first node. Fit view stays a control.",
+    "The delivery graph uses the phase labels in the portal bundle. It does not start an SMTP delivery.",
+    "Catalog components do not import the flow package. The route composes the graph."
+  ],
+  "context": "Svelte Flow is already the graph tool. Its nodes were mailbox, email, calendar, contact, and file, and they linked to the empty shells. The portal navigation and the delivery-trace phases are the structures that were actually built.",
+  "current_state": "Graph.svelte chains whatever list it is given into a grid. The dashboard has cards and a metrics refusal. Delivery tests has no graph.",
+  "target_design": "Graph items carry id, label, href, and an optional parent. Edges follow parents. The dashboard draws one graph for each portal layout from the generated catalog. Delivery tests draws the nine portal phases in order. CatalogNode remains the only node type, and its link uses nodrag nopan.",
+  "changes": [
+    "Record this slice.",
+    "Teach the shared graph to lay out a tree and to keep a short list fitted.",
+    "Build the three layout graphs from the portal catalog and mount them on the dashboard.",
+    "Build the delivery phase graph from the portal phase labels and mount it on Delivery tests.",
+    "Point the older mail and docs graph links at the portal screens those words already have."
+  ],
+  "boundaries": [
+    "Do not paste the minified portal bundle into ui/.",
+    "Do not start a live SMTP delivery from this slice.",
+    "Do not add a second node component.",
+    "Do not build the Astro site.",
+    "Catalog components do not fetch and do not import Svelte Flow."
+  ],
+  "verification": [
+    {
+      "name": "graphs-match-the-portal",
+      "command": "node --experimental-strip-types scripts/prove-portal-graphs.ts",
+      "proves": "The Management graph links Domains to /portal/x:Domain, the delivery graph links MX Lookup to TCP Connection, and the catalog does not import Svelte Flow. A graph that still points at /mail fails.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The graph, the dashboard, and the delivery route typecheck together.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

@@ -1,0 +1,118 @@
+name: shippintech-local
+services:
+  foundationdb:
+    image: foundationdb/foundationdb:7.4.6
+    environment:
+      FDB_NETWORKING_MODE: container
+    volumes:
+      - fdb-config-v2:/var/fdb
+      - fdb-data-v2:/var/fdb/data
+      - fdb-logs-v2:/var/fdb/logs
+    healthcheck:
+      test: [CMD-SHELL, "fdbcli --exec 'status' --timeout 3 >/dev/null 2>&1"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+  fdb-init:
+    image: foundationdb/foundationdb:7.4.6
+    depends_on:
+      foundationdb: {condition: service_started}
+    volumes:
+      - fdb-config-v2:/var/fdb
+      - ./init-fdb.sh:/init-fdb.sh:ro
+    entrypoint: [bash, /init-fdb.sh]
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    environment:
+      MINIO_ROOT_USER: ${LOCAL_S3_USER:?Create .env first}
+      MINIO_ROOT_PASSWORD: ${LOCAL_S3_PASSWORD:?Create .env first}
+    command: server /data --console-address :9001
+    volumes:
+      - objects:/data
+  minio-init:
+    build:
+      context: .
+      dockerfile: Dockerfile.minio-init
+    depends_on: [minio]
+    environment:
+      LOCAL_S3_USER: ${LOCAL_S3_USER}
+      LOCAL_S3_PASSWORD: ${LOCAL_S3_PASSWORD}
+    entrypoint: [/bin/sh, -c]
+    command:
+      - 'until mc alias set local http://minio:9000 "$$LOCAL_S3_USER" "$$LOCAL_S3_PASSWORD" >/dev/null 2>&1; do sleep 2; done; mc mb --ignore-existing local/shippin-local'
+  nats:
+    image: nats:2
+    command: [--jetstream, --store_dir, /data]
+    volumes:
+      - nats-data:/data
+  mail:
+    image: ${LOCAL_MAIL_IMAGE:-shippintech-mail:local}
+    command: [--config, /var/lib/shippin.tech/config.json]
+    restart: unless-stopped
+    hostname: mail.local.test
+    depends_on:
+      fdb-init: {condition: service_completed_successfully}
+      minio-init: {condition: service_completed_successfully}
+      nats: {condition: service_started}
+    environment:
+      shippin.tech_HOSTNAME: mail.local.test
+      shippin.tech_PUBLIC_URL: http://127.0.0.1:28080
+      shippin.tech_RECOVERY_ADMIN: ${LOCAL_RECOVERY_ADMIN:-}
+      # Free plan, open for local testing. .test domains have no public DNS, so the
+      # ownership proof is skipped here only; the production compose cannot do this.
+      shippin.tech_PANEL_SIGNUP: open
+      # A domain shared with another mail system; the stand-in is in ui/e2e-live/split-domain.spec.ts.
+      shippin.tech_SPLIT_DOMAINS: split-domain.test
+      shippin.tech_SPLIT_RELAY: host.docker.internal:28025
+      # A stand-in for Google, started by ui/e2e-live/google.spec.ts on the host.
+      shippin.tech_SSO_ALLOW_PRIVATE: "1"
+      shippin.tech_GOOGLE_CLIENT_ID: local-client
+      shippin.tech_GOOGLE_CLIENT_SECRET: local-secret
+      shippin.tech_GOOGLE_REDIRECT_URL: http://127.0.0.1:28080/api/google/callback
+      shippin.tech_GOOGLE_AUTH_URL: http://127.0.0.1:28099/o/oauth2/v2/auth
+      shippin.tech_GOOGLE_TOKEN_URL: http://host.docker.internal:28099/token
+      shippin.tech_GOOGLE_REVOKE_URL: http://host.docker.internal:28099/revoke
+      shippin.tech_GOOGLE_API_BASE: http://host.docker.internal:28099
+      shippin.tech_PANEL_INSECURE_SKIP_DNS_PROOF: "1"
+      shippin.tech_PANEL_MAILBOXES: "3"
+      shippin.tech_PANEL_ALIASES: "4"
+      shippin.tech_PANEL_MAILBOX_MB: "256"
+      shippin.tech_PANEL_SIGNUPS_PER_HOUR: "1000"
+      shippin.tech_PANEL_SENDS_PER_DAY: "500"
+      shippin.tech_SCALE_S3_ENDPOINT: http://minio:9000
+      shippin.tech_SCALE_S3_ACCESS_KEY: ${LOCAL_S3_USER}
+      shippin.tech_SCALE_S3_SECRET_KEY: ${LOCAL_S3_PASSWORD}
+      shippin.tech_SCALE_S3_BUCKET: shippin-local
+      shippin.tech_SCALE_S3_REGION: us-east-1
+      shippin.tech_SCALE_NATS_ADDRESS: nats:4222
+    volumes:
+      - fdb-config-v2:/var/fdb:ro
+      - mail-data:/var/lib/shippin.tech
+    ports:
+      - 127.0.0.1:28081:8080
+      - 127.0.0.1:21443:443
+      - 127.0.0.1:21025:25
+      - 127.0.0.1:21465:465
+      - 127.0.0.1:21587:587
+      - 127.0.0.1:21993:993
+  web:
+    build:
+      context: ../..
+      dockerfile: deploy/local/Dockerfile.web
+    restart: unless-stopped
+    depends_on:
+      mail: {condition: service_healthy}
+    ports:
+      - 127.0.0.1:28080:80
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -O /dev/null http://127.0.0.1/portal"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  fdb-config-v2:
+  fdb-data-v2:
+  fdb-logs-v2:
+  objects:
+  nats-data:
+  mail-data:

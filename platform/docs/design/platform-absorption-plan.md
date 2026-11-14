@@ -1,0 +1,675 @@
+# Shippin platform absorption plan
+
+Status: active execution plan, reconciled 2026-11-06 against `main` at
+`82e7e24b1fb40a540f5e0de1a072b1530bd9a9dd` at packet start. This describes target contracts and
+acceptance gates; it does not claim unimplemented workflows are live. The
+[capability ledger](capability-absorption.md) holds source-by-source evidence
+and dispositions. Exact-head Checks run `42314073779` passed on that exact
+12-job head. The current ignored packet
+`2026/11/ee85788b-eca3-4a9b-ab12-640ef0c02db6` contains the full execution plan,
+source baseline and work journal. Earlier packets document completed slices;
+they do not complete this full objective.
+
+## Current execution checkpoint (2026-11-06)
+
+Canonical `main` was `82e7e24b1fb40a540f5e0de1a072b1530bd9a9dd`, clean and synchronized with `origin/main` at packet start. The service-probe redirect/status fix `e1adde0` passed `bash scripts/check.sh` and exact-head Checks run `42301847324` (12 jobs). The documentation correction `31310ff` passed the same local check and exact-head run `42302600010`. The host enrollment redirect guard and ownership/acceptance map passed exact-head Checks run `42303761981` (12 jobs). The durable Incus target-health implementation is on main in `bcac104`; hosted PostgreSQL tests exposed an enrollment prerequisite and an unordered test assertion, corrected in `68d474e` and `eb43240`. The latest completed plan checkpoint passed `bash scripts/check.sh` and exact-head Checks run `42314073779` (12 jobs). Hosted PostgreSQL suites exercised migration, command replay, recovery and reconciliation. Direct Windows `go test ./internal/enroll` still reports pre-existing Unix config and file-mode assumptions; Linux CI ran `go test ./...` successfully. No live provider or AgentHub target is available.
+
+The latest provider slice persists bounded API reachability observations separately from guest inventory, keyed to provider configuration revision, in the existing infrastructure view. It does not prove a guest OS or declared application is healthy. Review found the reconciler treated Incus `Running` read-back as application `passing`; commit `06ca323` corrected this to unknown and blocked ready without a positive application probe. Commits `bcac104`, `68d474e` and `eb43240` add target-bound durable host commands/results, host-local Incus ownership and managed-network read-back, bounded TCP/HTTP probing, and lease/generation-fenced reconciliation. Only a verified pass yields ready; verified failure yields degraded; no result stays unknown. Queueing does not require an enrolled credential, while retrieval/result submission still requires the authenticated active host. PostgreSQL tests and the exact-head workflow verify command persistence/replay, recovery and the negative paths. The existing deployment view presents provider and application-health observations separately. No live Incus, AgentHub, Vaultix, Cloudflare or Tailscale operation has been run, so service health has not been proven against a real target.
+
+The existing platform-health registry is already operator-configurable in the canonical API and panel: create/edit/disable/check, bounded cadence, revision-fenced observations/history and optional provider resource joins are implemented. Review found its HTTP status rule classified redirects as healthy while correctly refusing to follow them. Commit `e1adde0` makes only 2xx responses healthy and tests 2xx, 3xx, 4xx and 5xx plus the no-follow negative path. Exact-head Checks run `42301847324` passed all 12 jobs. This corrects service-health status; it does not implement target-scoped deployment health or close the richer metrics/resource gaps in stage 7.
+
+The host enrollment contract originally redeemed a one-time token, stored a credential locally and sent heartbeats only. Commit `0080ebe` ensures a credential-bearing enrollment or heartbeat request never follows an HTTP redirect; the regression test proves the redirect destination receives no request. Exact-head Checks run `42303761981` passed all 12 jobs. The current packet extends that contract with a typed durable command/result channel while keeping the existing redirect guard.
+
+The target-health packet is implemented under canonical owners: typed heartbeat commands, a `shippin_server_commands` migration, target-bound result storage, host-local Incus ownership/network read-back, bounded TCP/HTTP probing, and lease/generation-fenced result reconciliation. Design and failure behavior are recorded in [`deployment-health-probes.md`](deployment-health-probes.md). `bash scripts/check.sh` and exact-head Checks run `42310489066` pass; hosted PostgreSQL exercised the migration-backed command replay and deployment worker tests. The live Incus acceptance gate remains open.
+
+A running review then found a state-transition defect: after queueing a target
+probe the worker also recorded `runtime_unsupported`, changing observed state
+to failed before the host had a chance to return the result. The worker now
+returns `health_pending` while preserving observed `unknown`, then reconciles an
+authenticated passing result to ready. A migration-backed test covers both the
+pending and completed-result transitions. The disposable Incus acceptance gate
+remains open.
+
+All requested scope remains in this register and the ignored full execution plan. Work remains ordered by prerequisites: source audit and rights; provider declarations/lifecycle; AgentHub authorization; durable deployment/build; managed engines; networking; dynamic service health/resources; sole-panel developer/rollout; then archive decisions. A screen, catalog row, schema or mocked response does not close runtime behavior. Each bounded packet must update the plan and ledger, run contribution checks, commit to `main`, push and wait for all 12 current hosted jobs before dependent work.
+
+## Execution map: canonical ownership and work products
+
+Use this map to turn each historical feature into a reviewed Shippin capability.
+The source checkout is evidence; it is never the destination. Preserve each
+checkout and its dirty files. Before adopting any specific implementation, record
+its exact commit/path, license and asset rights, dependencies, threat boundary,
+failure behavior and tests in the capability ledger. A missing right or unsafe
+boundary means defer or reject that source implementation and author a clean
+Shippin design from the product requirement.
+
+| Workstream | Canonical product files | Required authored result | Completion evidence |
+|---|---|---|---|
+| Incus infrastructure | `internal/hv/incus/`, `internal/api/infra*.go`, `internal/servers/`, existing infrastructure feature under `web/src/features/infrastructure/` | UI-managed endpoint, credential source, test/edit, capabilities and provider-specific lifecycle; stable server identity and operation history | API and provider tests for valid/invalid credentials, denied/malformed responses, task failures, retries and read-back; disposable Incus evidence before advertising guest/service deploy |
+| Proxmox / Shippin Prox | `internal/hv/proxmox/`, provider-scoped API handlers, existing infrastructure feature | UI-managed PVE endpoints/nodes, scoped credentials, resource/guest inventory, task lifecycle, and a separate Proxmox application runtime contract; `proxmox` remains the provider enum and Warden remains provenance only | Fake/API negative paths plus disposable PVE create/start/health/update/remove and restart-recovery evidence; until then expose only verified inventory and guest operations |
+| Deployment control plane | `internal/deployments/`, `internal/api/deployment_*.go`, `internal/db/migrations/`, `internal/jobs/`, `cmd/console`, `web/src/features/deployments/` | Immutable validated generations, target selections, durable jobs, AgentHub JIT decision per exact write, provider-specific executors, read-back, health and truthful rollback/removal status | PostgreSQL replay/fencing/denial/recovery tests; provider simulators; per-provider disposable target; no `ready` without configured application probe and observed success |
+| Catalog and custom source | `internal/catalog/`, bounded builder package (not catalog HTTP handlers), catalog API/OpenAPI, existing catalog/deployment UI | UI-managed repository or OCI source, immutable revision/digest, provenance, schema-validated service config, isolated bounded build and cancellation | Floating refs rejected, credentials excluded from URL/logs, egress/resource/time/concurrency limits tested; built image read back by digest before deployment |
+| Managed data engines | new `internal/managed/` package with `shippin_` migrations, provider adapter contract, catalog definitions, existing service/deployment UI | Engine-specific PostgreSQL, Dragonfly, Redis and ClickHouse provisioning, secret rotation, network policy, health, upgrade and backup/restore lifecycle; shared API model only where semantics truly match | Independent per-engine integration and restore tests, isolation proof, capacity limits, failure recovery and provider matrix; no database is called turnkey until this passes |
+| Connectivity | `internal/networking/`, migrations `041`/`042` plus additive migrations, networking APIs and existing infrastructure networking UI | Separate observed inventory from Shippin-managed writes; scoped Cloudflare/Tailscale/custom setup, attachment to stable system IDs, credential rotate/revoke, AgentHub JIT review for external writes | Permission-scope tests, redaction, denial/timeout/no-mutation proof, provider read-back and detached/stale resource states; custom adapter schema and all new table names prefixed `shippin_` |
+| Platform services and resources | `internal/api/platform_health.go`, `internal/db/platform_health.go`, migration `046`, provider metrics APIs and existing Platform UI | Keep service definitions editable and persistent; add authorized secret-backed probes and fresh resource observations joined by stable IDs; retain explicit unknown/stale/down and provenance | Existing scheduler/registry tests plus concurrent-worker, secret-denial, stale observation, metrics failure and history/retention tests; never infer service health from provider power state |
+| Identity and review | Shippin system/servers owners, `internal/agenthub/`, audit and existing Platform/deployment UI; policy stays in AgentHub | Hostname is observed control-plane identity; aliases/tags are operator metadata; explicit AgentHub mapping; no Gold/second policy engine | Restart-persistent identity, provenance/freshness, ambiguous mapping blocked; AgentHub ticket/policy/version/action binding and stale/deny/timeout/lease-loss paths produce zero provider writes |
+| One panel and release | `web/` only, `cmd/console`, `cmd/shippin-hostd`, `install/`, `scripts/`, `docs/` | Colocated feature routes, validated UI configuration, clean standalone console/agent build and install/upgrade/rollback path; destinations within four actions | Clean-clone build and all contribution checks, route/action coverage, config round-trip, fresh install and upgrade/rollback evidence |
+
+### Ordered execution rule
+
+1. Finish source feature-family accounting without changing sibling checkouts.
+2. Complete provider declarations and safe resource inventory for both Incus and
+   Proxmox; retain provider-specific files and contracts.
+3. Target-scoped deployment health is implemented and passes hosted PostgreSQL
+   tests. Verify real pass/fail and restart recovery on disposable Incus, then
+   close the remaining complete Incus lifecycle. Do not widen service claims
+   before that live gate passes.
+4. Implement Proxmox application execution as its own plan version, step set,
+   authorization scope, runtime and target configuration; do not adapt Incus OCI
+   operation names to Proxmox.
+5. Add the bounded builder and prove immutable custom-source deployment.
+6. Bring up PostgreSQL as the first managed engine; then Dragonfly, Redis and
+   ClickHouse each get independent configuration and lifecycle proofs.
+7. Add provider-write connectivity after inventory-only behavior, credential
+   scopes, AgentHub action review and observed-state contracts are verified.
+8. Complete service/resource dashboards and one-panel clean install/build evidence.
+9. Reconcile every source row and dirty path, then produce archive recommendations.
+
+Every numbered step requires a concrete file-level plan, implementation, negative
+paths, contribution checks, explicit-path commit to `main`, push, and an all-green
+exact-head hosted run before dependent steps proceed. Absorption is capability
+behavior under canonical owners, not code volume transferred.
+
+
+Earlier deployment checkpoint `0722b96` passed all 13 jobs in run
+`42029507436`, including PostgreSQL API tests. No live Incus, Proxmox, AgentHub,
+Vaultix, Cloudflare or Tailscale operation has been run; archive readiness
+remains open.
+
+The reconciler invokes worker JIT AgentHub authorization and a one-time
+lease/generation/plan/step-bound dispatch claim for each implemented Incus
+operation. It ensures and reads back the deployment-owned persistent volume
+when declared, creates and reads back the digest-pinned OCI workload in a
+stopped state, then separately starts and reads back that exact reviewed
+workload. Power has its own intent, authorization, dispatch claim and outcome;
+ambiguous start is inspected read-only and never retried blindly. No Vaultix
+secret reveal is needed by the power step. A separately reviewed, JIT-authorized Incus remove step now stops and removes
+only the exact owned workload after snapshot preflight and read-back; ambiguous
+outcomes are inspected without blind retry and persistent data is preserved.
+Removal passed all 13 jobs in run `42039645110`. The worker still records
+`runtime_unsupported` after the supported Incus steps because configured
+application health, complete service lifecycle and Proxmox application runtime
+remain absent. The executable health step was found to contradict this documented
+gate by inferring application readiness from the provider's `Running` state; the
+current packet removes that inference. No live Incus test has run.
+
+The Incus OCI provider primitive supports digest-pinned image creation, bounded
+CPU/memory, optional deployment-owned persistent volume, ownership and
+generation read-back, run state and guarded removal. Runtime v3 adds
+config-to-environment bindings; the primitive projects bounded values into
+Incus `environment.*` config and checks read-back. Incus administrators can
+inspect stored environment config, so it is not a secret isolation boundary.
+The workload worker path resolves declared Vaultix references only after the
+provider trust acknowledgement and audits each reveal; values remain visible
+to Incus administrators. No live Incus process test has verified OCI
+environment behavior. Network exposure, service
+health, secret delivery, upgrade, backup/restore, Proxmox application execution
+and deployable catalog services remain open. Proxmox health rejects malformed
+responses and supports the documented 8/9 major window. Incus OCI pulls require
+server 7.3.0 or newer and use the REST API, following the upstream [OCI remote
+workflow](https://linuxcontainers.org/incus/docs/main/howto/images_remote/)
+and [application container path](https://linuxcontainers.org/incus/docs/main/howto/instances_create/).
+
+
+## Ordered delivery queue
+
+The order below is a dependency order. Each row closes only when its observable
+acceptance checks pass; a panel or catalog screen alone does not close a runtime
+capability. The outbox, generation-keyed jobs, lease-fenced outcomes and catalog
+recipes v1-v3 are implemented. Worker JIT AgentHub authorization and dispatch
+claims are integrated for Incus persistent-volume, workload create/start, and guarded removal
+steps. Complete service
+runtime, process health, network exposure, Proxmox application execution and
+production least-privilege AgentHub/Vaultix verification remain open.
+| Order | Work package | Canonical owners | Exit evidence | Current state / gate |
+|---|---|---|---|---|
+| 0 | Source inventory, one-panel ownership, migration rules and capability ledger | `docs/design/`, `third_party/warden-ct102` reference matrix | Every candidate row has source revision, observed behavior, destination, disposition, rights/security status and acceptance evidence | The imported `BACKLOG.md` is captured as a product requirement matrix; its source code/document is not a product runtime input. Cloud, Console, Mesh and remaining Warden feature-family rights/behavior reviews remain open. Historical worktrees are read-only and archive is prohibited. |
+| 1 | Provider declarations, credential-safe edits/tests, Incus and Proxmox guest lifecycle, resources and operation read-back | `internal/servers`, `internal/hv/{incus,proxmox}`, `internal/api`, `web/` | Disposable Incus and Proxmox lifecycle workflows, edit/test denial, read-back, task failure, auth denial and secret redaction | Core lifecycle and shared storage inventory exist. Proxmox physical disk listing and capacity are read-only. Full provider coverage and disposable-host evidence remain open. |
+| 2 | Stable Shippin system identity and AgentHub review authorization | system/identity owner, AgentHub adapter, API and audit | Exact action + system + resource + ticket hash + policy version decision; least-privilege identity; no-match, stale, denied, timeout and restart all block writes | Shippin identity mapping, generation-bound ticket preparation, exact action authorization and append-only decision provenance are implemented and covered by API/store tests. Disposable AgentHub coverage used synthetic principals. Production least-privilege principal permissions and live target-installation timeout/restart behavior remain open. Worker just-in-time authorization is used immediately before each implemented Incus dispatch; other provider writes remain unavailable. |
+| 3 | Deployment reconciliation and provider execution | `internal/deployments`, migrations, hostd, provider drivers, jobs, API/OpenAPI, `web/` | Transactional dispatch, fenced lease, immutable generation, provider-specific executor, restart/retry, read-back, health, idempotent removal and negative-path evidence | Incus storage ensure, OCI create/read-back, start/read-back, guarded remove and durable host-bound health probes use fresh AgentHub authorization and lease/generation-bound dispatch claims. A queued probe returns `health_pending` and leaves observed state unknown; an authenticated result is reconciled separately, and only a verified pass yields ready. Hosted PostgreSQL CI plus the current focused API test cover pending and completion; local disposable PostgreSQL verifies them against migrations. Remaining acceptance: disposable Incus pass/fail, host/console restart, target mismatch and current-generation fencing. Upgrades/rollback and Proxmox application execution remain open. |
+| 4 | Pinned source resolution and bounded builds | catalog/builder owner, isolated worker, secret resolver | Immutable input commit/digest, build provenance, bounded CPU/memory/time/storage/concurrency/egress, secret mounts, cancellation and cleanup | Not implemented. Start only after Incus live acceptance and the provider execution contract are closed. Must precede GitHub/custom Git deployment; OCI digest path still needs provider compatibility. |
+| 5 | Managed PostgreSQL, tenant application Auth, Dragonfly/Redis and ClickHouse | `internal/catalog`, `internal/deployments`, engine-specific adapters, migrations and existing `web/` | Per-engine versioned configuration, isolated target/storage/network, secrets and rotation, health/resources, upgrades, verified backup/restore and deletion; Shippin identity remains distinct from tenant application Auth | No managed engine is turnkey. PostgreSQL is first; optional Auth is a separately deployed product after its provenance/license review; ClickHouse has a separate role, resource and recovery contract; Dragonfly or Redis is chosen only for a concrete workload. Neon/Supabase inform workflow and developer experience, not a claim of equivalent storage architecture or full Supabase stack. See [`managed-services.md`](managed-services.md). |
+| 6 | Cloudflare Tunnel, Tailscale and custom connectivity management | `internal/networking`, API, migration, `web/` | Per-provider add/edit/test/rotate/revoke and supported mutations, stable system attachment, permission denials, redaction and observed-vs-managed state | Configured inventory/refresh exists. Provider mutation/attachment lifecycle remains open. |
+| 7 | Dynamic service health and resource views | platform-health registry, provider read APIs, `web/` | UI-managed service definitions; bounded persisted probes; truthful unknown/stale/down states; provider resource reads and independent failure display | Probe registry/configuration/history exists. Resource joins are partial; secret-backed auth and richer service metrics remain open. |
+| 8 | Sole-panel workflows, public core/private extension boundary and clean developer build | `web/`, `cmd/console`, installer/deploy, versioned optional service contracts, docs | 3–4 action navigation, configuration persistence, no dead controls, reproducible public build/install without private credentials, independently versioned private services, provenance/SBOM and install/upgrade evidence | One React panel exists. Private modules must use authenticated versioned service contracts or a separately resolved build artifact; no second panel/runtime plugin loader. Distribution, licensing and clean-install evidence remain open. |
+| 9 | Archive readiness | capability ledger and source owners | All useful source rows dispositioned, source changes/dirty user data preserved, rights and dependencies resolved, clear archive checklist | Not ready. Do not delete, reset, move or shut down source folders before user reviews the completed checklist. |
+
+### Immediate execution packet (current)
+
+The full ordered architecture and exit gates are in this document. The ignored,
+schema-validated full-scope session `2026/11/b54b453c-1a83-41a5-a945-d1614180fe37`
+and current source-hashed health packet `2026/11/115cde7d-49e5-43f0-81c8-7c708475b602`
+contain execution steps, evidence requirements and remaining unknowns. These
+local work records do not imply any unsupported stage is done.
+
+1. **Current checkpoint verified:** canonical `main` is `ce8fe8c`; exact-head
+   run `42297978561` passed all 12 jobs, including PostgreSQL integration,
+   panel, console/hostd build, install, upgrade and compose checks. The false-ready
+   correction and the panel's persisted health/provider event view passed local
+   `bash scripts/check.sh`. Local Windows has no `SHIPPIN_TEST_DATABASE_URL`;
+   PostgreSQL integration ran in hosted CI. No disposable/live provider is
+   available here.
+2. **Current source slice completed, not whole inventory:** the 12 Warden
+   implementation rows for local backups, certs, disks, logs and packages now
+   have explicit dispositions. Unsafe host-local operations are rejected as
+   source implementations; Proxmox disk inventory is credited only to its
+   independent driver implementation. Backup/restore, PVE certificate/log/apt
+   and fuller disk workflows remain open product requirements. The imported
+   `BACKLOG.md` items are mapped as product requirements; the source document
+   is not a product runtime input. Cloud, Console, Mesh and the rest of Warden
+   still require feature-level rights/dependency/security review.
+3. Continue the source audit in bounded family packets. For each candidate,
+   capture exact source revision/path, observed behavior, rights/provenance,
+   dependency and asset licenses, security boundary, tests/failure paths,
+   canonical owner and `adopt`/`re-author`/`reject`/`defer` disposition. Preserve
+   dirty worktrees. Never copy a source implementation wholesale.
+4. After source inventory, implement the ordered provider, AgentHub, deployment,
+   bounded build, managed-engine, network, health/resource and one-panel gates
+   above. Each product packet needs API/schema/UI/runtime/read-back and negative
+   path evidence; keep unsupported apply actions disabled. Postgres, Dragonfly,
+   Redis, ClickHouse, Cloudflare, Tailscale and custom integrations stay marked
+   design/inventory only until real lifecycle paths pass disposable-target
+   acceptance.
+5. For every packet, update this plan, the capability ledger and ignored journal;
+   run the relevant local checks from `CONTRIBUTING.md`, stage explicit paths,
+   commit directly to `main`, push, and confirm all 12 current hosted jobs pass before
+   starting dependent work. Do not claim live deployment without a live target.
+6. Prepare archive recommendations only after per-source code/rights/dirty-file
+   gates and clean-checkout developer build/install/upgrade/rollback evidence
+   pass. The user reviews those recommendations before any external folder is
+   archived or shut down.
+
+### Capability-by-capability execution register
+
+This register is the working definition of “absorbed.” A source feature is not
+complete because a similarly named screen, model, or file exists. For each row,
+the owner must connect configuration, persistence, API contract, UI action,
+runtime behavior, observed result, and negative-path evidence. The detailed
+source inventory and per-file Warden accounting remain in
+[`capability-absorption.md`](capability-absorption.md) and
+[`warden-capture-matrix.md`](warden-capture-matrix.md); those records determine
+what is useful and eligible for authoring. The order below is a hard dependency
+order, not a claim that all stages are currently implemented.
+
+| Stage | Capability slice to author in `shippin-platform` | Canonical destination | Required proof before closure |
+|---|---|---|---|
+| A | Source provenance, dirty-work preservation, license/dependency/security review; reconcile each Cloud, Console, Mesh and Warden feature family | `docs/design/`, source ledger and Warden matrix | Every source row has revision, source behavior, rights status, current owner, adopt/rewrite/reject disposition and linked behavior evidence. No sibling source is modified or archived. |
+| B | Stable Shippin system identity, hostname observation, operator aliases/tags, explicit AgentHub mapping | `internal/servers`, `internal/db`, `internal/api`, existing infrastructure UI | Identity persists through restart; aliases never authorize; mapping is verified against AgentHub and records freshness/provenance; ambiguous or stale mapping blocks. |
+| C | AgentHub-configured review preparation, exact operation snapshot, safe evidence, submit/review status and policy provenance | `internal/agenthub`, `internal/api`, `internal/db/migrations`, `web/` Platform settings and deployment details | Commits `6081250` and `c196b35` provide generation-bound ticket/evidence preparation, required review context, bounded redaction and status UI; local checks and all 13 CI jobs pass (`41938627494`). Commit `39b9d80` adds owner/admin authorization recheck for the exact action/ticket/policy/system, normalized denial events, append-only `shippin_deployment_events` provenance, OpenAPI and panel feedback. Focused Go tests/vet, panel/governance checks and all 13 CI jobs pass for this slice (`41942328098`); Windows-only full-suite limitations are recorded in the ledger. Synthetic fixture identities do not prove the least-privilege production AgentHub credential. Provider mutation stays blocked until deployment credential permissions and future worker-side reauthorization are verified. |
+| D | Multi-server Incus and Proxmox declarations, credential-safe edit/test, capability discovery, provider-local VM/container lifecycle, task polling/read-back and resource inventory | `internal/servers`, `internal/hv/incus`, `internal/hv/proxmox`, existing infra API/UI | Multiple configured endpoints work without source edits. Incus and Proxmox behavior stays provider-specific; authorization/audit precede writes; task failure, denial, retry, restart, deletion and observed read-back are covered on fakes and disposable hosts. |
+| E | Review-gated durable deployment reconciliation from desired generation to provider execution | `internal/deployments`, prefixed migrations, `cmd/console`, hostd/provider drivers, API/OpenAPI and `web/src/features/deployments` | The design and dependency contract is specified in [`deployment-reconciliation.md`](deployment-reconciliation.md); target health transport is specified in [`deployment-health-probes.md`](deployment-health-probes.md). The transactional outbox relays identifier-only, generation-keyed jobs through the existing leader and job runner. Incus volume ensure, create/start read-back and guarded removal have per-operation AgentHub decisions and lease/generation claims. The current packet adds persisted server commands/results and host-local verified probes. **Still open:** hosted database/replay tests, disposable Incus recovery and pass/fail evidence, complete deployment lifecycle, Proxmox application runtime and complete job/event UI linkage. |
+| F | Pinned GitHub/custom HTTPS Git/OCI resolution and isolated builds | `internal/catalog`, bounded builder owner, secret resolver contract, deployment UI | Immutable source digest and provenance; bounded time/CPU/memory/storage/concurrency/egress; cancellation and cleanup; credentials never appear in URLs/logs; no arbitrary privileged host commands. |
+| G | Turnkey PostgreSQL, Dragonfly, Redis and ClickHouse definitions and engine-specific lifecycle | existing managed-services owner, catalog/deployment contracts, provider adapters and `web/` | Explicit engine/version/image, placement, resource/storage/network/secrets; install, edit, upgrade, health, backup, restore and delete; tenant isolation and restore verification. Redis and Dragonfly compatibility is stated accurately. |
+| H | Cloudflare Tunnel, Tailscale and bounded custom integrations: configure/edit/test/rotate/revoke, attach to stable systems, manage supported provider resources | `internal/networking`, its prefixed schema/API and existing infrastructure UI | Least-privilege provider scopes and exact write support proven; observed inventory remains distinct from requested changes; denial, credential rotation, redaction and stale inventory pass. |
+| I | Nomen, Vaultix, Edge, Database, Operator and installation-added service health plus resources | platform health registry/observations, provider read APIs and existing overview/settings UI | UI-managed definitions; configured secret resolver only; bounded scheduling, persisted probes, freshness and provenance; resource metrics join by stable IDs. Missing or stale values stay unknown/stale and failed resource reads do not overwrite service reachability. |
+| J | Re-author each remaining Warden/Mesh/Cloud/Console useful feature (backup, restore, DNS/ACME, firewall, logs, runners, templates, workspaces and diagnostics) only into its owned bounded context | Existing `internal/backupcov`, provider/networking, project/workspace, audit, jobs or catalog owners as documented per source row | Each feature receives rights/security review and actual API/schema/UI/runtime/failure evidence. Shell, root file manager, arbitrary Docker/Compose, local account management, unsafe disk controls, site IDs and parallel panel/policy are explicitly rejected. |
+| K | One-panel navigation, fully configurable operator and tenant workflows, clean standalone developer build and rollout | `web/`, `cmd/console`, installers/deploy docs | Every implemented destination is reachable in at most four user actions; no dead/mock controls; config survives restart; clean checkout builds console and hostd, migrates, installs and upgrades with supported workflows proven. |
+| L | Archive decision for each historical checkout | capability ledger and user-review checklist | All useful source rows closed, local dirty data retained, rights/dependencies recorded, and exact remaining gaps listed. Archiving/deleting source trees requires a separate user decision after this evidence is reviewable. |
+
+#### Current Stage E slices: fenced outcomes and typed recipe contract
+
+The job runner cancels a handler when its renewable lease is lost, while the
+deployment store already fences writes by desired generation. A cancellation
+alone is not an atomic persistence fence: a worker can lose its lease between
+checking context and committing a deployment event. `RecordRuntimeUnavailable`
+now has a worker-only variant that locks and validates the live
+`deployment.reconcile` job row in the same transaction as the generation check,
+state update and failure event. An expired or replaced worker receives a
+normalized lease-loss error and writes nothing. The ordinary store helper
+remains only for isolated store setup/tests; the production reconciler uses the
+lease-fenced path. This proves durable outcome fencing only; it does not prove
+external provider-call fencing or enable execution.
+
+Commit `537f304` adds the matching `RecordReviewDecisionWithLease` store
+boundary. It locks and validates the live deployment reconcile job before the
+generation, review, ticket and append-only decision checks in the same
+transaction. PostgreSQL integration coverage exercises expired, replaced and
+current lease owners. This worker variant is not used by the operator-side `authorizeDeploymentAction`; the deployment worker invokes lease-fenced JIT authorization and decision persistence immediately before the Incus persistent-volume dispatch. Other provider operations remain unsupported.
+
+The catalog runtime declaration now has three versions. Before implementing each further provider operation, complete and enforce its required lifecycle recipe. Version 1 preserves the
+existing compatibility-only Incus/OCI marker. Version 2 requires CPU/memory,
+persistent storage size and normalized mount path, private/Edge exposure with
+declared ports, and a bounded TCP/HTTP health check. Version 3 retains that
+recipe and adds up to 16 environment variable bindings to declared scalar
+string config paths. The catalog UI edits the recipe through structured
+controls in the existing service form; new recipes start incomplete instead of
+assuming service-specific values, and API validation remains authoritative.
+Version 1 and 2 edits remain compatible. PostgreSQL rejects incomplete v2/v3
+shapes. Tenant discovery and immutable deployment generations carry the
+validated version. The target-configuration workflow discovers Incus pools
+and managed bridge/OVN networks, pins both in each generation, and revalidates
+them at request time. The Incus OCI primitive attaches and reads back the
+selected private NIC. This does not provide edge publication, secret delivery,
+an executor, health polling, upgrade, backup/restore or removal semantics;
+the worker must continue to fail closed with `runtime_unsupported` until the
+corresponding executor is proven.
+
+The target-configuration slice is authored in the existing deployment context.
+It adds tenant-assignment-scoped, read-only Incus pool and managed-network
+discovery; persists `target_config.storage.pool` and `target_config.network.name`
+alongside each immutable generation; shows live inventory in the existing
+deployment editor; and includes both selections in AgentHub's exact action hash
+and review artifact. Pool and network changes on an existing deployment are
+rejected until explicit migration lifecycles exist. The Incus primitive can
+attach and read back a private NIC, but the worker uses it only for persistent-volume ensure/read-back;
+workload networking and further provider calls remain disabled. Database-backed tests passed in CI run
+`41998288896` and a follow-up disposable-Postgres regression; this is not
+evidence of a live Incus deployment.
+
+Each implementation slice names its stage and source rows in the commit and
+journal, lists canonical files it owns, states what it excludes, and shows an
+acceptance result plus a denial/failure result. If an external contract is
+unavailable, keep its gate open and continue only independent work. Current
+active stage is E. AgentHub ticket preparation, operator-side exact-action
+authorization, lease-fenced decision persistence, desired-generation outbox and
+current unsupported-runtime reporting are on `main`; local Windows and Linux CI
+limitations, production AgentHub credential status and lack of a live provider
+are recorded in the evidence journal. The first provider deployment remains
+unimplemented and unavailable.
+
+### Stop conditions
+
+- AgentHub is unavailable, its policy has no matching explicit rule, its
+  decision is not typed and bound to the exact action/system/resource, the
+  ticket or policy hash changed, principal permissions are unverified, or the
+  system mapping is ambiguous: stop before provider mutation.
+- A provider response lacks successful task completion and read-back: retain a
+  failed/unknown state and event; never report ready.
+- A candidate source has unresolved license/provenance, dirty user work,
+  unbounded privileges, installation-specific assumptions or no tests: preserve
+  it and record the gap; do not copy it into the canonical tree.
+- CI is red on `main`: repair the baseline before adding the next change.
+
+## Product boundary
+
+`shippin-platform` is the only product repository and `web/` is its only panel.
+The Go control plane owns configuration, authorization, desired state, operation
+records and observed state. `cmd/shippin-hostd` owns bounded host-side execution.
+`internal/hv/incus` and `internal/hv/proxmox` own provider-specific operations.
+`internal/networking` owns external connectivity providers. `internal/catalog`
+owns reusable deployment definitions and source provenance. Managed services
+own engine-specific lifecycle and recovery behavior. AgentHub owns human-review
+policy, tickets, evidence and decisions.
+
+Historical panels, routes and Warden names remain source provenance only. Reuse
+means comparing behavior, then authoring it into the destination owner with its
+current contracts, tests and failure behavior. No server-specific hostname,
+address, tenant ID, credential or reviewer becomes a product default.
+
+## Target domain model
+
+- **System**: one stable Shippin ID for a physical or virtual system. Provider
+  identifiers and AgentHub machine IDs are explicit mappings. Hostname,
+  nickname, alias and tags are descriptive fields with source/time provenance;
+  they never become authorization keys.
+- **Provider connection**: one configured Incus or Proxmox API with sealed
+  credentials, TLS validation, discovered capabilities, test result and
+  freshness. A connection does not imply that a guest or service is deployed.
+- **Deployment definition**: a versioned, reviewable contract for a pinned
+  GitHub, custom HTTPS Git or OCI source, build context, declared inputs,
+  resource bounds, health checks, secret references and compatible target
+  capabilities. Mutable references, credentials in URLs, undeclared privileges
+  and unbounded commands are rejected.
+- **Deployment instance**: a durable desired generation and separately observed
+  provider state, linked to a system, definition version, operation history and
+  secret references. `pending`, `degraded`, `unknown`, `failed` and `ready` have
+  distinct meanings. Only provider read-back and a passing configured health
+  check can produce `ready`.
+- **Managed service**: a deployment instance with an engine-specific adapter.
+  PostgreSQL, Dragonfly, Redis and ClickHouse have independent version,
+  configuration, storage, upgrade and backup/restore capabilities. Shared
+  lifecycle plumbing does not erase differences between their data formats or
+  recovery semantics.
+- **Network connection**: a configured Cloudflare Tunnel, Tailscale or custom
+  provider integration. Its observed inventory is separate from requested
+  provider changes and from service attachment. Unsupported write operations
+  remain visibly read-only.
+- **Platform service**: a UI-managed service definition and its time-stamped
+  probes/resource observations for Nomen, Vaultix, Edge, Database, Operator and
+  any installation-added service. Missing or stale measurements remain
+  `unknown`/`stale`, never fabricated zeroes or operational status.
+- **Change review**: an AgentHub policy decision and hash-bound ticket/review
+  tied to the same stable Shippin system, exact action, provider resource,
+  evidence and rollback. Shippin does not keep a competing approver list or
+  authorize by hostname.
+
+New durable Shippin-owned tables use the `shippin_` prefix. Existing legacy
+tables are not renamed in place: each migration needs an additive backfill,
+compatibility window, stable IDs, rollback plan and upgrade test. Secret values
+are stored only by the configured secret owner; product rows contain references.
+
+## Platform health implementation contract
+
+The final service registry is a normalized PostgreSQL owner, not a JSON blob or
+a second panel. `shippin_platform_services` stores stable UUID, display name,
+kind, optional alias, HTTP(S) or TCP target, optional stable system/guest link,
+timeout, cadence, enabled state, update revision and audit timestamps. A target
+must have exactly one supported protocol; credentials remain unsupported until
+the configured Vaultix/SOPS resolver has a tested contract. Remove is a soft
+disable so observation history and provenance remain addressable.
+
+Migration imports the current `services.probes` platform override. A one-time,
+marked startup import adds installation-file probes only when no registry row
+already owns that stable ID; later startup must never resurrect a service the
+operator disabled or removed from the active set. Legacy definitions without an
+ID receive a deterministic UUID from their normalized name during import. After
+the migration, all add/edit/disable actions use the registry API, not the legacy
+settings key.
+
+The console scheduler claims due rows with database leases so two replicas do
+not scan the same service. It obeys the existing process-wide concurrency
+setting, per-service cadence (30–86,400 seconds), 1–10 second probe timeout,
+the 50-service batch bound and request cancellation. A successful or failed
+attempt appends a `shippin_platform_service_observations` row with service ID,
+config revision, observation time, configured/healthy state, nullable measured
+latency, redacted detail and optional provider-resource snapshot. A read endpoint
+does no network I/O. The explicit “check now” action uses the same bounded
+worker and persistence path.
+
+The overview joins current definitions to their latest observations. No prior
+row means `unknown`; an observation older than twice its configured cadence is
+`stale`; only a recent successful probe is `operational`. Provider resource
+availability stays separate from service reachability. Retention is configurable
+from 1 to 365 days (default 30) and pruning is bounded and scheduled. Tests cover
+upgrade/backfill, stable identity, lease contention, timeout/cancellation,
+redaction, stale/unknown states, retention and independent Incus/Proxmox resource
+failure before the UI calls this a live registry.
+
+### Implementation progress, 2026-11-04
+
+The AgentHub setup slice adds an audited operator API and existing-panel form for
+the endpoint and a write-only credential. Credentials are sealed with the
+installation session key and a fixed application-purpose context; responses,
+audit details and UI state expose only whether a credential exists. A new
+`shippin_agenthub_connection` migration stores the singleton endpoint and sealed
+bytes. HTTPS endpoint rejection, credential replacement/retention/clear,
+round-trip decryption, ciphertext storage, and audit behavior have focused tests.
+The same Platform page now offers a read-only policy check for an explicitly
+entered AgentHub tenant and displays only policy version/hash metadata. This can
+verify configured URL and credentials when an operator runs it; fixture tests
+cover the request and local CI has not contacted a live AgentHub. It does not
+validate Shippin system mapping, ticket lifecycle, quorum, service principal
+permissions or provider authorization. Single-guest power actions have since
+been implemented as an exact-action AgentHub-reviewed, one-shot flow with
+persistent Shippin provenance. Batch and other provider mutations remain
+unavailable. Live AgentHub policy/quorum and Incus/Proxmox execution are not
+verified; see the active packet status in
+[`../platform-consolidation-plan.md`](../platform-consolidation-plan.md).
+
+The first implementation slice is now authored in the canonical Go database/API
+owners and existing React admin/overview pages: migration 046 backfills the old
+database override; startup imports file-defined probes once without reactivating
+disabled IDs; operators can create, revision-edit, soft-disable/re-enable and
+check services; a leased 5-second scheduler writes results; overview reads use only
+the latest persisted observation; operators can inspect the newest 20 history
+entries; and retention defaults to 30 days with an audited 1–365 day override.
+The disposable PostgreSQL 16 run has exercised the legacy JSON backfill (including
+an orphaned provider link and an invalid target), registry store, leases,
+observations, retention pruning, API create/edit/stale revision/disable, a real
+refused local HTTP target, unknown/down/stale status, history read, and the
+no-network overview read path.
+
+This closes only the platform-health registry slice. Commit `c36b025` is on `main`
+and all 13 jobs in Checks run `41898917087` passed. A follow-up review restored the
+existing live hostd instance inventory alongside persisted probe observations. The overall source inventory, provider lifecycle completeness, executable
+deployment reconciler/build path, managed database runtimes, external-network
+mutation support, and AgentHub action-bound review remain open plan phases.
+
+## Operator navigation
+
+Keep workflows in the existing shell and group destinations so the usual path
+fits within four actions:
+
+| Starting point | Path | Main actions |
+|---|---|---|
+| Operator home | Infrastructure → Hosts & nodes → system detail | add/edit/test Incus or Proxmox; view guests, resources, operations and health |
+| Operator home | Deployments → Catalog → definition/instance | add source, validate, choose target, configure, deploy, inspect events and roll back |
+| Operator home | Services → Managed data → instance | provision PostgreSQL/Dragonfly/Redis/ClickHouse, configure, observe, back up/restore, upgrade |
+| Operator home | Infrastructure → Connectivity → connection/resource | configure Cloudflare/Tailscale/custom, test, refresh, rotate/revoke and attach where supported |
+| Operator home | Platform health → service detail | add/edit/disable probes, inspect freshness, latency, resources and events |
+| System detail | Review status → AgentHub ticket | inspect policy provenance and hash-bound review, then retry the same Shippin operation |
+
+Navigation visibility follows server-side capabilities and tenant scope. Buttons
+must call persisted APIs, show provider-backed results and expose recovery/error
+states. A design-only screen or saved catalog source is not a deployment.
+
+## Deployment runtime implementation contract
+
+The saved catalog source is metadata only. A deploy operation must create a durable
+desired generation, preserve the exact source and target snapshot, pass AgentHub's
+configured review gate, then dispatch a provider-capability-specific operation. The
+reconciler owns the transition from desired to observed state; the UI never infers
+success from an accepted request or a completed job alone.
+
+### Artifact and provider paths
+
+- **OCI image on Incus:** use Incus's native OCI application-container path when the
+  attached server advertises it. Require an explicit registry and sha256 digest,
+  record the resolved digest, and use provider read-back plus the configured health
+  check. Incus distinguishes OCI application containers from full-system containers
+  and VMs; keep those instance types separate in Shippin. See the
+  [Incus instance model](https://linuxcontainers.org/incus/docs/main/explanation/instances/),
+  [image references](https://linuxcontainers.org/incus/docs/main/howto/images_remote/),
+  and [OCI application launch workflow](https://linuxcontainers.org/incus/docs/main/howto/instances_create/).
+- **OCI image on Proxmox:** use an explicitly supported guest runtime and a
+  provider-specific bootstrap path. The current Proxmox guest API creates VMs or
+  system containers; it does not yet provide a Shippin application-container
+  executor. Do not pass arbitrary OCI references to its template field. Require a
+  supported guest template, one-time enrollment, and a constrained Shippin hostd
+  workload contract before advertising this path.
+- **GitHub/custom Git build:** fetch the pinned commit in a short-lived isolated
+  worker, produce an OCI artifact, and record its digest and build provenance before
+  target mutation. The builder must be a separately configurable service with
+  resource, concurrency, storage, and egress bounds. A rootless builder reduces
+  daemon privilege but is not itself an egress policy. Build credentials use secret
+  mounts; never pass them as build arguments or ordinary environment variables.
+  See Docker's [BuildKit configuration](https://docs.docker.com/build/buildkit/toml-configuration/),
+  [rootless mode](https://docs.docker.com/engine/security/rootless/), and
+  [build-secret handling](https://docs.docker.com/build/building/secrets/).
+
+### Required durable operation contract
+
+Each `shippin_` deployment instance stores tenant, catalog service, stable target
+system, source snapshot, desired generation, typed resource/config values, secret
+references, desired state and current observed state. An append-only event row stores
+actor, generation, operation, provider result, health result, redacted failure and
+time. Job rows remain the worker lease/retry mechanism; they are not deployment
+truth. A repeated request with the same idempotency key returns the same generation;
+an update with a stale base generation conflicts. A retry reuses the generation and
+provider operation key. Deletion records desired absence, then confirms provider
+absence before reporting deleted. Restart recovery resumes by reading current
+provider state and reconciling the durable generation.
+
+No generation may execute until the exact target system/provider, catalog service
+revision, artifact digest, resource bounds, secret references, health contract,
+requesting actor and rollback strategy are bound to the AgentHub ticket/review. A
+policy denial, missing mapping, unavailable AgentHub, stale ticket hash, missing
+provider capability, ambiguous provider outcome, failed health check or failed
+read-back leaves the deployment pending/degraded/failed as appropriate and blocks
+`ready`. Never store secret bytes in the definition, generation, job, result, event,
+logs or API response.
+
+### Runtime delivery packets
+
+1. Finalize the typed deployment-instance/config contract, target capability matrix,
+   idempotency semantics, event/redaction contract, and additive migration tests.
+2. Implement tenant-scoped desired generations, optimistic update, request replay,
+   append-only events, and read APIs. Confirm authorization and cross-tenant denial.
+3. Implement AgentHub service identity and the review adapter against a verified
+   typed decision/ticket contract. Exercise allow, require-review, deny, stale,
+   timeout and unavailable paths before any provider write.
+ 4. Add a bounded, configurable builder and immutable Git-to-OCI resolution. Prove
+    egress denial, CPU/memory/disk/time limits, cleanup, no credential values in
+    build state or logs, artifact digest/provenance capture, cancellation and restart.
+5. Add the Incus OCI adapter and verify create/configure/start/read-back/health,
+   update, rollback and deletion on a disposable Incus host.
+6. Add a separate Proxmox guest bootstrap/hostd adapter. Verify template capability,
+   enrollment, resource bounds, create/update/restart/health/delete on a disposable
+   Proxmox host. If the environment cannot provide the guest prerequisites, keep
+   this provider capability visibly unsupported rather than simulating it.
+7. Wire user/operator forms, dashboards, operation events and retry/rollback actions
+   to those persisted APIs. Verify tenant scoping and four-action navigation.
+8. Build managed PostgreSQL, Dragonfly, Redis and ClickHouse as versioned catalog
+   definitions and engine-specific contracts on the verified runtime, including
+   storage, credential rotation, backups, restore proof and upgrade behavior.
+
+Packets 1–3 gate every provider write. Packets 4–6 establish a real runtime. Package
+templates and product cards do not count as deployed services until provider
+read-back and configured health observations prove the requested generation.
+
+## Ordered implementation phases
+
+### 0. Source inventory and ownership
+
+Record each source revision and dirty state. Compare each useful behavior with
+its current platform API, schema, UI and tests. Record one canonical owner and
+one disposition per row: already implemented, to author, replaced with evidence,
+rejected with reason, or unresolved. Verify every matrix row and source family;
+do not archive external trees while any useful behavior, rights question or
+user-local change remains unresolved.
+
+**Exit gate:** the source ledger is complete, license/provenance/dependency
+questions are explicit, and no source is treated as a runtime dependency.
+
+### 1. Stable identity and AgentHub review
+
+Define the canonical system record and explicit mapping to provider and
+AgentHub machine IDs. Add authenticated enrollment/observation with hostname
+source and freshness; add editable nickname/aliases/tags with audit. Integrate
+AgentHub using a least-privilege service principal and configured tenant
+mapping. The action path must ask policy, create/retrieve idempotent tickets,
+attach redacted evidence, submit, re-read the current ticket/hash and review,
+then execute only if the policy says so. Record policy version and decision
+provenance. Fail closed on missing mapping, stale hash, timeout, denial or
+provider failure.
+
+**Current gap:** Shippin persists an explicit system-to-AgentHub tenant/machine
+mapping and has a typed adapter in `internal/agenthub/review.go`. Read-only
+inspection of AgentHub `internal/changepolicy/decide.go` and
+`internal/devapi/policy_routes.go` confirms the decision response carries a
+decision ID, tenant, policy hash, allow result, policy version, matched rules and
+failures. The Shippin client binds the ticket to the exact machine, command and
+action hash; re-reads ticket and policy after the decision; rejects no-match,
+permissive rules and any matched rule lacking approval plus reviewer quorum. The
+operator review endpoint uses this client and persists action-bound provenance.
+The worker authorization variant now checks its live tenant/deployment-generation
+lease before calling AgentHub and persists decision or denial with a second
+lease-fenced transaction. Database-backed tests cover allowed provenance and an
+expired lease being rejected before any AgentHub call. The worker invokes this path only immediately before persistent-volume dispatch; it does not
+invoke it for other provider operations because those remain unsupported
+after JIT authorization. Production service-principal permissions and
+deployment-time credential scope remain unverified. The example installation denies gated
+actions; local approver defaults and the `HUB_OWNER_*` bypass remain removed.
+
+**Exit gate:** identity collision/change tests pass; AgentHub decision, review,
+replay, denial, unavailable service and restart cases pass; no local reviewer
+rules authorize provider actions.
+
+### 2. Incus and Proxmox lifecycle
+
+Keep one server/system registry and distinct provider implementations. Add/edit/
+test must validate endpoint, credentials, TLS, selected node/project and
+capabilities without saving a failed probe. Lifecycle requests use typed
+provider operations, durable operation IDs, idempotency, read-back and honest
+unknown/degraded states. Add Proxmox placement only from live storage/network
+capabilities; preserve provider-specific VM/container semantics. Present the
+operator capability as **Shippin Prox**, while `proxmox` remains the provider
+kind. Lifecycle behavior is already separated into
+`internal/hv/incus/lifecycle.go` and `internal/hv/proxmox/lifecycle.go`; preserve
+that ownership and close remaining gaps with provider-specific tests and
+disposable-host read-back.
+
+**Exit gate:** multiple configured systems can be connected and edited; create,
+start, stop, snapshot, delete and failure/retry are tested against disposable
+providers, with authorization, AgentHub review, audit and provider read-back.
+
+### 3. Catalog contracts and deployment runtime
+
+Version source and deployment contracts. Validate immutable Git commit or OCI
+digest, trusted source origin, subdirectory containment, declared parameters,
+secret references, resource/capability limits and health checks. Fetch and build
+in an isolated bounded builder with configured egress, storage and concurrency
+limits. The control plane schedules a desired generation; provider-specific
+drivers apply it; a reconciler observes actual state, retries safe operations,
+records events and handles cancellation/restart/deletion. Never accept
+unbounded shell, privileged Compose or arbitrary host execution as a shortcut.
+
+**Exit gate:** a pinned source can be configured, reviewed, built, deployed to
+an explicitly selected compatible target, observed healthy, updated and removed
+with failure/recovery coverage. A metadata pin alone remains labeled metadata.
+The current execution boundary, same-database outbox, worker fencing,
+just-in-time AgentHub authorization, provider/runtime contracts and acceptance
+tests are specified in [`deployment-reconciliation.md`](deployment-reconciliation.md).
+
+### 4. Managed data services
+
+Build service adapters on the deployment runtime, keeping engine differences
+explicit. Configuration covers engine/version, placement, CPU/memory/storage,
+replicas where supported, network access, secret refs, health, upgrades and
+backup/restore. PostgreSQL backups include consistency and restore verification;
+Dragonfly and Redis document persistence/replication differences; ClickHouse
+documents storage layout, users and restore semantics. Examples are editable
+catalog definitions, not hardcoded server deployments.
+
+**Exit gate:** an operator can configure and provision each supported engine,
+inspect real resources/health, rotate credentials, back up, restore, upgrade and
+delete; tenant scope and recovery are tested. Unsupported operations are not
+advertised.
+
+### 5. Connectivity providers
+
+Complete Cloudflare Tunnel, Tailscale and custom connection workflows in
+`internal/networking`: configure, validate, test, refresh, rotate/revoke and
+perform provider writes only when supported. Associate observed resources with
+stable systems and service instances. Keep provider API scopes minimal and
+credentials sealed; do not represent imported inventory as a configured
+connection or a live route.
+
+**Exit gate:** each supported provider has add/edit/test/read-back and
+permission-denial coverage; custom integrations declare the minimum protocol
+and resource fields and use prefixed tables.
+
+### 6. Platform service registry and dashboards
+
+Replace static probe-only facts with a persistent UI-managed registry. Configure
+display name, protocol, endpoint, probe bounds/cadence, optional secret
+reference, resource sources and enabled state. Collect live probes and provider
+resource observations with time, provenance and retention bounds. Build linked
+operator dashboards for platform services, provider systems, deployment/service
+instances, operations and events.
+
+**Exit gate:** add/edit/disable/test works; stale and unknown are distinct;
+latency, memory and address are sourced rather than mocked; all destinations are
+reachable in four actions or fewer from the relevant operator view.
+
+### 7. Release and source retirement readiness
+
+Run the documented developer checks, full Linux Go and panel checks, fresh and
+upgrade migrations, secret/public-tree scans, install/compose paths and
+disposable Incus/Proxmox scenarios. Build standalone control-plane and host-agent
+executables from clean `main`. Reconcile every source row against implementation
+evidence and document excluded features, external user changes, unresolved
+rights and failure paths.
+
+**Exit gate:** clean developer build and CI are green; every claimed deployment
+is provider-backed and observed; each remaining source row has an evidence-backed
+disposition. Produce an archive checklist for user review. This plan does not
+delete, reset or archive the sibling repositories.
+
+## Required evidence for each phase
+
+Every implementation slice links its owning Go/API/schema/UI files, tests,
+configuration shape, security boundary, failure behavior and deployment evidence
+in the absorption ledger and ignored session journal. New tables must have
+explicit `shippin_` names. Every write needs authorization, tenant scope,
+idempotency, audit, secret redaction and read-back. CI is checked after each
+direct-to-main commit; a red main is fixed before the next slice.

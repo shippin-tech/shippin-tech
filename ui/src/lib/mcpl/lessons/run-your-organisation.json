@@ -1,0 +1,19 @@
+{
+  "id": "run-your-organisation",
+  "title": "Run your organisation",
+  "audience": "owner",
+  "steps": [
+    {
+      "id": "add-someone",
+      "say": "Add a person. They get their own mailbox, Drive and calendar on your domain.",
+      "where": "/shippin/org/people",
+      "doneWhen": "org.person.added"
+    },
+    {
+      "id": "adjust-someone",
+      "say": "Edit someone to reset a password or change how much storage they have.",
+      "where": "/shippin/org/people",
+      "doneWhen": "org.person.updated"
+    }
+  ]
+}

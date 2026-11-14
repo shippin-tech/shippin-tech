@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shippin.tech/mcpl/v0/lesson.schema.json",
+  "title": "MCPL v0 lesson",
+  "description": "A self-teaching script: steps shown in the UI, each finished by a real event the app emits. A lesson never fakes progress and never acts for the user.",
+  "type": "object",
+  "required": ["id", "title", "audience", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "audience": { "enum": ["guest", "user", "owner", "admin"], "description": "Which kind of signed-in person sees it." },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "say", "doneWhen"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "say": { "type": "string", "minLength": 1, "description": "What the step asks the person to do, in plain words." },
+          "where": { "type": "string", "pattern": "^/", "description": "Page where the step is done." },
+          "doneWhen": { "$ref": "event.schema.json#/$defs/eventType" }
+        }
+      }
+    }
+  }
+}

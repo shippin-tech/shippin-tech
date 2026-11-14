@@ -1,0 +1,19 @@
+{
+  "id": "keep-your-contacts",
+  "title": "Keep your contacts",
+  "audience": "user",
+  "steps": [
+    {
+      "id": "add-a-contact",
+      "say": "Add someone. Press New contact and give them a name or an address.",
+      "where": "/contacts",
+      "doneWhen": "contact.card.created"
+    },
+    {
+      "id": "update-a-contact",
+      "say": "Open a contact and change a detail, like their phone or company.",
+      "where": "/contacts",
+      "doneWhen": "contact.card.updated"
+    }
+  ]
+}

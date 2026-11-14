@@ -1,0 +1,20 @@
+{
+  "id": "google",
+  "a2ui": "GoogleDrive",
+  "variants": [
+    "not-available",
+    "connect",
+    "browse"
+  ],
+  "engine": "crates/common/src/shippin/google.rs",
+  "routes": [
+    "/files?view=google"
+  ],
+  "emits": [
+    "google.account.connected",
+    "google.account.disconnected",
+    "google.file.imported",
+    "google.file.exported"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/docs/kernel/instruction.md"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "use-your-calendar",
+  "title": "Use your calendar",
+  "audience": "user",
+  "steps": [
+    {
+      "id": "add-an-event",
+      "say": "Add an event. Press New event, or a day on the calendar.",
+      "where": "/calendar",
+      "doneWhen": "calendar.event.created"
+    },
+    {
+      "id": "change-an-event",
+      "say": "Open your event and change something about it.",
+      "where": "/calendar",
+      "doneWhen": "calendar.event.updated"
+    },
+    {
+      "id": "invite-someone",
+      "say": "Add a guest's address to an event. They get an email invitation.",
+      "where": "/calendar",
+      "doneWhen": "calendar.invite.sent"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "email",
+  "a2ui": "Email",
+  "variants": [
+    "reader",
+    "compose"
+  ],
+  "engine": "crates/jmap/src/email",
+  "routes": [
+    "/mail/email",
+    "/mail/compose"
+  ],
+  "emits": [
+    "mail.message.sent",
+    "mail.draft.saved"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/mail/kernel/instruction.md"
+}

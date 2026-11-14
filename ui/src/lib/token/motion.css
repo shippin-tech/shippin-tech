@@ -1,0 +1,13 @@
+:root {
+	--motion-duration: 150ms;
+	--motion-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+	--ease-bento: cubic-bezier(0.2, 0.7, 0.2, 1);
+	--motion-distance: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--motion-duration: 0ms;
+		--motion-distance: 0px;
+	}
+}

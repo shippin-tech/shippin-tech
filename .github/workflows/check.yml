@@ -1,0 +1,94 @@
+name: Check
+
+# Pre-release: cheap correctness checks on every push to main. No image is built here;
+# that is test-build.yml and runs only for v* tags or on demand.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.ai/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      rust: ${{ steps.filter.outputs.rust }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            rust:
+              - 'crates/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - '.cargo/**'
+              - 'resources/**'
+
+  web:
+    name: brand + portal
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - name: Brand sources are valid and generated files are current
+        run: |
+          node scripts/brand-sync.mjs --check
+          node --test scripts/brand-sync.test.mjs
+      - name: Host deploy scripts behave (fake docker)
+        run: |
+          bash deploy/update.test.sh
+          bash deploy/auto-update.test.sh
+          bash deploy/backup.test.sh
+      - run: npm ci
+        working-directory: ui
+      - run: node scripts/check-webui-inventory.mjs
+        working-directory: ui
+      - name: MCPL conformance
+        run: node scripts/check-mcpl.mjs
+        working-directory: ui
+      - run: npm run check
+        working-directory: ui
+      - run: npm test
+        working-directory: ui
+      - run: npm run build
+        working-directory: ui
+      - name: Browser tests (mocked engine)
+        working-directory: ui
+        run: |
+          # The runner image already carries Chrome's system libraries. When Ubuntu's package
+          # mirror cannot be reached, install the browser alone instead of failing the run.
+          npx playwright install --with-deps chromium || {
+            echo "::warning::System packages could not be installed; using the runner image's own."
+            npx playwright install chromium
+          }
+          npx playwright test
+
+  rust:
+    name: cargo check
+    needs: changes
+    if: needs.changes.outputs.rust == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends protobuf-compiler clang cmake
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo check (same feature set as the image)
+        run: cargo check -p shippin-tech --no-default-features --features "sqlite postgres mysql rocks s3 redis azure nats enterprise"

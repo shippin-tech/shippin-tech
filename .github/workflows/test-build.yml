@@ -1,0 +1,77 @@
+name: Test container build
+
+# Pre-release: an image is built only for a tagged version (v*) or on demand.
+# Plain pushes to main never start a build.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scale:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Image coordinates
+        id: image
+        shell: bash
+        run: |
+          name="ghcr.io/${GITHUB_REPOSITORY,,}-scale"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "tag=sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          # Every build gets the commit tag. A version tag (v*) also moves the
+          # "release" channel, which hosts running deploy/auto-update.sh follow.
+          tags="$name:sha-${GITHUB_SHA}"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            tags="$tags,$name:${GITHUB_REF_NAME},$name:release"
+          fi
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build scale image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.fdb
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.image.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=scale-amd64
+          cache-to: type=gha,mode=max,scope=scale-amd64
+      - name: Package server bundle
+        run: tar -czf server-bundle.tar.gz -C deploy compose.yaml server.env.example config.json update.sh auto-update.sh verify-install.sh backup.sh README.md control-plan.template.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: server-bundle
+          path: server-bundle.tar.gz
+      - name: Deployment reference
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TAGS: ${{ steps.image.outputs.tags }}
+        run: |
+          echo '### This build' >> "$GITHUB_STEP_SUMMARY"
+          echo "Tags: \`${TAGS//,/\` \`}\`" >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$TAGS" == *:release ]]; then
+            echo 'Hosts running `auto-update.sh` pick this up within five minutes.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "Manual: \`bash update.sh $IMAGE@$DIGEST\`" >> "$GITHUB_STEP_SUMMARY"

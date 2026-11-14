@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-remaining",
+  "title": "Finish the remaining portal surfaces in index order",
+  "costar": {
+    "context": "Search is on the portal shell. Eight portal surfaces are still remaining. The maintainer said continue planning and get this fully done.",
+    "objective": "Finish those surfaces in the portal index order, each with the bundle's sentences and a proof.",
+    "style": "One sequence, then one slice at a time.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "Copy is first. Bootstrap, dashboard charts, schema writes, the delivery runner, trace timeline and detail, action execute, and the engine serving this portal follow."
+  },
+  "sources": [
+    {"kind": "code", "ref": "assets/webui/assets/AdminPanel-DhmcW4yN.js"},
+    {"kind": "code", "ref": "assets/webui/assets/BootstrapWizard-DqwPyluo.js"},
+    {"kind": "code", "ref": "C:/Users/jessa/.cursor/projects/d-localdev-mail-shippin-shippin-tech/canvases/portal-webui-index.canvas.tsx"}
+  ],
+  "concerns": [
+    "This running server is not in bootstrap mode. The wizard must not call a set method against it.",
+    "Live metrics and live tracing are refused as enterprise on this build. The screens show that refusal and do not invent numbers.",
+    "Schema writes, the delivery runner, and action execute change server state. Their proofs stop before a live set, a live delivery, or a live action.",
+    "The engine still fetches the v1.0.11 web bundle. Serving assets/webui 2.0.4 has to avoid a VERSION file the unpacker rejects."
+  ],
+  "context": "The index order after search is copy, bootstrap, dashboard charts and the metrics stream, schema writes, the delivery runner, trace timeline and detail, action execute, then the engine serving this portal.",
+  "current_state": "Copy has no module. The form shows readonly values.",
+  "target_design": "Each remaining surface gets its own slice plan and a proof that fails when that surface is absent. This plan is the sequence. It is implemented only when those proofs have been observed.",
+  "changes": [
+    "Add the copy control on form values.",
+    "Add the bootstrap wizard without calling set on this server.",
+    "Add dashboard charts and the metrics stream refusal.",
+    "Add schema confirm and write controls without firing them at this server.",
+    "Add the delivery runner, trace timeline, and trace detail.",
+    "Add action execute.",
+    "Point the engine at this portal bundle."
+  ],
+  "boundaries": [
+    "Do not build the Astro site.",
+    "Do not call a set method on this running server.",
+    "Do not fire a delivery or an action as a proof.",
+    "The catalog does not fetch."
+  ],
+  "verification": [
+    {
+      "name": "copy-control",
+      "command": "node --experimental-strip-types scripts/prove-portal-copy.ts",
+      "proves": "Clipboard success is copied. A blocked clipboard falls through to the manual command. The form renders the portal sentences.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The portal shell typechecks after each slice.",
+      "expected": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "draft"
+}

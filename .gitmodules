@@ -1,0 +1,5 @@
+[submodule "landing"]
+	path = landing
+	url = https://github.com/shippin-tech/landing.git
+	update = none
+	branch = main

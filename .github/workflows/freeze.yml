@@ -1,0 +1,45 @@
+name: Freeze
+
+# Pre-release. Every pull request is closed, whoever opens it, until the AI working
+# system in mcpl/README.md ("Acceptance") is accepted and this file is removed.
+# Issues from anyone who is not a maintainer are closed and locked; reports go to
+# support.shippin.tech (see AGENTS.md).
+#
+# pull_request_target runs in this repository's context with a write token. It never
+# checks out or runs the pull request's code, only gh commands against its number.
+on:
+  pull_request_target:
+    types: [opened, reopened]
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  close-pull-request:
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-24.04
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr close "$NUMBER" --repo "$REPO" --comment "This repository is pre-release and pull requests are frozen until its AI working system is accepted (mcpl/README.md, \"Acceptance\"). Work happens on main by the owner. See AGENTS.md."
+
+  close-issue:
+    if: >-
+      github.event_name == 'issues' &&
+      !contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
+    runs-on: ubuntu-24.04
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh issue close "$NUMBER" --repo "$REPO" --comment "Issues are not taken on GitHub. Report problems, questions and requests at https://support.shippin.tech (sign in with GitHub). See AGENTS.md."
+          gh issue lock "$NUMBER" --repo "$REPO"

@@ -1,0 +1,25 @@
+{
+  "id": "write-a-document",
+  "title": "Write a document",
+  "audience": "user",
+  "steps": [
+    {
+      "id": "start-a-document",
+      "say": "Start a new document and give it a title.",
+      "where": "/docs",
+      "doneWhen": "doc.document.created"
+    },
+    {
+      "id": "write-something",
+      "say": "Write something. It saves by itself as you type.",
+      "where": "/docs",
+      "doneWhen": "doc.document.edited"
+    },
+    {
+      "id": "take-a-copy",
+      "say": "Download a copy, or print it to PDF.",
+      "where": "/docs",
+      "doneWhen": "doc.document.exported"
+    }
+  ]
+}

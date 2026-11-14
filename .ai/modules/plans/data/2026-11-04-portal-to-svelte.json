@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-04-portal-to-svelte",
+  "title": "Convert the domain mail portal in assets/webui to SvelteKit",
+  "costar": {
+    "context": "The maintainer built this Rust server first as a mail server for a domain. The UI for that job is the portal already pulled into assets/webui, version 2.0.4. They asked for that UI to be converted to Svelte and for the conversion to be planned.",
+    "objective": "Record the screen inventory, the engine calls those screens already use, and the order of the Svelte conversion, so the next edit follows the portal instead of a new shell.",
+    "style": "One implementation plan a developer can execute without inventing screens.",
+    "tone": "Direct.",
+    "audience": "The maintainer and the next coding agent.",
+    "response": "Transition every screen in assets/webui to SvelteKit before any landing page. The Astro site comes after that, as static public HTML."
+  },
+  "sources": [
+    {"kind": "code", "ref": "assets/webui/shippintech-app.json"},
+    {"kind": "code", "ref": "assets/webui/index.html"},
+    {"kind": "code", "ref": "assets/webui/oauth-client.json"},
+    {"kind": "code", "ref": "assets/webui/assets/BootstrapWizard-DqwPyluo.js"},
+    {"kind": "code", "ref": "assets/webui/assets/schemaStore-CkCqaJbK.js"},
+    {"kind": "code", "ref": "crates/http/src/api/mod.rs"},
+    {"kind": "code", "ref": "crates/common/src/manager/defaults.rs"},
+    {"kind": "code", "ref": "crates/common/src/manager/application.rs"},
+    {"kind": "code", "ref": ".cursor/rules/product-boundaries.mdc"}
+  ],
+  "concerns": [
+    "The portal bundle is minified. A screen that is not named by a translation key or by crates/http/src/api/mod.rs must not be invented.",
+    "The sidebar is generated from GET /api/schema. One hand-built page per registry object will drift from the server.",
+    "Boot still fetches https://github.com/shippin.techlabs/webui/releases/download/v1.0.11/webui.zip, or file:///Users/me/code/webui/.ignore/webui.zip in dev_mode. It does not read assets/webui. An existing one-node registry may already store the old Application record, so changing the default insert does not retarget a bootstrapped store.",
+    "shippintech-app.json says version 2.0.4. unsupported_bundle_version only refuses a zip that contains a VERSION file whose major is above WEBUI_MAX_MAJOR_VERSION (1). Adding a VERSION file of 2.0.4 would make the current unpacker refuse this portal.",
+    "Live metrics and live tracing are inside  blocks and return not found on a build that is not the enterprise edition. The Svelte screen has to show the portal's existing disabled state.",
+    "The one-node server crashed and is not running. A browser proof of /api/auth cannot pass until that process is started again on purpose.",
+    "The empty ui/ shells (No messages yet, No events this week, No contacts yet, No files yet) are a different app. Leaving them as the home page hides the portal conversion."
+  ],
+  "context": "The product started as a reliable mail server for the maintainer's own domains. The portal in assets/webui is the interface for that job: first-boot setup, sign-in, and schema-driven administration of the server. The broader suite and the Astro landing site come after this portal is the Svelte app.",
+  "current_state": "assets/webui is a built portal titled Portal, id webui, version 2.0.4, OAuth client name ShippinTECH Web Interface. Fixed screens found in the bundle are sign-in, OAuth callback, bootstrap wizard, dashboard, live tracing, delivery trace, action runner, TOTP, and Sievepad. Lists, forms, and views are rendered from the registry schema (objects, views, enterprise flag, memberTenantId), not from a hardcoded route table. The engine mounts an unpacked zip at /admin and /account and does not serve assets/webui. ui/ currently opens on empty mailbox, calendar, contacts, files, and docs shells.",
+  "target_design": "SvelteKit in ui/ replaces the portal screen for screen. The adapter is the only module that calls the engine. Catalog components use the cyber palette: neon green #39ff14, electric burnt gold #ffb000, cyber pink #ff2bd6, on :root light and .dark. Type stays Inter, Plus Jakarta Sans, and JetBrains Mono. Components do not fetch. Theme choice is typed as system, light, or dark. Contrast pairs stay at 4.5:1. The home of the app is the domain mail portal: sign-in, bootstrap, dashboard, and the schema-driven admin. The Rust binary remains the mail server.",
+  "changes": [
+    "Record this conversion order in the plans module.",
+    "Correct the product rule so the portal in assets/webui is the UI under conversion. Remove the phase ban that says not to add an admin UI. Leave the license, shippin.cloud hosting, the Go control plane, and the later suite products banned.",
+    "Retarget the Application resource at a zip of assets/webui so /admin and /account serve this portal on a fresh boot and on a store that already points at the v1.0.11 URL. Do not add a VERSION file that the current unpacker would refuse.",
+    "Add adapter calls for the portal's engine surface: POST /api/auth, GET /api/discover/:email, GET /api/account, GET /api/schema/:hash, POST /jmap x:Bootstrap/get and x:Bootstrap/set, and the live token plus event-stream paths /api/token/delivery and /api/live/delivery. Metrics and tracing stay behind the existing enterprise response.",
+    "Convert the fixed screens in this order: sign-in (account name, then secret, OAuth callback, TOTP), bootstrap wizard (Welcome to ShippinTECH, setup fields from the server, credentials shown once, restart instruction), dashboard (24h, 7d, 30d, 90d, node, live metrics failure states), delivery trace, action runner, Sievepad.",
+    "Convert the schema-driven list, form, and view once. The sidebar and the object pages come from GET /api/schema. Enterprise objects render the portal line This feature requires an Enterprise license.",
+    "Stop using the empty mailbox, calendar, contacts, files, and docs shells as the application home. A mailbox client is a later pass and is not this portal.",
+    "Use the cyber palette. Primary is neon green #39ff14. Electric burnt gold is #ffb000. Cyber pink is #ff2bd6. Light is :root (#eef3f0, #04140c). Dark is the class dark (#070908, #e7f6ee). Type is Inter, Plus Jakarta Sans, and JetBrains Mono. ThemeChoice is system, light, or dark. Body text on the light page uses #0b6b32, #7a4e00, and #b0006a.",
+    "Finish this full transition before the Astro landing in 2026-11-04-astro-landing. That plan stays draft until this status is implemented."
+  ],
+  "boundaries": [
+    "The Rust engine stays the mail server. Do not add a second server.",
+    "Do not paste the minified React bundle into ui/.",
+    "Do not invent a license checker that accepts keys. Cargo.toml license stays deciding.",
+    "Do not build the Astro landing site in this conversion.",
+    "Do not move the control plane onto main.",
+    "Do not mark deployable-product done.",
+    "The cyber palette stays the visual source. Neon green is the primary. Electric burnt gold and cyber pink are the other accents. Body text on the light page uses the darker text shades because the neon swatches fail 4.5:1 on #eef3f0."
+  ],
+  "verification": [
+    {
+      "name": "plan-names-the-portal-and-the-order",
+      "command": "python -c \"from pathlib import Path; t=Path(r'.ai/modules/plans/data/2026-11-04-portal-to-svelte.json').read_text(encoding='utf-8'); keys=['assets/webui','2.0.4','POST /api/auth','GET /api/schema','Welcome to ShippinTECH','schema-driven','Sievepad','No messages yet','#39ff14','#ffb000','#ff2bd6','Plus Jakarta Sans','2026-11-04-astro-landing']; missing=[k for k in keys if k not in t]; assert not missing, missing; print('ok')\"",
+      "proves": "The plan names the pulled portal, its version, the engine calls, the bootstrap copy, the schema-driven admin, Sievepad, and the empty shells that are not the home page. A plan that omits the source UI fails.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "tree-matches-schemas",
+      "command": "python .ai/machine/organize.py --check",
+      "proves": "The plan matches the plans schema and the other modules still match theirs.",
+      "expected": "exit 0",
+      "result": "{\"modules\": 6, \"lines\": 583, \"documents\": 21, \"events\": 169, \"messages\": 64, \"tools\": 328, \"journal\": 22}"
+    }
+  ],
+  "status": "draft"
+}

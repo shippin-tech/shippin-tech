@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-03-client-sequence",
+  "title": "Sequence the mailbox clients, then docs, then photos and phone backup",
+  "costar": {
+    "context": "The maintainer asked for webmail and a phone-width version, a commercial cloud deployment, an enterprise-only control plane, then docs, then photos sync and phone backup.",
+    "objective": "Record that sequence on the surfaces this server already serves, without starting the clients during the deployable-image phase.",
+    "style": "One product rule section and four roadmap phases that stay not_started.",
+    "tone": "Direct.",
+    "audience": "The next coding agent and the maintainer.",
+    "response": "Web and phone mailbox clients use JMAP, CalDAV, and CardDAV after shippin.cloud hosts the image. The control plane stays the existing directory and is enterprise-only. Docs connect later. Photos and phone backup use file nodes."
+  },
+  "sources": [
+    {"kind": "code", "ref": ".cursor/rules/product-boundaries.mdc"},
+    {"kind": "code", "ref": ".ai/modules/roadmap/data/roadmap.json"},
+    {"kind": "code", "ref": "crates/jmap-proto/src/request/capability.rs"},
+    {"kind": "code", "ref": "crates/groupware/src/file/mod.rs"},
+    {"kind": "code", "ref": "crates/common/src/auth/mod.rs"}
+  ],
+  "concerns": [
+    "Starting a webmail client before the deployable image is hosted would skip the current phase.",
+    "A new Go control plane would be a second product. The directory, SCIM, and registry are the control plane.",
+    "Photos and phone backup need a new store only if file nodes cannot hold the blobs. FileNode already has a blob hash, size, and media type."
+  ],
+  "context": "Two nodes already shared a mailbox. The deployable image is in progress. The maintainer wants the client sequence written down so functionality comes before docs, and docs before photos and phone backup.",
+  "current_state": "JMAP mail, CalDAV, CardDAV, web push, email push, and urn:ietf:params:jmap:filenode exist. deployable-product is in_progress. No web client, document editor, or phone-backup client is in this repository.",
+  "target_design": "After shippin.cloud hosts the image, one client family serves the mailbox at desktop width and phone width. The control plane is the existing directory and is limited to white-label and enterprise licensing. Documents are a later connected product. Photos sync and phone backup are a later client on file nodes.",
+  "changes": [
+    "State the client pass in .cursor/rules/product-boundaries.mdc.",
+    "Restate zoho-client as the web and phone mailbox.",
+    "Add enterprise-control, docs, and photos-phone phases after that client, all not_started."
+  ],
+  "boundaries": [
+    "Do not build the web client in this pass.",
+    "Do not add a Go control plane or a license checker that accepts keys.",
+    "Do not add a document editor or a new blob store.",
+    "Do not mark deployable-product done.",
+    "Do not remove rocks from the one-node build."
+  ],
+  "verification": [
+    {
+      "name": "phases-stay-unstarted",
+      "command": "python -c \"import json; r=json.load(open(r'.ai/modules/roadmap/data/roadmap.json',encoding='utf-8')); ids={p['id']:p['status'] for p in r['phases']}; assert ids['deployable-product']=='in_progress'; assert ids['zoho-client']=='not_started'; assert ids['enterprise-control']=='not_started'; assert ids['docs']=='not_started'; assert ids['photos-phone']=='not_started'; print(ids['deployable-product'], ids['zoho-client'], ids['photos-phone'])\"",
+      "proves": "The client sequence is recorded and the current image phase is still the open work.",
+      "expected": "in_progress not_started not_started",
+      "result": "in_progress not_started not_started"
+    },
+    {
+      "name": "tree-matches-schemas",
+      "command": "python .ai/machine/organize.py --check",
+      "proves": "The roadmap, this plan, and the other modules still match their schemas.",
+      "expected": "exit 0 and modules 6",
+      "result": "{\"modules\": 6, \"lines\": 584, \"documents\": 12, \"events\": 178, \"messages\": 69, \"tools\": 329, \"journal\": 8}"
+    }
+  ],
+  "status": "implemented"
+}

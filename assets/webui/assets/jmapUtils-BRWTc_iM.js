@@ -1,0 +1,1 @@
+var e=`****`;function t(e){return Array.isArray(e)?e:e&&typeof e==`object`?Object.entries(e).sort(([e],[t])=>Number(e)-Number(t)).map(([,e])=>e):[]}export{t as n,e as t};

@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-03-kit-layout",
+  "title": "Pin SvelteKit and Svelte Flow to a one-way folder layout",
+  "costar": {
+    "context": "The maintainer wants SvelteKit and Svelte Flow with Next.js-level strict plug-in patterns, and the old HTML screens converted into that app.",
+    "objective": "Record the folder layout and the import direction so a component or a route plugs in without a central registry.",
+    "style": "One section in the product rule.",
+    "tone": "Direct.",
+    "audience": "The next coding agent and the maintainer.",
+    "response": "SvelteKit routes are the pages. The catalog holds components and colocated variants. Svelte Flow only renders catalog ids. The adapter is the only door to Rust."
+  },
+  "sources": [
+    {"kind": "code", "ref": ".cursor/rules/product-boundaries.mdc"}
+  ],
+  "concerns": [
+    "A Svelte Flow node that draws its own buttons would fork the catalog.",
+    "A catalog component that calls the engine would bypass the adapter.",
+    "Scaffolding the SvelteKit app inside this repository would start the client before the UI tree is open."
+  ],
+  "context": "The surface standard already names A2UI, tokens, and provenance folders. The framework choice is SvelteKit plus Svelte Flow.",
+  "current_state": "The product rule described tokens and provenance. It did not pin SvelteKit routes, component.json discovery, or the import direction.",
+  "target_design": "routes and ai-runtime may call adapter. flow and admin render catalog. catalog and token import neither adapter nor routes nor flow. component.json is discovered. Tauri wraps the build. Go may serve it.",
+  "changes": [
+    "Add the Kit layout to .cursor/rules/product-boundaries.mdc."
+  ],
+  "boundaries": [
+    "Do not scaffold a SvelteKit app in this pass.",
+    "Do not add a second component library for Go.",
+    "Do not mark deployable-product done."
+  ],
+  "verification": [
+    {
+      "name": "rule-pins-kit-layout",
+      "command": "python -c \"from pathlib import Path; t=Path(r'.cursor/rules/product-boundaries.mdc').read_text(encoding='utf-8'); keys=['SvelteKit','Svelte Flow','component.json','+page.server.ts','src/lib/catalog','src/lib/adapter']; missing=[k for k in keys if k not in t]; assert not missing, missing; print('ok')\"",
+      "proves": "The product rule names SvelteKit, Svelte Flow, discovered component manifests, the server boundary, and the adapter.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "tree-matches-schemas",
+      "command": "python .ai/machine/organize.py --check",
+      "proves": "The plan and the other modules still match their schemas.",
+      "expected": "exit 0 and modules 6",
+      "result": "{\"modules\": 6, \"lines\": 571, \"documents\": 15, \"events\": 169, \"messages\": 64, \"tools\": 328, \"journal\": 10}"
+    }
+  ],
+  "status": "implemented"
+}

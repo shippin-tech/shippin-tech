@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-bootstrap",
+  "title": "Convert the bootstrap wizard with bits-ui",
+  "costar": {
+    "context": "The maintainer said convert the webui, and the primitive library is bits-ui. Bootstrap is the next unfinished portal screen.",
+    "objective": "Convert the bootstrap wizard from assets/webui, using bits-ui for choices and checkboxes, and show it only when x:Bootstrap/get returns a record.",
+    "style": "One slice of the portal conversion.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "The wizard uses the schema steps and bits-ui. This server stays on the portal because it is not in bootstrap mode. Finish is not sent here."
+  },
+  "sources": [
+    {"kind": "code", "ref": "assets/webui/assets/BootstrapWizard-DqwPyluo.js"},
+    {"kind": "code", "ref": "assets/webui/assets/AdminPanel-DhmcW4yN.js"},
+    {"kind": "code", "ref": "crates/jmap/src/registry/mapping/bootstrap.rs"},
+    {"kind": "code", "ref": "resources/schema/schema.json.gz"},
+    {"kind": "code", "ref": "ui/scripts/emit-portal.ts"},
+    {"kind": "code", "ref": "ui/src/routes/(portal)/portal/+layout.svelte"},
+    {"kind": "code", "ref": "ui/package.json"},
+    {"kind": "code", "ref": "ui/node_modules/bits-ui/package.json"},
+    {"kind": "code", "ref": "ui/node_modules/bits-ui/dist/bits/checkbox/types.d.ts"},
+    {"kind": "code", "ref": "ui/node_modules/bits-ui/dist/bits/select/types.d.ts"}
+  ],
+  "concerns": [
+    "This running server is not in bootstrap mode. x:Bootstrap/get returns notFound. The portal must stay visible and Finish must not be sent.",
+    "Object fields are variant records. This slice chooses the variant name. Nested store fields stay for a later pass of the same form.",
+    "bits-ui is the primitive. The catalog still owns the tokens and does not fetch."
+  ],
+  "context": "The bundle replaces the admin with BootstrapWizard when the signed-in session has no layout it can open. The engine only returns the bootstrap singleton from x:Bootstrap/get while bootstrap mode is on. The form has five sections. serverSet fields are omitted. Finish posts x:Bootstrap/set with update.singleton.",
+  "current_state": "The wizard renders the five schema steps with bits-ui. The portal shows it only when x:Bootstrap/get returns a record. Finish does not post from the portal or from /setup.",
+  "target_design": "emit-portal writes the five steps. The wizard renders them with bits-ui checkbox and select. The portal layout fetches x:Bootstrap/get and shows the wizard only when a record is returned.",
+  "changes": [
+    "Install bits-ui.",
+    "Generate the bootstrap steps.",
+    "Render the wizard and keep Finish off this server."
+  ],
+  "boundaries": [
+    "Do not call x:Bootstrap/set against this running server.",
+    "Do not add a document editor.",
+    "The catalog does not fetch."
+  ],
+  "verification": [
+    {
+      "name": "wizard-follows-the-schema",
+      "command": "node --experimental-strip-types scripts/prove-portal-bootstrap.ts",
+      "proves": "Five steps, the portal sentences, serverSet fields omitted, an empty get stays on the portal, and the wizard imports bits-ui without fetching.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The wizard, bits-ui, and the portal layout typecheck.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

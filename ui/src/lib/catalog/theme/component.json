@@ -1,0 +1,12 @@
+{
+  "id": "theme",
+  "a2ui": "Theme",
+  "variants": [
+    "system",
+    "light",
+    "dark"
+  ],
+  "engine": "none (browser setting)",
+  "routes": [],
+  "emits": []
+}

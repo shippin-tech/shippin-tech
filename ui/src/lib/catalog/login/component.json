@@ -1,0 +1,16 @@
+{
+  "id": "login",
+  "a2ui": "Login",
+  "variants": [
+    "account",
+    "password",
+    "device",
+    "otp"
+  ],
+  "engine": "crates/http/src/auth",
+  "routes": [
+    "/login"
+  ],
+  "emits": [],
+  "kernel": "ui/src/lib/ai-runtime/account/kernel/instruction.md"
+}

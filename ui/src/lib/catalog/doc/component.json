@@ -1,0 +1,20 @@
+{
+  "id": "doc",
+  "a2ui": "Docs",
+  "variants": [
+    "list",
+    "editor"
+  ],
+  "engine": "crates/jmap/src/file",
+  "routes": [
+    "/docs",
+    "/docs/edit"
+  ],
+  "emits": [
+    "doc.document.created",
+    "doc.document.edited",
+    "doc.document.exported",
+    "doc.document.deleted"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/docs/kernel/instruction.md"
+}

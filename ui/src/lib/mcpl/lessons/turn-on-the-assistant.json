@@ -1,0 +1,19 @@
+{
+  "id": "turn-on-the-assistant",
+  "title": "Turn on the assistant",
+  "audience": "admin",
+  "steps": [
+    {
+      "id": "choose-a-service",
+      "say": "Choose the AI service. A model on your own machines keeps every question here.",
+      "where": "/shippin/admin/ai",
+      "doneWhen": "ai.settings.saved"
+    },
+    {
+      "id": "test-it",
+      "say": "Test the connection to see it answer.",
+      "where": "/shippin/admin/ai",
+      "doneWhen": "ai.connection.tested"
+    }
+  ]
+}

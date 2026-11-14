@@ -1,0 +1,31 @@
+{
+  "id": "use-your-drive",
+  "title": "Use your Drive",
+  "audience": "user",
+  "steps": [
+    {
+      "id": "upload-a-file",
+      "say": "Upload a file. Press Upload, or drop a file on this page.",
+      "where": "/files",
+      "doneWhen": "drive.file.uploaded"
+    },
+    {
+      "id": "make-a-folder",
+      "say": "Make a folder to keep things together.",
+      "where": "/files",
+      "doneWhen": "drive.folder.created"
+    },
+    {
+      "id": "file-it-away",
+      "say": "Move a file into your folder with its Move button.",
+      "where": "/files",
+      "doneWhen": "drive.item.moved"
+    },
+    {
+      "id": "get-it-back",
+      "say": "Download a file to this device.",
+      "where": "/files",
+      "doneWhen": "drive.file.downloaded"
+    }
+  ]
+}

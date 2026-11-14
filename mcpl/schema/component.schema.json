@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shippin.tech/mcpl/v0/component.schema.json",
+  "title": "MCPL v0 component manifest",
+  "description": "One per UI component folder (component.json). Says what the component is, which engine owns its data, where it appears, and which events it emits.",
+  "type": "object",
+  "required": [
+    "id",
+    "a2ui",
+    "variants",
+    "engine",
+    "routes",
+    "emits"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Folder name; unique in the app."
+    },
+    "a2ui": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*$",
+      "description": "Component name an agent uses to ask for this UI (A2UI style)."
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "engine": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path of the server code that owns this component's data."
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^/"
+      },
+      "uniqueItems": true,
+      "description": "Pages that show it. Empty for components used only inside others."
+    },
+    "emits": {
+      "type": "array",
+      "items": {
+        "$ref": "event.schema.json#/$defs/eventType"
+      },
+      "uniqueItems": true,
+      "description": "Event types emitted when a user action on this component succeeds."
+    },
+    "kernel": {
+      "type": "string",
+      "description": "Repo path of the AI kernel instruction file that owns this area."
+    },
+    "kind": {
+      "enum": [
+        "screen",
+        "mail-body"
+      ],
+      "default": "screen",
+      "description": "A page part, or the HTML of a message the server sends."
+    },
+    "html": {
+      "type": "string",
+      "description": "For mail-body components: the template the server renders."
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "action.schema.json"
+      },
+      "description": "Proposed extension (drive): what an AI agent can do on this component, served as MCP tools and carried out on the operator's screen."
+    }
+  }
+}

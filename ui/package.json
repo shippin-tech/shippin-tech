@@ -1,0 +1,48 @@
+{
+	"name": "@shippin/ui",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"tokens": "node --experimental-strip-types scripts/emit-fluid.ts && node --experimental-strip-types scripts/emit-portal.ts",
+		"predev": "npm run tokens",
+		"prebuild": "svelte-kit sync && npm run tokens",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"test": "vitest run",
+		"test:browser": "playwright test",
+		"storybook": "storybook dev -p 6006",
+		"build-storybook": "storybook build",
+		"test:live": "playwright test -c playwright.live.config.ts",
+		"mcpl": "node scripts/check-mcpl.mjs"
+	},
+	"devDependencies": {
+		"@axe-core/playwright": "^4.14.0",
+		"@playwright/test": "^1.65.0",
+		"@storybook/addon-a11y": "^10.6.6",
+		"@storybook/addon-docs": "^10.6.6",
+		"@storybook/addon-svelte-csf": "latest",
+		"@storybook/sveltekit": "^10.6.6",
+		"@sveltejs/adapter-static": "^3.0.8",
+		"@sveltejs/kit": "^2.21.0",
+		"@sveltejs/vite-plugin-svelte": "^5.0.3",
+		"@types/qrcode": "^1.5.5",
+		"@xyflow/svelte": "^1.7.1",
+		"ajv": "^8.20.0",
+		"bits-ui": "^2.20.6",
+		"storybook": "^10.6.6",
+		"svelte": "^5.28.0",
+		"svelte-check": "^4.1.6",
+		"typescript": "^5.8.3",
+		"utopia-core": "^1.6.0",
+		"vite": "^6.3.5",
+		"vitest": "^5.1.0"
+	},
+	"dependencies": {
+		"@tiptap/core": "3.32.0",
+		"@tiptap/extension-text-align": "3.32.0",
+		"@tiptap/pm": "3.32.0",
+		"@tiptap/starter-kit": "3.32.0",
+		"qrcode": "^1.5.4"
+	}
+}

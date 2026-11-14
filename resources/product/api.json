@@ -1,0 +1,737 @@
+{
+  "product": "shippin.tech",
+  "prerelease": true,
+  "summary": "Your own mail, calendars, contacts, Drive and Docs on your domain, with a link to Google Drive and MCPL lessons that teach people as they use it.",
+  "reviewed": "2026-11-11",
+  "statuses": {
+    "live": "Works against the server and is proven by an automated test.",
+    "partial": "Real calls to the server, but only part of the job.",
+    "planned": "Not built yet. The plan names where it is tracked."
+  },
+  "areas": [
+    {
+      "id": "mail",
+      "name": "Webmail and mail",
+      "status": "live",
+      "web": "/mail",
+      "api": [
+        {
+          "method": "GET",
+          "path": "/.well-known/jmap",
+          "auth": "signed-in",
+          "does": "JMAP session: the account's capabilities and URLs"
+        },
+        {
+          "method": "POST",
+          "path": "/jmap",
+          "auth": "signed-in",
+          "does": "JMAP mail: mailboxes, messages, threads, search, sending"
+        }
+      ],
+      "protocols": [
+        "JMAP",
+        "IMAP",
+        "POP3",
+        "SMTP submission",
+        "ManageSieve"
+      ],
+      "proof": "ui/e2e-live/free-plan.spec.ts"
+    },
+    {
+      "id": "calendar",
+      "name": "Calendars",
+      "status": "live",
+      "web": "/calendar",
+      "api": [
+        {
+          "method": "POST",
+          "path": "/jmap",
+          "auth": "signed-in",
+          "does": "JMAP calendars and events"
+        },
+        {
+          "method": "PROPFIND",
+          "path": "/dav/cal",
+          "auth": "signed-in",
+          "does": "CalDAV for calendar apps"
+        }
+      ],
+      "proof": "ui/e2e-live/calendar.spec.ts"
+    },
+    {
+      "id": "contacts",
+      "name": "Contacts",
+      "status": "live",
+      "web": "/contacts",
+      "api": [
+        {
+          "method": "POST",
+          "path": "/jmap",
+          "auth": "signed-in",
+          "does": "JMAP address books and contacts"
+        },
+        {
+          "method": "PROPFIND",
+          "path": "/dav/card",
+          "auth": "signed-in",
+          "does": "CardDAV for contact apps"
+        }
+      ],
+      "proof": "ui/e2e-live/contacts.spec.ts"
+    },
+    {
+      "id": "drive",
+      "name": "Drive",
+      "status": "live",
+      "web": "/files",
+      "api": [
+        {
+          "method": "POST",
+          "path": "/jmap",
+          "auth": "signed-in",
+          "does": "JMAP files (FileNode)"
+        },
+        {
+          "method": "PROPFIND",
+          "path": "/dav/file",
+          "auth": "signed-in",
+          "does": "WebDAV for file apps"
+        }
+      ],
+      "proof": "ui/e2e-live/drive.spec.ts, ui/e2e-live/drive-share.spec.ts"
+    },
+    {
+      "id": "docs",
+      "name": "Docs",
+      "status": "live",
+      "web": "/docs",
+      "api": [
+        {
+          "method": "POST",
+          "path": "/jmap",
+          "auth": "signed-in",
+          "does": "Documents are files in Drive named <title>.shdoc.html (FileNode)"
+        }
+      ],
+      "missing": "Two people typing at the same moment do not merge; the second to save chooses whose version to keep.",
+      "proof": "ui/e2e-live/docs.spec.ts"
+    },
+    {
+      "id": "masked",
+      "name": "Masked addresses",
+      "status": "live",
+      "web": "/mail/masked",
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/masked",
+          "auth": "signed-in",
+          "does": "The person's own masked addresses and their limit"
+        },
+        {
+          "method": "POST",
+          "path": "/api/masked",
+          "auth": "signed-in",
+          "does": "Make a new address on the person's domain"
+        },
+        {
+          "method": "POST",
+          "path": "/api/masked/<local part>",
+          "auth": "signed-in",
+          "does": "Switch one on or off, or change its label"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/masked/<local part>",
+          "auth": "signed-in",
+          "does": "Remove one"
+        }
+      ],
+      "missing": "Receiving only; sending from a masked address is not built.",
+      "proof": "ui/e2e-live/masked.spec.ts"
+    },
+    {
+      "id": "google",
+      "name": "Google Drive and Docs link",
+      "status": "partial",
+      "web": "/files?view=google",
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/google",
+          "auth": "signed-in",
+          "does": "Whether the link is available and who is connected"
+        },
+        {
+          "method": "POST",
+          "path": "/api/google/connect",
+          "auth": "signed-in",
+          "does": "The Google sign-in address, with PKCE"
+        },
+        {
+          "method": "GET",
+          "path": "/api/google/callback",
+          "auth": "none",
+          "does": "Where Google sends the browser back"
+        },
+        {
+          "method": "POST",
+          "path": "/api/google/disconnect",
+          "auth": "signed-in",
+          "does": "Forget the link and revoke it at Google"
+        },
+        {
+          "method": "GET",
+          "path": "/api/google/files",
+          "auth": "signed-in",
+          "does": "List, search and browse the person's Google Drive"
+        },
+        {
+          "method": "GET",
+          "path": "/api/google/info/<id>",
+          "auth": "signed-in",
+          "does": "One Google file's details"
+        },
+        {
+          "method": "GET",
+          "path": "/api/google/content/<id>",
+          "auth": "signed-in",
+          "does": "A file's bytes, or a Google Doc exported"
+        },
+        {
+          "method": "POST",
+          "path": "/api/google/copy",
+          "auth": "signed-in",
+          "does": "Put a copy of a Drive file in Google"
+        }
+      ],
+      "missing": "Proven against a stand-in Google server only; a real Google OAuth client is still needed to prove it (RELEASE.md U3). Files are copied one at a time; continuous two-way sync is not built.",
+      "proof": "ui/e2e-live/google.spec.ts"
+    },
+    {
+      "id": "learn",
+      "name": "MCPL lessons",
+      "status": "live",
+      "web": "/manage",
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/learn/progress",
+          "auth": "signed-in",
+          "does": "What this person has finished in every lesson"
+        },
+        {
+          "method": "POST",
+          "path": "/api/learn/progress/{lesson}",
+          "auth": "signed-in",
+          "does": "Add finished steps; finished steps are never taken away"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/learn/progress/{lesson}",
+          "auth": "signed-in",
+          "does": "Start a lesson over"
+        }
+      ],
+      "missing": "More lessons, and comparing this MCPL variant with another app's (RELEASE.md M1).",
+      "docs": "mcpl/README.md",
+      "proof": "ui/e2e-live/learn.spec.ts"
+    },
+    {
+      "id": "domains",
+      "name": "Your domain on the free plan",
+      "status": "live",
+      "web": "/manage",
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/panel/signup",
+          "auth": "none",
+          "does": "Sign up a domain, proven by a DNS record"
+        },
+        {
+          "method": "GET",
+          "path": "/api/panel/domain",
+          "auth": "domain owner",
+          "does": "The owner's domain and its limits"
+        },
+        {
+          "method": "GET",
+          "path": "/api/panel/dns",
+          "auth": "domain owner",
+          "does": "DNS records to publish and their live status"
+        },
+        {
+          "method": "GET",
+          "path": "/api/panel/mailboxes",
+          "auth": "domain owner",
+          "does": "Mailboxes and aliases on the domain"
+        }
+      ],
+      "proof": "ui/e2e-live/free-plan.spec.ts"
+    },
+    {
+      "id": "account",
+      "name": "Your account",
+      "status": "live",
+      "web": "/account",
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/account",
+          "auth": "signed-in",
+          "does": "Who is signed in and what they may do"
+        }
+      ],
+      "proof": "ui/e2e-live/free-plan.spec.ts"
+    },
+    {
+      "id": "orgs",
+      "name": "Organisations",
+      "status": "live",
+      "web": "/shippin/org",
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/orgs",
+          "auth": "administrator",
+          "does": "Every organisation and the domains on the server"
+        },
+        {
+          "method": "POST",
+          "path": "/api/orgs",
+          "auth": "administrator",
+          "does": "Save an organisation: domains, administrators, limits"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/orgs/<id>",
+          "auth": "administrator",
+          "does": "Remove an organisation; its domains and people stay"
+        },
+        {
+          "method": "GET",
+          "path": "/api/org",
+          "auth": "organisation administrator",
+          "does": "Your organisation, its limits and its people"
+        },
+        {
+          "method": "POST",
+          "path": "/api/org/people",
+          "auth": "organisation administrator",
+          "does": "Add a person on one of your domains"
+        },
+        {
+          "method": "POST",
+          "path": "/api/org/people/<id>",
+          "auth": "organisation administrator",
+          "does": "Change a person's name, password or storage"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/org/people/<id>",
+          "auth": "organisation administrator",
+          "does": "Remove a person"
+        },
+        {
+          "method": "POST",
+          "path": "/api/org/people/<id>/aliases",
+          "auth": "organisation administrator",
+          "does": "Give a person another address"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/org/people/<id>/aliases/<alias>",
+          "auth": "organisation administrator",
+          "does": "Remove one of a person's addresses"
+        },
+        {
+          "method": "POST",
+          "path": "/api/org/teams",
+          "auth": "organisation administrator",
+          "does": "Make a team"
+        },
+        {
+          "method": "POST",
+          "path": "/api/org/teams/<id>/members",
+          "auth": "organisation administrator",
+          "does": "Put someone on a team or take them off"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/org/teams/<id>",
+          "auth": "organisation administrator",
+          "does": "Remove a team"
+        },
+        {
+          "method": "GET",
+          "path": "/api/org/domains/<id>/dns",
+          "auth": "organisation administrator",
+          "does": "Which DNS records are published for one of your domains"
+        },
+        {
+          "method": "GET",
+          "path": "/api/brand/<domain>",
+          "auth": "none",
+          "does": "A domain's logo"
+        },
+        {
+          "method": "POST",
+          "path": "/api/brand/<domain>",
+          "auth": "domain manager",
+          "does": "Set a domain's logo: PNG, JPEG or WebP under 90 KB"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/brand/<domain>",
+          "auth": "domain manager",
+          "does": "Remove a domain's logo"
+        },
+        {
+          "method": "GET",
+          "path": "/api/sso/<domain>",
+          "auth": "none",
+          "does": "Whether a domain offers its own sign-in"
+        },
+        {
+          "method": "POST",
+          "path": "/api/sso/begin",
+          "auth": "none",
+          "does": "Start a sign-in through the domain's identity provider"
+        },
+        {
+          "method": "GET",
+          "path": "/api/sso/callback",
+          "auth": "none",
+          "does": "Where the identity provider sends the browser back"
+        },
+        {
+          "method": "GET",
+          "path": "/api/sso/<domain>/settings",
+          "auth": "domain manager",
+          "does": "A domain's provider, never its secret"
+        },
+        {
+          "method": "POST",
+          "path": "/api/sso/<domain>/settings",
+          "auth": "domain manager",
+          "does": "Set a domain's OpenID Connect provider"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/sso/<domain>/settings",
+          "auth": "domain manager",
+          "does": "Remove a domain's provider"
+        },
+        {
+          "method": "GET",
+          "path": "/api/scim/settings/<domain>",
+          "auth": "domain manager",
+          "does": "Whether a domain has a SCIM token, and the endpoint"
+        },
+        {
+          "method": "POST",
+          "path": "/api/scim/settings/<domain>",
+          "auth": "domain manager",
+          "does": "Make a new SCIM token, shown once"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/scim/settings/<domain>",
+          "auth": "domain manager",
+          "does": "Revoke the SCIM token"
+        },
+        {
+          "method": "GET",
+          "path": "/api/scim/v2/Users",
+          "auth": "SCIM token",
+          "does": "People on the token's domain; filter with eq"
+        },
+        {
+          "method": "POST",
+          "path": "/api/scim/v2/Users",
+          "auth": "SCIM token",
+          "does": "Create a person"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/scim/v2/Users/<id>",
+          "auth": "SCIM token",
+          "does": "Replace a person's details"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/scim/v2/Users/<id>",
+          "auth": "SCIM token",
+          "does": "Change a person, or switch them off"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/scim/v2/Users/<id>",
+          "auth": "SCIM token",
+          "does": "Remove a person"
+        },
+        {
+          "method": "GET",
+          "path": "/api/scim/v2/Groups",
+          "auth": "SCIM token",
+          "does": "Teams on the token's domain"
+        },
+        {
+          "method": "POST",
+          "path": "/api/scim/v2/Groups",
+          "auth": "SCIM token",
+          "does": "Create a team"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/scim/v2/Groups/<id>",
+          "auth": "SCIM token",
+          "does": "Change a team or its members"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/scim/v2/Groups/<id>",
+          "auth": "SCIM token",
+          "does": "Remove a team"
+        }
+      ],
+      "missing": "The server's administrators assign domains; an organisation cannot add its own yet. DKIM keys and reports stay with the server's administrators. Sign-in through a provider is OpenID Connect only, proven against a stand-in, and needs an account to exist already.",
+      "proof": "ui/e2e-live/org.spec.ts, ui/e2e-live/brand.spec.ts, ui/e2e-live/sso.spec.ts, ui/e2e-live/scim.spec.ts"
+    },
+    {
+      "id": "assistant",
+      "name": "Assistant",
+      "status": "partial",
+      "web": "/shippin/admin/ai",
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/assistant",
+          "auth": "signed-in",
+          "does": "Whether the assistant is offered on this server"
+        },
+        {
+          "method": "POST",
+          "path": "/api/assistant",
+          "auth": "signed-in",
+          "does": "Ask how something works; it explains and changes nothing"
+        },
+        {
+          "method": "GET",
+          "path": "/api/ai/settings",
+          "auth": "administrator",
+          "does": "Which AI service is set, never its key"
+        },
+        {
+          "method": "POST",
+          "path": "/api/ai/settings",
+          "auth": "administrator",
+          "does": "Choose the AI service and model"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/ai/settings",
+          "auth": "administrator",
+          "does": "Remove the AI service"
+        },
+        {
+          "method": "POST",
+          "path": "/api/ai/test",
+          "auth": "administrator",
+          "does": "Check the AI service answers"
+        }
+      ],
+      "missing": "Off until an administrator sets it. Proven against stand-ins; a real model is the next proof.",
+      "proof": "ui/e2e-live/assistant.spec.ts"
+    },
+    {
+      "id": "admin",
+      "name": "Running the server",
+      "status": "live",
+      "web": "/shippin/admin",
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/setup",
+          "auth": "none",
+          "does": "Whether first-run setup is still pending"
+        },
+        {
+          "method": "POST",
+          "path": "/api/setup/admin",
+          "auth": "setup key",
+          "does": "Create the first administrator"
+        },
+        {
+          "method": "GET",
+          "path": "/api/stats",
+          "auth": "administrator",
+          "does": "Dashboard statistics: presets or any range, all nodes or one"
+        },
+        {
+          "method": "GET",
+          "path": "/api/trace/token",
+          "auth": "administrator",
+          "does": "A 60-second token for the live trace stream"
+        },
+        {
+          "method": "GET",
+          "path": "/api/trace/live",
+          "auth": "trace token",
+          "does": "Live server events, filtered by level, keyword and key"
+        },
+        {
+          "method": "GET",
+          "path": "/api/trace/history",
+          "auth": "administrator",
+          "does": "Search stored mail traces"
+        },
+        {
+          "method": "GET",
+          "path": "/api/trace/history/<id>",
+          "auth": "administrator",
+          "does": "One stored trace's events"
+        },
+        {
+          "method": "GET",
+          "path": "/api/alerts",
+          "auth": "administrator",
+          "does": "Alert rules and the metrics they can watch"
+        },
+        {
+          "method": "POST",
+          "path": "/api/alerts",
+          "auth": "administrator",
+          "does": "Save an alert rule"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/alerts/<id>",
+          "auth": "administrator",
+          "does": "Remove an alert rule"
+        },
+        {
+          "method": "POST",
+          "path": "/api/alerts/check",
+          "auth": "administrator",
+          "does": "Check every rule now"
+        },
+        {
+          "method": "GET",
+          "path": "/api/recover/accounts",
+          "auth": "administrator",
+          "does": "Deleted accounts still being kept"
+        },
+        {
+          "method": "POST",
+          "path": "/api/recover/accounts/<id>/restore",
+          "auth": "administrator",
+          "does": "Bring back a deleted account"
+        },
+        {
+          "method": "GET",
+          "path": "/api/recover/messages/<account>",
+          "auth": "administrator",
+          "does": "A person's deleted messages still being kept"
+        },
+        {
+          "method": "POST",
+          "path": "/api/recover/messages/<account>/<id>/restore",
+          "auth": "administrator",
+          "does": "Put a deleted message back in the Inbox"
+        },
+        {
+          "method": "GET",
+          "path": "/api/calendar-templates",
+          "auth": "administrator",
+          "does": "The invitation and reminder emails"
+        },
+        {
+          "method": "POST",
+          "path": "/api/calendar-templates/<id>",
+          "auth": "administrator",
+          "does": "Reword one, checked before saving"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/calendar-templates/<id>",
+          "auth": "administrator",
+          "does": "Go back to the built-in email"
+        },
+        {
+          "method": "GET",
+          "path": "/api/resources",
+          "auth": "administrator",
+          "does": "The server, and how much each organisation is using"
+        },
+        {
+          "method": "GET",
+          "path": "/api/schema",
+          "auth": "signed-in",
+          "does": "The settings schema the portal is drawn from"
+        },
+        {
+          "method": "POST",
+          "path": "/jmap",
+          "auth": "administrator",
+          "does": "Every server object and setting (urn:shippin.tech:jmap)"
+        },
+        {
+          "method": "GET",
+          "path": "/api/keys",
+          "auth": "administrator",
+          "does": "Each service's keys and the key-wrapping key's place; never a key's bytes"
+        },
+        {
+          "method": "POST",
+          "path": "/api/keys/author",
+          "auth": "administrator",
+          "does": "Make a random key for every service that has none yet"
+        },
+        {
+          "method": "POST",
+          "path": "/api/keys/<service>/replace",
+          "auth": "administrator",
+          "does": "Replace a service's key (random, pasted, environment variable or file); its values are sealed again, then the old key is destroyed"
+        }
+      ],
+      "proof": "ui/e2e-live/dashboard.spec.ts, ui/e2e-live/tracing.spec.ts, ui/e2e-live/alerts.spec.ts, ui/e2e-live/recover.spec.ts, ui/e2e-live/split-domain.spec.ts, ui/e2e-live/calendar-templates.spec.ts, ui/e2e-live/resources.spec.ts, ui/e2e-live/admin-shell.spec.ts, ui/e2e-live/people.spec.ts, ui/e2e-live/keys.spec.ts",
+      "missing": "Features still being rebuilt as our own code are listed in RELEASE.md, section F."
+    },
+    {
+      "id": "agents",
+      "name": "AI agents on the operator's screen",
+      "status": "partial",
+      "web": "/shippin/admin",
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/mcp",
+          "auth": "administrator",
+          "does": "MCP server (2026-07-28, and initialize-based 2025-11-25, 2025-06-18, 2025-03-26). Every tool is carried out on the operator's open admin panel, which asks before anything that writes"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mcp/viewport/token",
+          "auth": "administrator",
+          "does": "A 60-second token for the screen's event stream"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mcp/viewport/stream",
+          "auth": "token",
+          "does": "The agent's calls, as server-sent events, for the screen to carry out"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mcp/viewport/result",
+          "auth": "administrator",
+          "does": "What the screen and the operator decided, back to the waiting agent"
+        }
+      ],
+      "missing": "Tools cover the screen itself, Keys and AI settings so far; more screens join by declaring actions. Calls reach screens open on the same server node. Agents sign in with an administrator's password, app password or API key; OAuth discovery for MCP clients is not built. Agents never pass keys.",
+      "proof": "ui/e2e-live/mcp.spec.ts"
+    }
+  ]
+}

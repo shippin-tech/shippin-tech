@@ -1,0 +1,31 @@
+{
+  "id": "set-up-your-domain",
+  "title": "Set up your domain",
+  "audience": "owner",
+  "steps": [
+    {
+      "id": "publish-dns",
+      "say": "Publish the DNS records listed below at your DNS provider, then press Check again.",
+      "where": "/manage",
+      "doneWhen": "panel.dns.published"
+    },
+    {
+      "id": "add-mailbox",
+      "say": "Add a mailbox for someone on your team.",
+      "where": "/manage",
+      "doneWhen": "panel.mailbox.created"
+    },
+    {
+      "id": "send-first-message",
+      "say": "Send your first message from webmail.",
+      "where": "/mail/compose",
+      "doneWhen": "mail.message.sent"
+    },
+    {
+      "id": "turn-on-two-factor",
+      "say": "Turn on two-factor sign-in for your own account.",
+      "where": "/account",
+      "doneWhen": "account.twofactor.enabled"
+    }
+  ]
+}

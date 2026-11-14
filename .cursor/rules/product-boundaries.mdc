@@ -1,0 +1,133 @@
+---
+description: shippin.tech product boundary. Zoho client map is current work. Docs wait.
+alwaysApply: true
+---
+
+# Product boundary
+
+shippin.tech is the open product and the brand. shippin.cloud is later paid hosting of the same server, not a second mail engine.
+
+This repository is the Rust mail and groupware engine: SMTP, IMAP, JMAP, POP3, ManageSieve, CalDAV, and CardDAV.
+
+## Current work
+
+Make the scale image a deployable multi-tenant product. `Dockerfile.fdb`, started from `resources/scale`, runs two nodes on FoundationDB, one S3 bucket, and NATS. Two tenants share that deployment. A mailbox written for one tenant on the first node is read for that same tenant on the second node, and the other tenant cannot read it. The same process serves JMAP, CalDAV, and CardDAV so another product can connect. shippin.cloud later hosts that same image. The license choice is written only after that.
+
+The engine already has this groundwork in `crates/common/src/auth/mod.rs`: a tenant has roles, quotas, and permissions; a domain and an account each carry `id_tenant`.
+
+The scale compose file sets `shippin.tech_SCALE_S3_ENDPOINT`, `shippin.tech_SCALE_S3_ACCESS_KEY`, `shippin.tech_SCALE_S3_SECRET_KEY`, and `shippin.tech_SCALE_NATS_ADDRESS`. On first boot the scale binary writes those into the existing BlobStore and Coordinator registry singletons when they are empty. A one-node build without those variables does not write them.
+
+Do not add, in this phase:
+
+- a license choice in `Cargo.toml` or a `LICENSE` file
+- shippin.cloud hosting
+- a webmail, calendar, or contacts client
+- a document, spreadsheet, or slide editor
+- chat, meetings, or a drive product
+- a Go control plane
+- a second mail server, including Mox, Postfix, or Dovecot
+- a collaborative Docs editor (Google Docs / Zoho Writer style)
+
+Mox is a product reference only. Do not port it or run it beside this server.
+
+The UI work is the full transition of `assets/webui` into the SvelteKit app: sign-in, bootstrap, dashboard, delivery trace, actions, Sievepad, and the schema-driven admin. The Astro landing page comes after that transition. It is a static public site. The HTML states who shippin.tech is and what the server does. `robots.txt`, a sitemap, schema.org, and `llms.txt` make that page readable to public crawlers. The landing does not host the password form.
+
+## Suite map
+
+These capabilities were not written in this repo. Sources: [Zoho Workplace](https://www.zoho.com/workplace/) and its [edition list](https://www.zoho.com/workplace/pricing.html), the [Zoho API directory](https://www.zoho.com/developer/rest-apis/api-directory.html), and [Google Workspace developer products](https://developers.google.com/workspace/products).
+
+This engine already covers the mail, calendar, contacts, and directory row. Other products connect to those surfaces. They are not a second mail server and they are not built inside this phase.
+
+| Suite capability | Zoho | Google | This repository |
+| --- | --- | --- | --- |
+| Mail | Mail | Gmail | SMTP, IMAP, JMAP, POP3, ManageSieve |
+| Calendar | Calendar | Calendar | CalDAV |
+| Contacts | Contacts, Card Scanner | People API | CardDAV |
+| Tenants, domains, users, quotas | Directory, Mail Admin | Admin SDK Directory API | `TenantCache`, domains, accounts, SCIM flag, OAuth |
+| Files | WorkDrive | Drive | Later product, connected over the existing store and HTTP surfaces |
+| Documents, spreadsheets, slides | Writer, Sheet, Show | Docs, Sheets, Slides | Later products. Zoho Office Integrator embeds those editors while files stay in the caller's storage |
+| Chat | Cliq | Chat | Later product |
+| Meetings | Meeting | Meet | Later product |
+| Tasks | ToDo | Tasks | Later product on the groupware data that already exists |
+| Forms, sites, keep, vault, social | Vault, Connect | Forms, Sites, Keep, Vault | Separate products |
+
+## Surfaces
+
+This fork is the Rust engine kept after it served the maintainer and two customers. Mailcow is not the UI to copy. Mox is not the engine to switch to. The `/admin` and `/account` bundle is the UI to rebuild with shippin.tech style tokens and visuals.
+
+The same standards apply across the maintainer's products.
+
+- **MCP Warp.** Each domain has one master. An agent reaches that master for canonical knowledge instead of keeping a private copy. The UI can show the discussion that produced a decision.
+- **A2UI.** Agent-driven UI uses the A2UI protocol, production v0.9.1 (`createSurface`, `updateComponents`, `updateDataModel`, `deleteSurface`). The client owns a trusted component catalog and the brand. The agent sends declarative messages, not executable UI code. https://a2ui.org/specification/v0.9.1-a2ui/
+- **Learning surface.** Linger, signals, and dynamic inputs open tooltips and modals from a shared library: a demo or an interactive explanation, passive until the person stays on that spot. Every component has a path and an instruction an agent can follow.
+- **Style tokens.** Color, type, space, and motion are tokens. shippin.tech branding is a token set on that catalog. Screens do not invent their own colors.
+- **SvelteKit and Svelte Flow.** The application UI is SvelteKit with Svelte 5. Svelte Flow graphs are a view over the catalog, used to witness a domain master or a discussion. The old `/admin` and `/account` HTML converts into this app. CSS variables and mail bodies stay CSS and HTML.
+
+## Kit layout
+
+File routes are the only pages, the way a Next.js app router is the only pages. A feature plugs in by adding a folder. Nothing is registered in a central list.
+
+```text
+ui/src/lib/catalog/<component>/   Component.svelte, variants.ts, component.json, instruction.md
+ui/src/lib/token/                 color.css, motion.css, interaction.css
+ui/src/lib/flow/<domain>/         Svelte Flow graph. Nodes render catalog ids.
+ui/src/lib/adapter/               The only module that calls the Rust engine.
+ui/src/lib/ai-runtime/<domain>/kernel/instruction.md
+ui/src/lib/ai-runtime/<domain>/threads/<feature>/instruction.md
+ui/src/lib/admin/ai/
+ui/src/lib/admin/chat/
+ui/src/routes/(mail|account|admin|calendar|contacts|files)/<feature>/+page.svelte
+                               +page.server.ts, +layout.svelte, +error.svelte
+```
+
+The application tree is `ui/`. It is not a Cargo workspace member.
+
+Domains that reserve a kernel are `mail`, `docs`, and `control-plane`. A sub-thread is a feature folder under `threads/` and uses the kebab-case Rust module name. An agent starts at that domain's `kernel/instruction.md`.
+
+The control plane is local git branch `control-plane`. That branch is not pushed. `main` does not carry `ui/src/routes/(admin)` or `ui/src/lib/ai-runtime/control-plane`. Check out `control-plane` to work on tenants, domains, accounts, and SCIM.
+
+Import direction is one way. `routes` and `ai-runtime` may call `adapter`. `flow` and `admin` may render `catalog`. `catalog` and `token` import neither `adapter`, nor routes, nor flow. `+page.server.ts` is the server boundary. A catalog component does not fetch.
+
+`component.json` names the A2UI type and the variants. A checker discovers those files. Adding a component does not edit a registry.
+
+Tauri wraps the SvelteKit build. A Go control plane may serve that build and set tenant ceilings. It does not contain a second component library.
+
+## Naming
+
+Rust names stay as they are. UI names are the same words, with a different case, so a folder can be traced to one crate.
+
+| Kind | Rust, already in the tree | UI folder |
+| --- | --- | --- |
+| Package | `crates/<name>`, kebab-case when the package has a hyphen (`jmap-proto`, `dav-proto`, `http-proto`, `scim-proto`, `imap-proto`) | no UI crate inside `crates/` |
+| Module | `snake_case` files: `calendar_event`, `share_notification`, `email/get.rs` | kebab-case: `calendar-event`, `share-notification` |
+| Component file | | PascalCase `CalendarEvent.svelte` |
+| Manifest | | `component.json` field `id` is the kebab-case folder name |
+| Route | `crates/http/src/request.rs` path segment | SvelteKit group |
+
+The HTTP switch in `crates/http/src/request.rs` is the adapter's map:
+
+| Path | Rust owner | UI route group |
+| --- | --- | --- |
+| `/jmap` | `crates/jmap` | `(mail)`, `(calendar)`, `(contacts)`, `(files)`, `(account)` |
+| `/dav` | `crates/dav` | calendar and contacts, CalDAV and CardDAV |
+| `/api` | `crates/http/src/api` and `crates/jmap/src/registry` | `(admin)` |
+| `/scim` | `crates/scim` | `(admin)` provisioning |
+| `/auth`, `/login` | `crates/http/src/auth` | `(account)` session |
+| `/mail/config-v1.1.xml` | autoconfig | no catalog component |
+
+JMAP domains that already have a folder under `crates/jmap/src` keep that name in the catalog: `email`, `mailbox`, `thread`, `submission`, `sieve`, `vacation`, `calendar`, `calendar-event`, `contact`, `addressbook`, `file` (file nodes), `quota`, `identity`, `principal`. Registry records under `crates/jmap/src/registry/mapping` are `(admin)` features: `domain`, `account`, `cluster`, and the other mapping files. `crates/directory` is the tenant and account directory the control plane writes. `maxDiskQuota` on the tenant and the account is the storage ceiling. The free preset is 2 GB on that field.
+
+A new UI word that does not match a crate or a `crates/jmap/src` folder is a new domain and needs its own folder on both sides. Do not rename a Rust module to match a Svelte preference.
+
+## Folders
+
+Layout is `domain/feature`, colocated and plug-in. A second copy is allowed only when the path states the provenance.
+
+- `ai-runtime/` is agent execution.
+- `admin/ai/` is the team-managed agent surface.
+- `admin/chat/` is the witnessed discussion.
+- `adapter/` is the only door into the Rust engine. The UI and a future control-plane service do not import mail crates as their own code.
+
+Rust stays the mail engine, with strict crate boundaries. The control plane that sets tenant ceilings may be a Go service later. It manages clients. Each client has a disk and object ceiling and, inside that ceiling, full mail, domain, and capability control. The license field stays `deciding` until the license phase. Do not invent a license checker that accepts keys.
+
+The web and phone mailbox, documents, and photos or phone backup still wait until shippin.cloud hosts the deployable image. The token names, the catalog, and these folders are the standard those screens must use.

@@ -1,0 +1,240 @@
+[
+  {
+    "id": "author-your-keys",
+    "title": "Author your keys",
+    "audience": "admin",
+    "steps": [
+      {
+        "say": "Give every service its own key. Make them at random, or bring your own.",
+        "where": "/shippin/admin/keys"
+      },
+      {
+        "say": "Replace one key, to see its secrets sealed again under the new one and the old key destroyed.",
+        "where": "/shippin/admin/keys"
+      }
+    ]
+  },
+  {
+    "id": "keep-your-contacts",
+    "title": "Keep your contacts",
+    "audience": "user",
+    "steps": [
+      {
+        "say": "Add someone. Press New contact and give them a name or an address.",
+        "where": "/contacts"
+      },
+      {
+        "say": "Open a contact and change a detail, like their phone or company.",
+        "where": "/contacts"
+      }
+    ]
+  },
+  {
+    "id": "link-google-drive",
+    "title": "Link your Google Drive",
+    "audience": "user",
+    "steps": [
+      {
+        "say": "Connect your Google account.",
+        "where": "/files?view=google"
+      },
+      {
+        "say": "Copy a file from Google to your Drive.",
+        "where": "/files?view=google"
+      },
+      {
+        "say": "In My Drive, press To Google on a file.",
+        "where": "/files"
+      }
+    ]
+  },
+  {
+    "id": "mask-your-address",
+    "title": "Mask your address",
+    "audience": "user",
+    "steps": [
+      {
+        "say": "Make an address for something you do not fully trust, like a shop's sign-up form.",
+        "where": "/mail/masked"
+      },
+      {
+        "say": "Turn it off. Mail to that address is now refused, and your real address stays private.",
+        "where": "/mail/masked"
+      }
+    ]
+  },
+  {
+    "id": "run-your-organisation",
+    "title": "Run your organisation",
+    "audience": "owner",
+    "steps": [
+      {
+        "say": "Add a person. They get their own mailbox, Drive and calendar on your domain.",
+        "where": "/shippin/org/people"
+      },
+      {
+        "say": "Edit someone to reset a password or change how much storage they have.",
+        "where": "/shippin/org/people"
+      }
+    ]
+  },
+  {
+    "id": "run-your-team",
+    "title": "Run your team",
+    "audience": "admin",
+    "steps": [
+      {
+        "say": "Make a team. It gets its own address that reaches everyone in it.",
+        "where": "/shippin/admin/people"
+      },
+      {
+        "say": "Add a person and put them on the team.",
+        "where": "/shippin/admin/people"
+      },
+      {
+        "say": "Edit someone and set how much storage they can use.",
+        "where": "/shippin/admin/people"
+      }
+    ]
+  },
+  {
+    "id": "set-up-an-organisation",
+    "title": "Set up an organisation",
+    "audience": "admin",
+    "steps": [
+      {
+        "say": "Make an organisation. Give it its domains, the person who runs it, and how many people and how much storage it can have.",
+        "where": "/shippin/admin/orgs"
+      }
+    ]
+  },
+  {
+    "id": "set-up-your-domain",
+    "title": "Set up your domain",
+    "audience": "owner",
+    "steps": [
+      {
+        "say": "Publish the DNS records listed below at your DNS provider, then press Check again.",
+        "where": "/manage"
+      },
+      {
+        "say": "Add a mailbox for someone on your team.",
+        "where": "/manage"
+      },
+      {
+        "say": "Send your first message from webmail.",
+        "where": "/mail/compose"
+      },
+      {
+        "say": "Turn on two-factor sign-in for your own account.",
+        "where": "/account"
+      }
+    ]
+  },
+  {
+    "id": "shape-your-organisation",
+    "title": "Shape your organisation",
+    "audience": "owner",
+    "steps": [
+      {
+        "say": "Make a team. It gets its own address that reaches everyone on it.",
+        "where": "/shippin/org/teams"
+      },
+      {
+        "say": "Tick the people who belong on it.",
+        "where": "/shippin/org/teams"
+      }
+    ]
+  },
+  {
+    "id": "turn-on-the-assistant",
+    "title": "Turn on the assistant",
+    "audience": "admin",
+    "steps": [
+      {
+        "say": "Choose the AI service. A model on your own machines keeps every question here.",
+        "where": "/shippin/admin/ai"
+      },
+      {
+        "say": "Test the connection to see it answer.",
+        "where": "/shippin/admin/ai"
+      }
+    ]
+  },
+  {
+    "id": "use-your-calendar",
+    "title": "Use your calendar",
+    "audience": "user",
+    "steps": [
+      {
+        "say": "Add an event. Press New event, or a day on the calendar.",
+        "where": "/calendar"
+      },
+      {
+        "say": "Open your event and change something about it.",
+        "where": "/calendar"
+      },
+      {
+        "say": "Add a guest's address to an event. They get an email invitation.",
+        "where": "/calendar"
+      }
+    ]
+  },
+  {
+    "id": "use-your-drive",
+    "title": "Use your Drive",
+    "audience": "user",
+    "steps": [
+      {
+        "say": "Upload a file. Press Upload, or drop a file on this page.",
+        "where": "/files"
+      },
+      {
+        "say": "Make a folder to keep things together.",
+        "where": "/files"
+      },
+      {
+        "say": "Move a file into your folder with its Move button.",
+        "where": "/files"
+      },
+      {
+        "say": "Download a file to this device.",
+        "where": "/files"
+      }
+    ]
+  },
+  {
+    "id": "watch-your-server",
+    "title": "Watch your server",
+    "audience": "admin",
+    "steps": [
+      {
+        "say": "Make an alert. Pick a number to watch, the line it should not cross, and where to send the warning.",
+        "where": "/shippin/admin/alerts"
+      },
+      {
+        "say": "Press Check now to see it work without waiting five minutes.",
+        "where": "/shippin/admin/alerts"
+      }
+    ]
+  },
+  {
+    "id": "write-a-document",
+    "title": "Write a document",
+    "audience": "user",
+    "steps": [
+      {
+        "say": "Start a new document and give it a title.",
+        "where": "/docs"
+      },
+      {
+        "say": "Write something. It saves by itself as you type.",
+        "where": "/docs"
+      },
+      {
+        "say": "Download a copy, or print it to PDF.",
+        "where": "/docs"
+      }
+    ]
+  }
+]

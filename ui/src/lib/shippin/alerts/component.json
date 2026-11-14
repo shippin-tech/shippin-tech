@@ -1,0 +1,19 @@
+{
+  "id": "alerts",
+  "a2ui": "Alerts",
+  "variants": [
+    "list",
+    "form",
+    "empty"
+  ],
+  "engine": "crates/services/src/alerts.rs",
+  "routes": [
+    "/shippin/admin/alerts"
+  ],
+  "emits": [
+    "alerts.rule.saved",
+    "alerts.rule.removed",
+    "alerts.checked"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/admin/kernel/instruction.md"
+}

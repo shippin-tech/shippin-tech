@@ -1,0 +1,24 @@
+{
+  "id": "file",
+  "a2ui": "Drive",
+  "variants": [
+    "browse",
+    "search",
+    "empty",
+    "shared"
+  ],
+  "engine": "crates/jmap/src/file",
+  "routes": [
+    "/files"
+  ],
+  "emits": [
+    "drive.file.uploaded",
+    "drive.file.downloaded",
+    "drive.folder.created",
+    "drive.item.renamed",
+    "drive.item.moved",
+    "drive.item.deleted",
+    "drive.item.shared"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/mail/kernel/instruction.md"
+}

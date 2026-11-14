@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-01-scale-product",
+  "title": "Register the scale layout and prove two tenants",
+  "costar": {
+    "context": "two-node-shared is done. deployable-product is the next phase: the scale image is a multi-tenant product that another product can connect to. shippin.cloud and the license choice stay after that.",
+    "objective": "Make a scale binary write the existing S3 and NATS registry singletons from its environment, and prove two tenants on that shared layout.",
+    "style": "One boot path in the existing defaults, one ignored integration test, and the scale compose environment.",
+    "tone": "Direct.",
+    "audience": "The next coding agent and the maintainer.",
+    "response": "scale_two_nodes exits 0 with tenant isolation and JMAP, CalDAV, and CardDAV discovery. The default rocks and enterprise build still exits 0. deployable-product stays in_progress until the Dockerfile.fdb container is started."
+  },
+  "sources": [
+    {"kind": "code", "ref": ".ai/modules/roadmap/data/roadmap.json"},
+    {"kind": "code", "ref": ".cursor/rules/product-boundaries.mdc"},
+    {"kind": "code", "ref": ".cursor/rules/license-and-scale.mdc"},
+    {"kind": "code", "ref": "crates/main/Cargo.toml"},
+    {"kind": "code", "ref": "crates/common/src/manager/defaults.rs"},
+    {"kind": "code", "ref": "crates/common/src/manager/boot.rs"},
+    {"kind": "code", "ref": "crates/store/src/build/blob.rs"},
+    {"kind": "code", "ref": "crates/coordinator/src/bootstrap.rs"},
+    {"kind": "code", "ref": "tests/src/cluster/scale.rs"},
+    {"kind": "code", "ref": "tests/src/system/tenant.rs"},
+    {"kind": "code", "ref": "resources/scale/docker-compose.yml"},
+    {"kind": "code", "ref": "resources/scale/config.json"},
+    {"kind": "code", "ref": "Dockerfile.fdb"}
+  ],
+  "concerns": [
+    "The container built from Dockerfile.fdb was not started. deployable-product stays in_progress until that image returns tenant A's message from the second node and refuses tenant B.",
+    "A partial scale environment writes nothing. All four of endpoint, access key, secret key, and NATS address are required.",
+    "An existing BlobStore or Coordinator singleton is not replaced. Two nodes with the same environment can both insert only while the singleton is empty.",
+    "The default build does not have the s3 or nats features, so it does not contain this boot path.",
+    "Password policy rejected 'alice secret'. The proof uses longer passphrases.",
+    "Tenant B's JMAP Mailbox/get on tenant A's account returns forbidden, not accountNotFound.",
+    "docker compose is not installed in this WSL. The compose file was not started.",
+    "The unoptimized proof still needs RUST_MIN_STACK=33554432."
+  ],
+  "context": "The scale compose file started two nodes on FoundationDB but never wrote the S3 blob store or the NATS coordinator, which live as registry singletons. The two-node test proved one mailbox, not two tenants, and did not show that the same process serves JMAP, CalDAV, and CardDAV.",
+  "current_state": "insert_safe_defaults writes BlobStore::S3 and Coordinator::Nats when the scale features are on, the four shippin.tech_SCALE_* variables are set, and those singletons are empty. scale_two_nodes creates tenant A and tenant B, reads tenant A's message from the second node, and tenant B receives forbidden for tenant A's mailbox. Both nodes redirect /.well-known/jmap, /.well-known/caldav, and /.well-known/carddav. Node B's JMAP session advertises mail, calendars, and contacts.",
+  "target_design": "The shared layout stays the existing singletons. The scale image's environment is the only new input. A one-node build without those variables keeps using whatever blob store and coordinator are already in the registry, including the defaults. Adding another tenant is another Tenant, Domain, and UserAccount in that same registry. JMAP, CalDAV, and CardDAV stay the HTTP routes the server already serves.",
+  "changes": [
+    "crates/common/src/manager/defaults.rs reads the four scale variables and inserts the S3 and NATS singletons only when the s3 and nats features are compiled in and the singletons are empty.",
+    "crates/common/Cargo.toml, crates/main/Cargo.toml, and tests/Cargo.toml enable common/s3 and common/nats from the existing s3 and nats features. The default feature set stays rocks and enterprise.",
+    "tests/src/cluster/scale.rs creates two tenants on the shared FoundationDB layout, fetches tenant A's message from node B, and checks that tenant B is forbidden from that mailbox. It also checks JMAP session capabilities and the CalDAV and CardDAV discovery redirects on both nodes.",
+    "resources/scale/docker-compose.yml sets the four variables on both nodes, pulls cgr.dev/chainguard/minio, and pulls quay.io/minio/mc.",
+    "deployable-product in .ai/modules/roadmap/data/roadmap.json is in_progress."
+  ],
+  "boundaries": [
+    "Do not change the default features in crates/main/Cargo.toml.",
+    "Do not remove enterprise from either Dockerfile.",
+    "Do not choose a license, host shippin.cloud, or add a document editor, chat service, or second mail server.",
+    "Do not replace an existing BlobStore or Coordinator singleton.",
+    "Do not mark deployable-product done until a container built from Dockerfile.fdb is started from resources/scale and shows the tenant split.",
+    "Do not open a GitHub issue or pull request."
+  ],
+  "verification": [
+    {
+      "name": "two-tenants-on-shared-nodes",
+      "command": "RUST_MIN_STACK=33554432 STORE=FoundationDb cargo test -p tests --features scale -- --ignored scale_two_nodes",
+      "proves": "Tenant A's message appended on node A is fetched on node B, tenant B is forbidden from that mailbox, and both nodes serve JMAP, CalDAV, and CardDAV discovery. A single-node fixture cannot pass this.",
+      "expected": "exit 0 and test cluster::scale::scale_two_nodes ok",
+      "result": "WSL Ubuntu, libfdb_c, Docker, CARGO_TARGET_DIR=/home/hades/mail-shippin-target, CARGO_PROFILE_DEV_DEBUG=0. test cluster::scale::scale_two_nodes ... ok. test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 96 filtered out; finished in 16.66s. EXIT=0."
+    },
+    {
+      "name": "default-build-keeps-rocks-and-enterprise",
+      "command": "cargo build -p shippin-tech",
+      "proves": "The one-node build still finishes with the default features rocks and enterprise.",
+      "expected": "exit 0",
+      "result": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 4m 29s. exit 0."
+    },
+    {
+      "name": "scale-env-is-all-or-nothing",
+      "command": "cargo test -p common --features s3,nats scale_layout_env_is_all_or_nothing",
+      "proves": "A missing scale variable does not become a layout, and a complete set defaults the bucket to shippin.tech and the region to eu-central-1.",
+      "expected": "exit 0 and test manager::defaults::scale_layout_env_tests::scale_layout_env_is_all_or_nothing ok",
+      "result": "test manager::defaults::scale_layout_env_tests::scale_layout_env_is_all_or_nothing ... ok. test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 90 filtered out; finished in 0.00s."
+    },
+    {
+      "name": "scale-binary-compiles",
+      "command": "cargo check -p shippin-tech --no-default-features --features scale,enterprise",
+      "proves": "The product binary that Dockerfile.fdb builds accepts the scale feature set, including the boot path.",
+      "expected": "exit 0",
+      "result": "WSL, CARGO_TARGET_DIR=/home/hades/mail-shippin-target, CARGO_PROFILE_DEV_DEBUG=0. Finished `dev` profile [unoptimized] target(s) in 12m 30s. EXIT=0."
+    }
+  ],
+  "status": "implemented"
+}

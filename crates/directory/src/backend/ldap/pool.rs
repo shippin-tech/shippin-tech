@@ -1,0 +1,36 @@
+
+
+use super::LdapConnectionManager;
+use deadpool::managed;
+use ldap3::{Ldap, LdapConnAsync, LdapError, exop::WhoAmI};
+
+impl managed::Manager for LdapConnectionManager {
+    type Type = Ldap;
+    type Error = LdapError;
+
+    async fn create(&self) -> Result<Ldap, LdapError> {
+        let (conn, mut ldap) =
+            LdapConnAsync::with_settings(self.settings.clone(), &self.address).await?;
+
+        ldap3::drive!(conn);
+
+        if let Some(bind) = &self.bind_dn {
+            ldap.simple_bind(&bind.dn, &bind.password)
+                .await?
+                .success()?;
+        }
+
+        Ok(ldap)
+    }
+
+    async fn recycle(
+        &self,
+        conn: &mut Ldap,
+        _: &managed::Metrics,
+    ) -> managed::RecycleResult<LdapError> {
+        conn.extended(WhoAmI)
+            .await
+            .map(|_| ())
+            .map_err(managed::RecycleError::Backend)
+    }
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shippin.tech/mcpl/v0/action.schema.json",
+  "title": "MCPL v0 action (proposed extension: drive)",
+  "description": "Something an AI agent can do on a screen, through that screen, while the operator watches. Listed in a component's component.json \"actions\" and served as an MCP tool. The screen carries it out with the same code its own controls use, so its event and lesson progress are exactly what a person doing it would produce.",
+  "type": "object",
+  "required": ["name", "title", "description", "route", "input", "writes"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$",
+      "maxLength": 64,
+      "description": "The MCP tool name: <area>.<object>[.<verb>], unique in the app."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "description": "Shown to the operator in the agent bar, and to the model as the tool title."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 20,
+      "description": "What the action does and what it never does, for the model."
+    },
+    "route": {
+      "type": "string",
+      "pattern": "^/",
+      "description": "The page the operator is taken to before the action runs, so they see it happen. Must be one of the component's routes."
+    },
+    "input": {
+      "type": "object",
+      "description": "JSON Schema (2020-12) of the arguments, served as the tool's inputSchema.",
+      "required": ["type"],
+      "properties": { "type": { "const": "object" } }
+    },
+    "writes": {
+      "type": "boolean",
+      "description": "True when the action changes anything. The operator then sees what it will do and must allow it first."
+    },
+    "destructive": {
+      "type": "boolean",
+      "description": "True when the change destroys or replaces something (MCP destructiveHint)."
+    },
+    "secret": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Argument names that hold a key or password: masked wherever they are shown, never logged."
+    },
+    "emits": {
+      "$ref": "event.schema.json#/$defs/eventType",
+      "description": "The app event the screen emits when the action succeeds. Must be in the component's emits."
+    }
+  }
+}

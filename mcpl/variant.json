@@ -1,0 +1,584 @@
+{
+  "mcpl": "0",
+  "variant": "shippin-tech-mail",
+  "stack": {
+    "ui": "SvelteKit 5",
+    "engine": "Rust"
+  },
+  "layers": {
+    "map": "implemented",
+    "components": "implemented",
+    "events": "implemented",
+    "lessons": "implemented",
+    "conformance": "implemented",
+    "actions": "implemented"
+  },
+  "map": {
+    "kernels": [
+      "account",
+      "admin",
+      "docs",
+      "mail",
+      "panel"
+    ]
+  },
+  "components": [
+    {
+      "id": "account",
+      "a2ui": "AccountSecurity",
+      "routes": [
+        "/account"
+      ],
+      "emits": [
+        "account.password.changed",
+        "account.twofactor.enabled",
+        "account.twofactor.disabled",
+        "account.apppassword.created",
+        "account.apppassword.revoked"
+      ]
+    },
+    {
+      "id": "admin",
+      "a2ui": "AdminPanel",
+      "routes": [
+        "/shippin/admin"
+      ],
+      "emits": [
+        "setup.administrator.created"
+      ]
+    },
+    {
+      "id": "agent",
+      "a2ui": "AgentBar",
+      "routes": [
+        "/shippin/admin"
+      ],
+      "emits": []
+    },
+    {
+      "id": "alerts",
+      "a2ui": "Alerts",
+      "routes": [
+        "/shippin/admin/alerts"
+      ],
+      "emits": [
+        "alerts.rule.saved",
+        "alerts.rule.removed",
+        "alerts.checked"
+      ]
+    },
+    {
+      "id": "assistant",
+      "a2ui": "Assistant",
+      "routes": [
+        "/shippin/admin/ai"
+      ],
+      "emits": [
+        "assistant.question.asked",
+        "ai.settings.saved",
+        "ai.settings.removed",
+        "ai.connection.tested"
+      ]
+    },
+    {
+      "id": "calendar",
+      "a2ui": "Calendar",
+      "routes": [
+        "/calendar"
+      ],
+      "emits": [
+        "calendar.event.created",
+        "calendar.event.updated",
+        "calendar.event.deleted",
+        "calendar.invite.sent",
+        "calendar.invite.answered",
+        "calendar.calendar.created"
+      ]
+    },
+    {
+      "id": "calendar-alarm",
+      "a2ui": "CalendarAlarm",
+      "routes": [],
+      "emits": []
+    },
+    {
+      "id": "calendar-invite",
+      "a2ui": "CalendarInvite",
+      "routes": [],
+      "emits": []
+    },
+    {
+      "id": "calendar-rsvp",
+      "a2ui": "CalendarRsvp",
+      "routes": [
+        "/rsvp"
+      ],
+      "emits": []
+    },
+    {
+      "id": "calendar-templates",
+      "a2ui": "CalendarEmails",
+      "routes": [
+        "/shippin/admin/templates"
+      ],
+      "emits": [
+        "calendar.template.saved",
+        "calendar.template.reset"
+      ]
+    },
+    {
+      "id": "contact",
+      "a2ui": "Contact",
+      "routes": [
+        "/contacts"
+      ],
+      "emits": [
+        "contact.card.created",
+        "contact.card.updated",
+        "contact.card.deleted",
+        "contact.book.created"
+      ]
+    },
+    {
+      "id": "dashboard",
+      "a2ui": "Dashboard",
+      "routes": [
+        "/shippin/admin"
+      ],
+      "emits": []
+    },
+    {
+      "id": "doc",
+      "a2ui": "Docs",
+      "routes": [
+        "/docs",
+        "/docs/edit"
+      ],
+      "emits": [
+        "doc.document.created",
+        "doc.document.edited",
+        "doc.document.exported",
+        "doc.document.deleted"
+      ]
+    },
+    {
+      "id": "email",
+      "a2ui": "Email",
+      "routes": [
+        "/mail/email",
+        "/mail/compose"
+      ],
+      "emits": [
+        "mail.message.sent",
+        "mail.draft.saved"
+      ]
+    },
+    {
+      "id": "file",
+      "a2ui": "Drive",
+      "routes": [
+        "/files"
+      ],
+      "emits": [
+        "drive.file.uploaded",
+        "drive.file.downloaded",
+        "drive.folder.created",
+        "drive.item.renamed",
+        "drive.item.moved",
+        "drive.item.deleted",
+        "drive.item.shared"
+      ]
+    },
+    {
+      "id": "google",
+      "a2ui": "GoogleDrive",
+      "routes": [
+        "/files?view=google"
+      ],
+      "emits": [
+        "google.account.connected",
+        "google.account.disconnected",
+        "google.file.imported",
+        "google.file.exported"
+      ]
+    },
+    {
+      "id": "keys",
+      "a2ui": "KeyNotice",
+      "routes": [
+        "/keys",
+        "/shippin/admin/keys"
+      ],
+      "emits": [
+        "keys.authored",
+        "keys.replaced"
+      ]
+    },
+    {
+      "id": "login",
+      "a2ui": "Login",
+      "routes": [
+        "/login"
+      ],
+      "emits": []
+    },
+    {
+      "id": "mailbox",
+      "a2ui": "Mailbox",
+      "routes": [
+        "/mail"
+      ],
+      "emits": []
+    },
+    {
+      "id": "masked",
+      "a2ui": "MaskedAddresses",
+      "routes": [
+        "/mail/masked"
+      ],
+      "emits": [
+        "masked.created",
+        "masked.switched",
+        "masked.removed"
+      ]
+    },
+    {
+      "id": "mcpl",
+      "a2ui": "Lesson",
+      "routes": [
+        "/manage"
+      ],
+      "emits": []
+    },
+    {
+      "id": "org",
+      "a2ui": "Organisations",
+      "routes": [
+        "/shippin/admin/orgs",
+        "/shippin/org",
+        "/shippin/org/people",
+        "/shippin/org/teams",
+        "/shippin/org/domains"
+      ],
+      "emits": [
+        "org.saved",
+        "org.removed",
+        "org.person.added",
+        "org.person.updated",
+        "org.person.removed",
+        "org.logo.changed",
+        "org.sso.changed",
+        "org.provisioning.changed",
+        "org.team.created",
+        "org.team.removed",
+        "org.member.changed",
+        "org.alias.added",
+        "org.alias.removed"
+      ]
+    },
+    {
+      "id": "panel",
+      "a2ui": "DomainPanel",
+      "routes": [
+        "/signup",
+        "/manage"
+      ],
+      "emits": [
+        "panel.domain.created",
+        "panel.dns.published",
+        "panel.mailbox.created",
+        "panel.mailbox.deleted",
+        "panel.alias.created",
+        "panel.catchall.changed",
+        "panel.domain.closed"
+      ]
+    },
+    {
+      "id": "people",
+      "a2ui": "PeopleAndTeams",
+      "routes": [
+        "/shippin/admin/people"
+      ],
+      "emits": [
+        "team.person.added",
+        "team.person.updated",
+        "team.person.removed",
+        "team.group.created",
+        "team.group.removed",
+        "team.member.changed"
+      ]
+    },
+    {
+      "id": "platform",
+      "a2ui": "PortingLedger",
+      "routes": [
+        "/platform"
+      ],
+      "emits": []
+    },
+    {
+      "id": "recover",
+      "a2ui": "RecoverDeleted",
+      "routes": [
+        "/shippin/admin/recover"
+      ],
+      "emits": [
+        "recover.account.restored",
+        "recover.message.restored"
+      ]
+    },
+    {
+      "id": "resources",
+      "a2ui": "Resources",
+      "routes": [
+        "/shippin/admin/resources"
+      ],
+      "emits": []
+    },
+    {
+      "id": "theme",
+      "a2ui": "Theme",
+      "routes": [],
+      "emits": []
+    }
+  ],
+  "events": [
+    "account.apppassword.created",
+    "account.apppassword.revoked",
+    "account.password.changed",
+    "account.twofactor.disabled",
+    "account.twofactor.enabled",
+    "ai.connection.tested",
+    "ai.settings.removed",
+    "ai.settings.saved",
+    "alerts.checked",
+    "alerts.rule.removed",
+    "alerts.rule.saved",
+    "assistant.question.asked",
+    "calendar.calendar.created",
+    "calendar.event.created",
+    "calendar.event.deleted",
+    "calendar.event.updated",
+    "calendar.invite.answered",
+    "calendar.invite.sent",
+    "calendar.template.reset",
+    "calendar.template.saved",
+    "contact.book.created",
+    "contact.card.created",
+    "contact.card.deleted",
+    "contact.card.updated",
+    "doc.document.created",
+    "doc.document.deleted",
+    "doc.document.edited",
+    "doc.document.exported",
+    "drive.file.downloaded",
+    "drive.file.uploaded",
+    "drive.folder.created",
+    "drive.item.deleted",
+    "drive.item.moved",
+    "drive.item.renamed",
+    "drive.item.shared",
+    "google.account.connected",
+    "google.account.disconnected",
+    "google.file.exported",
+    "google.file.imported",
+    "keys.authored",
+    "keys.replaced",
+    "mail.draft.saved",
+    "mail.message.sent",
+    "masked.created",
+    "masked.removed",
+    "masked.switched",
+    "org.alias.added",
+    "org.alias.removed",
+    "org.logo.changed",
+    "org.member.changed",
+    "org.person.added",
+    "org.person.removed",
+    "org.person.updated",
+    "org.provisioning.changed",
+    "org.removed",
+    "org.saved",
+    "org.sso.changed",
+    "org.team.created",
+    "org.team.removed",
+    "panel.alias.created",
+    "panel.catchall.changed",
+    "panel.dns.published",
+    "panel.domain.closed",
+    "panel.domain.created",
+    "panel.mailbox.created",
+    "panel.mailbox.deleted",
+    "recover.account.restored",
+    "recover.message.restored",
+    "setup.administrator.created",
+    "team.group.created",
+    "team.group.removed",
+    "team.member.changed",
+    "team.person.added",
+    "team.person.removed",
+    "team.person.updated"
+  ],
+  "lessons": [
+    {
+      "id": "author-your-keys",
+      "audience": "admin",
+      "steps": [
+        "make-the-keys <- keys.authored",
+        "replace-a-key <- keys.replaced"
+      ]
+    },
+    {
+      "id": "keep-your-contacts",
+      "audience": "user",
+      "steps": [
+        "add-a-contact <- contact.card.created",
+        "update-a-contact <- contact.card.updated"
+      ]
+    },
+    {
+      "id": "link-google-drive",
+      "audience": "user",
+      "steps": [
+        "connect-google <- google.account.connected",
+        "bring-a-file-over <- google.file.imported",
+        "send-a-file-back <- google.file.exported"
+      ]
+    },
+    {
+      "id": "mask-your-address",
+      "audience": "user",
+      "steps": [
+        "make-one <- masked.created",
+        "switch-it-off <- masked.switched"
+      ]
+    },
+    {
+      "id": "run-your-organisation",
+      "audience": "owner",
+      "steps": [
+        "add-someone <- org.person.added",
+        "adjust-someone <- org.person.updated"
+      ]
+    },
+    {
+      "id": "run-your-team",
+      "audience": "admin",
+      "steps": [
+        "make-a-team <- team.group.created",
+        "add-a-person <- team.person.added",
+        "set-a-limit <- team.person.updated"
+      ]
+    },
+    {
+      "id": "set-up-an-organisation",
+      "audience": "admin",
+      "steps": [
+        "make-an-organisation <- org.saved"
+      ]
+    },
+    {
+      "id": "set-up-your-domain",
+      "audience": "owner",
+      "steps": [
+        "publish-dns <- panel.dns.published",
+        "add-mailbox <- panel.mailbox.created",
+        "send-first-message <- mail.message.sent",
+        "turn-on-two-factor <- account.twofactor.enabled"
+      ]
+    },
+    {
+      "id": "shape-your-organisation",
+      "audience": "owner",
+      "steps": [
+        "make-a-team <- org.team.created",
+        "fill-the-team <- org.member.changed"
+      ]
+    },
+    {
+      "id": "turn-on-the-assistant",
+      "audience": "admin",
+      "steps": [
+        "choose-a-service <- ai.settings.saved",
+        "test-it <- ai.connection.tested"
+      ]
+    },
+    {
+      "id": "use-your-calendar",
+      "audience": "user",
+      "steps": [
+        "add-an-event <- calendar.event.created",
+        "change-an-event <- calendar.event.updated",
+        "invite-someone <- calendar.invite.sent"
+      ]
+    },
+    {
+      "id": "use-your-drive",
+      "audience": "user",
+      "steps": [
+        "upload-a-file <- drive.file.uploaded",
+        "make-a-folder <- drive.folder.created",
+        "file-it-away <- drive.item.moved",
+        "get-it-back <- drive.file.downloaded"
+      ]
+    },
+    {
+      "id": "watch-your-server",
+      "audience": "admin",
+      "steps": [
+        "make-an-alert <- alerts.rule.saved",
+        "check-it <- alerts.checked"
+      ]
+    },
+    {
+      "id": "write-a-document",
+      "audience": "user",
+      "steps": [
+        "start-a-document <- doc.document.created",
+        "write-something <- doc.document.edited",
+        "take-a-copy <- doc.document.exported"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "ai.connection.test",
+      "component": "assistant",
+      "writes": false,
+      "emits": "ai.connection.tested"
+    },
+    {
+      "name": "ai.settings.save",
+      "component": "assistant",
+      "writes": true,
+      "emits": "ai.settings.saved"
+    },
+    {
+      "name": "keys.author",
+      "component": "keys",
+      "writes": true,
+      "emits": "keys.authored"
+    },
+    {
+      "name": "keys.list",
+      "component": "keys",
+      "writes": false
+    },
+    {
+      "name": "keys.replace",
+      "component": "keys",
+      "writes": true,
+      "emits": "keys.replaced"
+    },
+    {
+      "name": "screen.go",
+      "component": "agent",
+      "writes": false
+    },
+    {
+      "name": "screen.read",
+      "component": "agent",
+      "writes": false
+    }
+  ]
+}

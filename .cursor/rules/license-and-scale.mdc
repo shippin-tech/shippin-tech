@@ -1,0 +1,27 @@
+---
+description: Business Source License chosen. Rocks stays a supported store. Enterprise stays in the build.
+alwaysApply: true
+---
+
+# License and scale
+
+## License is BUSL-1.1
+
+The project license is the Business Source License 1.1. Say so in `crates/main/Cargo.toml` (`license = "BUSL-1.1"`) and the root `LICENSE` file.
+
+The choice is last. First the scale image runs as its own deployable product. Then shippin.cloud hosts that same image. Only then does `Cargo.toml` and a `LICENSE` file record the choice.
+
+## Rocks
+
+`rocks` compiles RocksDB as `DataStore::RocksDb`. The files live in the directory in `RocksDbStore.path`. One machine owns that directory. A second node with its own directory does not see those mailboxes.
+
+The scale build includes `rocks`. A one-node server keeps using it. Multi-node shared state is a separate store (`DataStore::FoundationDb`), with `BlobStore::S3` and `Coordinator::Nats` or `Coordinator::Redis`.
+
+`cargo build --features scale` keeps the default features, so the binary has Rocks, enterprise, FoundationDB, S3, Redis, and NATS.
+
+## Do not use as the shared layout
+
+These compile only with `enterprise` and are the SEL composite path:
+
+- `BlobStore::Sharded`, `InMemoryStore::Sharded`, `LookupStore::Sharded`
+- `store::backend::composite`

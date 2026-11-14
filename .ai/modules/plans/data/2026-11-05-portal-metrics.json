@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-metrics",
+  "title": "Show dashboard metrics only from the live stream",
+  "costar": {
+    "context": "Bootstrap is on the portal. Six surfaces are still remaining, and the next one in the index is the dashboard metrics stream. The maintainer said plan, execute, and set the goal.",
+    "objective": "Set the goal for the remaining portal, then show live metrics only from a real stream: the refusal on this server, a chart only when points exist, and the retry sentence from the bundle.",
+    "style": "One goal, one plan, then the metrics slice.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "The goal is the rest of the portal. This slice does not invent numbers. This server still shows the refusal, and a chart mounts only when the stream has points."
+  },
+  "sources": [
+    {"kind": "code", "ref": "crates/http/src/api/telemetry.rs"},
+    {"kind": "code", "ref": "crates/http/src/api/mod.rs"},
+    {"kind": "code", "ref": "assets/webui/assets/DashboardView-C1roqzWz.js"},
+    {"kind": "code", "ref": "assets/webui/assets/sse-D6xFfUUY.js"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/metrics.ts"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/metrics-call.ts"},
+    {"kind": "code", "ref": "ui/src/lib/catalog/portal/DashboardPanel.svelte"},
+    {"kind": "code", "ref": "ui/src/routes/(portal)/portal/Dashboard.svelte"},
+    {"kind": "web", "ref": "https://next.layerchart.com/docs/components/LineChart/llms.txt"}
+  ],
+  "concerns": [
+    "This build answers /api/token/metrics with the enterprise refusal. The dashboard must keep that sentence and must not open EventSource without a token.",
+    "The stream frame is event metrics with Counter, Gauge, and Histogram objects. A histogram without sum is not a point.",
+    "The bundle retries five times, then says the stream disconnected. An empty chart does not replace the refusal or the no-data sentence."
+  ],
+  "context": "GET /api/token/metrics returns a token only on the enterprise build. GET /api/live/metrics?token=&interval=30&metrics= streams event metrics. Each item is {metric,@type,count} and a histogram also has sum. The client maxAttempts is 5, base delay 2000, max delay 10000. user.count, domain.count, and queue.count are the gauge names.",
+  "current_state": "The dashboard parses a metrics frame, retries five times, and draws a line only when that frame produced points. This server still shows the refusal and does not open the stream.",
+  "target_design": "A pure parser and retry reducer sit beside the token call. The route opens the stream only when the token body is non-empty. DashboardPanel shows the refusal, the disconnect sentence, or No data. LineChart mounts only when at least one parsed point exists.",
+  "changes": [
+    "Parse the metrics frame and reduce the five-attempt retry.",
+    "Open the live stream only with a token.",
+    "Draw a line only when parsed points exist."
+  ],
+  "boundaries": [
+    "Do not invent a metric number.",
+    "Do not open the live stream in the proof.",
+    "Do not post a set, a delivery, or an action.",
+    "The catalog does not fetch."
+  ],
+  "verification": [
+    {
+      "name": "metrics-follow-the-stream",
+      "command": "node --experimental-strip-types scripts/prove-portal-metrics.ts",
+      "proves": "A real frame becomes points, a histogram without sum is rejected, an empty token does not build a stream URL, the sixth retryable error disconnects, and the panel keeps the refusal.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The dashboard, the chart import, and the metrics types check.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

@@ -1,0 +1,35 @@
+{
+  "id": "org",
+  "a2ui": "Organisations",
+  "variants": [
+    "portal",
+    "overview",
+    "people",
+    "teams",
+    "domains"
+  ],
+  "engine": "crates/common/src/shippin/orgs.rs",
+  "routes": [
+    "/shippin/admin/orgs",
+    "/shippin/org",
+    "/shippin/org/people",
+    "/shippin/org/teams",
+    "/shippin/org/domains"
+  ],
+  "emits": [
+    "org.saved",
+    "org.removed",
+    "org.person.added",
+    "org.person.updated",
+    "org.person.removed",
+    "org.logo.changed",
+    "org.sso.changed",
+    "org.provisioning.changed",
+    "org.team.created",
+    "org.team.removed",
+    "org.member.changed",
+    "org.alias.added",
+    "org.alias.removed"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/admin/kernel/instruction.md"
+}

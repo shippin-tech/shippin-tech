@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shippin.tech/mcpl/v0/variant.schema.json",
+  "title": "MCPL v0 variant manifest",
+  "description": "Generated, never hand-edited. One per app (mcpl/variant.json). Diff two of these to see where two apps' MCPL implementations agree and differ.",
+  "type": "object",
+  "required": ["mcpl", "variant", "stack", "layers", "map", "components", "events", "lessons"],
+  "additionalProperties": false,
+  "properties": {
+    "mcpl": { "const": "0" },
+    "variant": { "type": "string" },
+    "stack": { "type": "object", "required": ["ui", "engine"], "properties": { "ui": { "type": "string" }, "engine": { "type": "string" } } },
+    "layers": {
+      "type": "object",
+      "required": ["map", "components", "events", "lessons", "conformance"],
+      "additionalProperties": { "enum": ["implemented", "partial", "absent"] }
+    },
+    "map": { "type": "object", "required": ["kernels"], "properties": { "kernels": { "type": "array", "items": { "type": "string" } } } },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "a2ui", "routes", "emits"],
+        "properties": {
+          "id": { "type": "string" }, "a2ui": { "type": "string" },
+          "routes": { "type": "array", "items": { "type": "string" } },
+          "emits": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "events": { "type": "array", "items": { "type": "string" } },
+    "lessons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "audience", "steps"],
+        "properties": { "id": { "type": "string" }, "audience": { "type": "string" }, "steps": { "type": "array", "items": { "type": "string" } } }
+      }
+    },
+    "actions": {
+      "description": "Proposed extension (drive): every agent action, for comparing variants.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "component", "writes"],
+        "properties": { "name": { "type": "string" }, "component": { "type": "string" }, "writes": { "type": "boolean" }, "emits": { "type": "string" } }
+      }
+    }
+  }
+}

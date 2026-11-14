@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-delivery",
+  "title": "Add the delivery runner without starting a trace",
+  "costar": {
+    "context": "Schema writes do not post set. The delivery runner is the next remaining portal surface. A live delivery diagnose sends real SMTP, so this server must not start one.",
+    "objective": "Add the delivery trace form, the stage parser, and the stream URL, and do not open the live delivery stream.",
+    "style": "One plan, then the runner.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "The form asks for a target and can start a trace. This page does not open /api/live/delivery."
+  },
+  "sources": [
+    {"kind": "code", "ref": "crates/http/src/api/diagnose.rs"},
+    {"kind": "code", "ref": "crates/http/src/api/mod.rs"},
+    {"kind": "code", "ref": "assets/webui/assets/DeliveryTracePage-CZs7z0nn.js"},
+    {"kind": "code", "ref": "ui/src/lib/flow/delivery/phases.ts"},
+    {"kind": "code", "ref": "ui/src/routes/(portal)/portal/[...view]/+page.svelte"}
+  ],
+  "concerns": [
+    "GET /api/token/delivery is not an enterprise refusal. Opening /api/live/delivery starts a real SMTP diagnose.",
+    "A stage frame is event event with a JSON array. The type field is camelCase.",
+    "An empty token must not build a stream URL."
+  ],
+  "context": "The page copies are Delivery Trace, Target address or domain, Start trace, and Enter a valid email address or domain. The stream path is /api/live/delivery/{target} with a token query. Frames use event: event. maxAttempts is 0. The phase names match the existing delivery graph.",
+  "current_state": "Delivery Trace asks for a target, rejects an invalid one, and parses a stage frame. A valid Start trace does not open /api/live/delivery.",
+  "target_design": "DeliveryRunner renders the form and any parsed stages. deliveryStreamUrl returns empty without a token. The route does not fetch the token or open EventSource. A valid click without a sender says the trace failed to start.",
+  "changes": [
+    "Validate the target and build the stream URL.",
+    "Parse a delivery stage frame into phase labels.",
+    "Render the runner and keep the page from starting a trace."
+  ],
+  "boundaries": [
+    "Do not open /api/live/delivery against this server.",
+    "Do not post a set or an action.",
+    "The catalog does not fetch."
+  ],
+  "verification": [
+    {
+      "name": "delivery-does-not-start",
+      "command": "node --experimental-strip-types scripts/prove-portal-delivery.ts",
+      "proves": "A stage frame becomes MX Lookup, a bad target is rejected, an empty token builds no URL, and the page does not open the live stream.",
+      "expected": "ok",
+      "result": "ok. Browser: invalid target shows the sentence, example.org shows Failed to start trace, and no request hit /api/live/delivery."
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The runner and the delivery route typecheck.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

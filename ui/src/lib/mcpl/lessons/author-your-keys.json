@@ -1,0 +1,19 @@
+{
+  "id": "author-your-keys",
+  "title": "Author your keys",
+  "audience": "admin",
+  "steps": [
+    {
+      "id": "make-the-keys",
+      "say": "Give every service its own key. Make them at random, or bring your own.",
+      "where": "/shippin/admin/keys",
+      "doneWhen": "keys.authored"
+    },
+    {
+      "id": "replace-a-key",
+      "say": "Replace one key, to see its secrets sealed again under the new one and the old key destroyed.",
+      "where": "/shippin/admin/keys",
+      "doneWhen": "keys.replaced"
+    }
+  ]
+}

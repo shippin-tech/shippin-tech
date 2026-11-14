@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-dashboard",
+  "title": "Show the portal dashboard periods and the live metrics refusal",
+  "costar": {
+    "context": "Portal lists now load from object/get. The user said go, which continues the fixed screens. This server is already bootstrapped, so the screen in use is the dashboard.",
+    "objective": "Add the portal period control and the live metrics result from GET /api/token/metrics.",
+    "style": "One plan, then the adapter and the dashboard screen.",
+    "tone": "Direct.",
+    "audience": "The maintainer and the next coding agent.",
+    "response": "The dashboard offers Last 24 hours, Last 7 days, Last 30 days, and Last 90 days. On this build the metrics token is refused and the screen says the server refused the live metrics stream."
+  },
+  "sources": [
+    {"kind": "code", "ref": "crates/http/src/api/mod.rs"},
+    {"kind": "code", "ref": "crates/jmap/src/api/mod.rs"},
+    {"kind": "code", "ref": "assets/webui/assets/DashboardView-C1roqzWz.js"},
+    {"kind": "code", "ref": "ui/src/lib/catalog/portal/PortalView.svelte"},
+    {"kind": "code", "ref": "ui/src/routes/(portal)/portal/+page.svelte"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/session.ts"}
+  ],
+  "concerns": [
+    "GET /api/token/metrics is inside the non-enterprise branch and returns NotFound with details Enterprise feature. A 200 token would mean this build is the enterprise edition, and this slice must not invent metric numbers.",
+    "The period control does not change the token request. The portal uses the period on the metrics query, which this build refuses before that query.",
+    "401 means the management call did not accept the session. That is sign-in, not a metrics refusal.",
+    "A network failure is Failed to connect to live metrics. A 404 or 403 is The server refused the live metrics stream."
+  ],
+  "context": "The dashboard cards already come from the schema overview. The portal also has four period presets and three live-metrics failure sentences. The token route is the gate in front of the event stream.",
+  "current_state": "PortalView renders the six cards and no period control. Nothing calls /api/token/metrics. The home page and the Dashboard nav item both render that static view.",
+  "target_design": "A route module calls the adapter. The adapter sends the session Authorization header to GET /api/token/metrics and classifies the status. The catalog draws the period buttons and the portal sentence. All nodes stays the only node choice because this response does not include a node list.",
+  "changes": [
+    "Record this slice.",
+    "Add classifyMetrics and requestLiveMetrics.",
+    "Render the four period presets, All nodes, and the metrics status on the dashboard.",
+    "Use that dashboard for /portal and for /portal/CustomComponent/Dashboard."
+  ],
+  "boundaries": [
+    "Do not invent metric values.",
+    "Do not open the event stream without a token.",
+    "Do not call a set method.",
+    "Do not build the bootstrap wizard or the Astro site in this slice.",
+    "Catalog components do not fetch."
+  ],
+  "verification": [
+    {
+      "name": "metrics-status-and-copy",
+      "command": "node --experimental-strip-types scripts/prove-portal-dashboard.ts",
+      "proves": "404 and 403 are the refusal, 401 is sign-in, and the dashboard view contains the four period labels plus both failure sentences. A dashboard that only shows the cards fails.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The dashboard route and the catalog view typecheck with the rest of the app.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

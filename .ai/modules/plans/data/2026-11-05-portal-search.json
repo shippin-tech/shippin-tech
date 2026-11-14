@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-search",
+  "title": "Search portal pages, form sections, and fields",
+  "costar": {
+    "context": "Direct sign-in now completes the authorization-code flow. The portal index still lists command search as remaining. The maintainer said continue.",
+    "objective": "Add the AdminPanel search over pages, form sections, and fields, and open the matching portal view.",
+    "style": "One plan, then a pure index and the portal shell.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "The portal shell searches the generated catalog. Ctrl K or Cmd K opens it. A result opens the existing portal view."
+  },
+  "sources": [
+    {"kind": "code", "ref": "assets/webui/assets/AdminPanel-DhmcW4yN.js"},
+    {"kind": "code", "ref": "assets/webui/assets/schemaStore-CkCqaJbK.js"},
+    {"kind": "code", "ref": "ui/src/lib/portal/catalog.ts"},
+    {"kind": "code", "ref": "ui/src/lib/catalog/portal/Portal.svelte"},
+    {"kind": "code", "ref": "ui/scripts/emit-portal.ts"}
+  ],
+  "concerns": [
+    "The bundle hides a result when the session lacks Get or Create on that object. This app has no permission map, so search matches the pages the navigation already shows.",
+    "Selecting a field in the bundle opens a create or singleton route. Those routes are not built. A result opens /portal/<view>, the page that already renders that view.",
+    "The index is the 86 layout views. Objects that are not in a layout stay out of search."
+  ],
+  "context": "AdminPanel builds a search index from layout links, object descriptions, form section titles, and field labels. A query is split on whitespace and every token must occur in the text or the field name. Results are ordered Pages, then Form Sections, then Fields, and capped at 15. Ctrl K or Cmd K toggles the dialog. Empty text says Type to search the admin panel. A miss says No results found.",
+  "current_state": "The portal shell lists the three layouts and has no search.",
+  "target_design": "A pure function builds that index from the generated layouts and views. The catalog search control renders the portal sentences and links each hit to its portal view. The catalog does not fetch.",
+  "changes": [
+    "Add the search index and query.",
+    "Mount the search control on the portal shell.",
+    "Open it with Ctrl K or Cmd K."
+  ],
+  "boundaries": [
+    "Do not add create, update, or destroy.",
+    "Do not add the copy control in this slice.",
+    "Do not build the Astro site.",
+    "The catalog does not fetch."
+  ],
+  "verification": [
+    {
+      "name": "search-matches-the-catalog",
+      "command": "node --experimental-strip-types scripts/prove-portal-search.ts",
+      "proves": "A page name, a description, a form section, and a field name match the generated catalog. An empty query and an unknown query return nothing. Results stay within 15. The shell shows the portal sentences and does not fetch.",
+      "expected": "ok",
+      "result": "ok"
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The search control and the portal shell typecheck together.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    }
+  ],
+  "status": "implemented"
+}

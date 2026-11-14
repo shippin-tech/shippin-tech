@@ -1,0 +1,19 @@
+{
+  "id": "watch-your-server",
+  "title": "Watch your server",
+  "audience": "admin",
+  "steps": [
+    {
+      "id": "make-an-alert",
+      "say": "Make an alert. Pick a number to watch, the line it should not cross, and where to send the warning.",
+      "where": "/shippin/admin/alerts",
+      "doneWhen": "alerts.rule.saved"
+    },
+    {
+      "id": "check-it",
+      "say": "Press Check now to see it work without waiting five minutes.",
+      "where": "/shippin/admin/alerts",
+      "doneWhen": "alerts.checked"
+    }
+  ]
+}

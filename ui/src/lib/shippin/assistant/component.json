@@ -1,0 +1,72 @@
+{
+  "id": "assistant",
+  "a2ui": "Assistant",
+  "variants": [
+    "panel",
+    "settings"
+  ],
+  "engine": "crates/http/src/shippin/assistant.rs",
+  "routes": [
+    "/shippin/admin/ai"
+  ],
+  "emits": [
+    "assistant.question.asked",
+    "ai.settings.saved",
+    "ai.settings.removed",
+    "ai.connection.tested"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/admin/kernel/instruction.md",
+  "actions": [
+    {
+      "name": "ai.settings.save",
+      "title": "Set up the AI service",
+      "description": "Fills in and saves the AI settings: the kind of service, its address, the model and whether people are offered the assistant. Never a key: when the service needs one, the operator pastes it into the Key field themselves, and an empty key keeps the one already saved.",
+      "route": "/shippin/admin/ai",
+      "input": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "openai",
+              "anthropic"
+            ],
+            "description": "openai for any OpenAI-compatible address (Ollama too), anthropic for Anthropic's API."
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "The service's address, starting with https:// or http://."
+          },
+          "model": {
+            "type": "string",
+            "description": "The model's name."
+          },
+          "assistant": {
+            "type": "boolean",
+            "description": "Whether to offer the assistant to people on this server."
+          }
+        },
+        "required": [
+          "kind",
+          "endpoint",
+          "model"
+        ],
+        "additionalProperties": false
+      },
+      "writes": true,
+      "emits": "ai.settings.saved"
+    },
+    {
+      "name": "ai.connection.test",
+      "title": "Test the AI service",
+      "description": "Asks the saved AI service one short question and reports its answer. Changes no setting.",
+      "route": "/shippin/admin/ai",
+      "input": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "writes": false,
+      "emits": "ai.connection.tested"
+    }
+  ]
+}

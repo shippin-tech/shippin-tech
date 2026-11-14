@@ -1,0 +1,25 @@
+{
+  "id": "link-google-drive",
+  "title": "Link your Google Drive",
+  "audience": "user",
+  "steps": [
+    {
+      "id": "connect-google",
+      "say": "Connect your Google account.",
+      "where": "/files?view=google",
+      "doneWhen": "google.account.connected"
+    },
+    {
+      "id": "bring-a-file-over",
+      "say": "Copy a file from Google to your Drive.",
+      "where": "/files?view=google",
+      "doneWhen": "google.file.imported"
+    },
+    {
+      "id": "send-a-file-back",
+      "say": "In My Drive, press To Google on a file.",
+      "where": "/files",
+      "doneWhen": "google.file.exported"
+    }
+  ]
+}

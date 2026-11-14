@@ -1,0 +1,19 @@
+{
+  "id": "account",
+  "a2ui": "AccountSecurity",
+  "variants": [
+    "security"
+  ],
+  "engine": "crates/jmap/src/registry/mapping/account.rs",
+  "routes": [
+    "/account"
+  ],
+  "emits": [
+    "account.password.changed",
+    "account.twofactor.enabled",
+    "account.twofactor.disabled",
+    "account.apppassword.created",
+    "account.apppassword.revoked"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/account/kernel/instruction.md"
+}

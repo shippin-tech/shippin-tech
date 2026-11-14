@@ -1,0 +1,91 @@
+{
+  "id": "keys",
+  "a2ui": "KeyNotice",
+  "variants": [
+    "ai",
+    "sso",
+    "scim",
+    "app-password",
+    "setup"
+  ],
+  "engine": "crates/common/src/shippin/sso.rs",
+  "routes": [
+    "/keys",
+    "/shippin/admin/keys"
+  ],
+  "emits": [
+    "keys.authored",
+    "keys.replaced"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/admin/kernel/instruction.md",
+  "actions": [
+    {
+      "name": "keys.list",
+      "title": "See each service's keys",
+      "description": "Shows each service's keys on the Keys page: where each came from, where it is kept and whether it is in use. Never a key's bytes. Changes nothing.",
+      "route": "/shippin/admin/keys",
+      "input": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "writes": false
+    },
+    {
+      "name": "keys.author",
+      "title": "Make the missing service keys",
+      "description": "Gives every service that has no key yet its own key, made at random by the server. Services that already have one are left alone.",
+      "route": "/shippin/admin/keys",
+      "input": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "writes": true,
+      "emits": "keys.authored"
+    },
+    {
+      "name": "keys.replace",
+      "title": "Replace a service key",
+      "description": "Replaces one service's key with a new one made at random, or read from an environment variable or a file on the server. Its secrets are sealed again under the new key and the old key is destroyed. A key to paste is never passed here: the operator pastes it on the Keys page themselves.",
+      "route": "/shippin/admin/keys",
+      "input": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "ai",
+              "sso",
+              "google",
+              "domain-proof"
+            ],
+            "description": "Which service's key to replace."
+          },
+          "from": {
+            "type": "string",
+            "enum": [
+              "random",
+              "environmentVariable",
+              "file"
+            ],
+            "description": "Where the new key comes from. Default: random."
+          },
+          "name": {
+            "type": "string",
+            "description": "For environmentVariable: the variable's name."
+          },
+          "path": {
+            "type": "string",
+            "description": "For file: the full path of the file on the server."
+          }
+        },
+        "required": [
+          "service"
+        ],
+        "additionalProperties": false
+      },
+      "writes": true,
+      "destructive": true,
+      "emits": "keys.replaced"
+    }
+  ]
+}

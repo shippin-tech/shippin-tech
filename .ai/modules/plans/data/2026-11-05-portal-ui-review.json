@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-ui-review",
+  "title": "Review the UI and name the libraries for hosting, then mail, then documents",
+  "costar": {
+    "context": "Portal search and copy are in. Seven management surfaces remain, and the mail, calendar, contacts, files, and docs routes are still thin shells. The maintainer asked for a senior review and a dependency plan.",
+    "objective": "Review the UI code and name the libraries and the phase order. Do not install packages or edit product code in this pass.",
+    "style": "One review and one plan.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "The catalog, adapter, and tokens stay. A test gate comes before more screens. Chart, select, sieve, and date libraries arrive with the screen that renders them. A document editor stays out of this repository."
+  },
+  "sources": [
+    {"kind": "code", "ref": "ui/package.json"},
+    {"kind": "code", "ref": "ui/svelte.config.js"},
+    {"kind": "code", "ref": "ui/scripts/emit-portal.ts"},
+    {"kind": "code", "ref": "ui/src/lib/catalog/portal/PortalView.svelte"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/portal.ts"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/mail.ts"},
+    {"kind": "code", "ref": "ui/src/lib/adapter/session.ts"},
+    {"kind": "code", "ref": "ui/src/routes/+layout.svelte"},
+    {"kind": "code", "ref": "ui/src/routes/(mail)/mail/+page.svelte"},
+    {"kind": "code", "ref": "ui/src/routes/(docs)/docs/+page.svelte"},
+    {"kind": "code", "ref": "ui/src/lib/flow/Graph.svelte"},
+    {"kind": "code", "ref": ".cursor/rules/product-boundaries.mdc"}
+  ],
+  "concerns": [
+    "adapter-static has no SvelteKit server in production. A cookie session library would not run once the engine serves the build. The bearer stays in sessionStorage.",
+    "emit-portal keeps field name and label and drops the schema field type. Widgets cannot be chosen until the emitter keeps that type.",
+    "layerchart, bits-ui, CodeMirror, and a date library installed before their screen become a second unused kit.",
+    "A document editor in this repository is a second product. Documents connect later through the file nodes.",
+    "The mail, calendar, contacts, files, and docs routes already fetch. Styling them now builds a second client beside the portal."
+  ],
+  "context": "The UI is SvelteKit 2, Svelte 5, Vite 6, TypeScript, adapter-static, utopia-core, and @xyflow/svelte. Every package is a devDependency, which matches a Vite-bundled app. There is no test script. Catalog components do not import the adapter or Svelte Flow. Routes call the adapter. Graphs mount after the browser loads. The header links Portal and Sign in. The other product routes still exist and still fetch.",
+  "current_state": "Management sign-in, navigation, search, copy, lists, and readonly forms work. PortalView.svelte also owns the dashboard, the enterprise sentence, the list, and the form. Every schema field renders as one readonly text input. The proofs are node scripts under ui/scripts and are not an npm test gate.",
+  "target_design": "Phase 1 finishes portal management: bootstrap, charts, writes, delivery, traces, actions, field widgets, and the engine serving this build. The test gate is vitest for the pure modules and Playwright with axe for the signed-in flows. Phase 2 is the mailbox client on JMAP, after this portal is the served UI. Phase 3 is documents as a separate product on the same tokens, catalog, and file nodes. Libraries install with the phase that renders them.",
+  "changes": [
+    "Record the review. Do not install packages in this pass.",
+    "Add vitest and Playwright before the next management screen.",
+    "Keep the field type in emit-portal, then add one catalog widget per type.",
+    "Install layerchart with the metrics stream, bits-ui with the select and confirm dialog, CodeMirror with the sieve field, and @internationalized/date with the date field.",
+    "Leave the document editor, Tailwind, a component kit, and a second chart or graph library out."
+  ],
+  "boundaries": [
+    "Do not install packages in this pass.",
+    "Do not edit product components in this pass.",
+    "Do not add a document editor.",
+    "Do not add Tailwind, shadcn, React, Monaco, or a second graph library.",
+    "The catalog does not fetch. The license stays deciding."
+  ],
+  "verification": [
+    {
+      "name": "review-does-not-change-the-app",
+      "command": "npm run check",
+      "proves": "This pass records a plan and does not change the Svelte program.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    },
+    {
+      "name": "plan-tree",
+      "command": "python .ai/machine/organize.py --check",
+      "proves": "The review plan and the COSTAR reading match the module schema.",
+      "expected": "exit 0",
+      "result": "{\"modules\": 6, \"lines\": 592, \"documents\": 30, \"events\": 169, \"messages\": 64, \"tools\": 328, \"journal\": 31}"
+    }
+  ],
+  "status": "draft"
+}

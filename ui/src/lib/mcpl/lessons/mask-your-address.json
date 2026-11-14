@@ -1,0 +1,19 @@
+{
+  "id": "mask-your-address",
+  "title": "Mask your address",
+  "audience": "user",
+  "steps": [
+    {
+      "id": "make-one",
+      "say": "Make an address for something you do not fully trust, like a shop's sign-up form.",
+      "where": "/mail/masked",
+      "doneWhen": "masked.created"
+    },
+    {
+      "id": "switch-it-off",
+      "say": "Turn it off. Mail to that address is now refused, and your real address stays private.",
+      "where": "/mail/masked",
+      "doneWhen": "masked.switched"
+    }
+  ]
+}

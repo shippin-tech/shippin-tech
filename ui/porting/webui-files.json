@@ -1,0 +1,741 @@
+{
+  "scope": "Every original compiled webui file; status is not whole-product completion.",
+  "files": [
+    {
+      "source": "assets/webui/assets/ActionPage-x2HeLrph.js",
+      "sha256": "cf2a9e3513b0d39f9d1cafd3f5902818f3efc3a36a5fe304baff7e751e04dc81",
+      "owners": [
+        "ui/src/lib/shippin/admin/ActionPanel.svelte",
+        "ui/src/lib/adapter/actions.ts"
+      ],
+      "status": "implemented-representative-proof",
+      "remaining": "Spam-classification execution verified; DMARC and full permission cases open.",
+      "work_packages": [
+        "P4"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/AdminPanel-DhmcW4yN.js",
+      "sha256": "16a49ba113399d2ab77276f8df17d172a1f073d6ef1d8094afcdfd05e5aa03d3",
+      "owners": [
+        "ui/src/lib/shippin/admin/RegistryEditor.svelte",
+        "ui/src/lib/shippin/admin/SchemaField.svelte",
+        "ui/src/lib/shippin/admin/ReferenceField.svelte"
+      ],
+      "status": "partial",
+      "remaining": "Representative CRUD verified. Paging, filters/sorting, item links, blobs, specialized editors, per-role controls and other object journeys open.",
+      "work_packages": [
+        "P1",
+        "P2"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/badge-BFFEYUJm.js",
+      "sha256": "ae8477f44e43636c9d05cea75df38ba46e4e86e9c9e42c6da82a5db7683ab086",
+      "owners": [
+        "ui/src/lib/catalog",
+        "ui/package.json"
+      ],
+      "status": "partial",
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/BootstrapWizard-DqwPyluo.js",
+      "sha256": "7091d27ef22887f547ac5a2df95ce9de59e4fdec3a1c281cb7139c3ceefd7f8f",
+      "owners": [
+        "ui/src/lib/shippin/admin/BootstrapWizard.svelte",
+        "ui/src/lib/adapter/bootstrap.ts"
+      ],
+      "status": "partial",
+      "remaining": "Docker initialized via bootstrap.py. Full browser wizard and credential-display parity open.",
+      "work_packages": [
+        "P3"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/button-CyPT_HBb.js",
+      "sha256": "a3e064c20ee7f981f5a695c2afdd545369f5d95429a0260013d74efb216b97a8",
+      "owners": [
+        "ui/src/lib/catalog",
+        "ui/package.json"
+      ],
+      "status": "partial",
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/calendar-Dl8i27yr.js",
+      "sha256": "aa5d8c092fb4d7988b0135ecfaddebd94965b05a374ee8a9b7a0c256e7102a18",
+      "owners": [
+        "ui/src/lib/catalog",
+        "ui/package.json"
+      ],
+      "status": "partial",
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/card-ByxhIVvB.js",
+      "sha256": "f3583a81ee6826e92285e3351eae4c14350dda164043c89383b340ec6be8988e",
+      "owners": [
+        "ui/src/lib/catalog",
+        "ui/package.json"
+      ],
+      "status": "partial",
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/client-DZEVMWQz.js",
+      "sha256": "2723f11c7b0a99104651563b82e849547d1d1bd352c6ae54d750bd819aabe2b7",
+      "owners": [
+        "ui/src/lib/adapter/jmap.ts",
+        "ui/src/lib/adapter/portal.ts",
+        "ui/src/lib/adapter/session.ts"
+      ],
+      "status": "partial",
+      "remaining": "Real OAuth/JMAP verified. Account switching, paging, blobs, expiry and permission parity open.",
+      "work_packages": [
+        "P1",
+        "P2",
+        "P3"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/collapsible-DzuJqKL0.js",
+      "sha256": "cb457c161d5cc4f9d5a15252354e433f52a1437574fa52e76794182a17542f57",
+      "owners": [
+        "ui/src/lib/catalog",
+        "ui/package.json"
+      ],
+      "status": "partial",
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/DashboardView-C1roqzWz.js",
+      "sha256": "b4b9b3995c22e71b39fe94495544b62bb28bcffa85f3876098a362aeda730892",
+      "owners": [
+        "ui/src/lib/shippin/dashboard/Dashboard.svelte",
+        "ui/src/lib/shippin/dashboard/DashboardPanel.svelte",
+        "ui/src/lib/shippin/dashboard/BarChart.svelte",
+        "crates/common/src/shippin/stats.rs"
+      ],
+      "status": "implemented-representative-proof",
+      "remaining": "None for parity: rebuilt as our own code on /api/stats with all six tabs, presets and custom range, node selector, refresh, bars or lines, and All metrics; proven live 2026-11-10.",
+      "work_packages": [
+        "P4"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/DeliveryTracePage-CZs7z0nn.js",
+      "sha256": "9d05bcba4b5269c067c1ae1bfe0c6513228b94ef15742f8e0373b17ec5ae2fc3",
+      "owners": [
+        "ui/src/lib/shippin/admin/Delivery.svelte",
+        "ui/src/lib/shippin/admin/DeliveryRunner.svelte",
+        "ui/src/lib/adapter/delivery.ts"
+      ],
+      "status": "implemented-representative-proof",
+      "remaining": "Real event stream completed for reserved invalid domain. Successful SMTP/TLS/DANE cases and detailed visual parity open.",
+      "work_packages": [
+        "P4"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/dist-BKCc23zt.js",
+      "sha256": "2e7e591a0f86e44648185894639620d64d8ed8395581eed64fa2df98f96cc1f0",
+      "owners": [
+        "ui/package.json"
+      ],
+      "status": "runtime-replaced",
+      "remaining": "Dependency runtime replaced; feature parity tracked separately.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/format-uBNNbuo5.js",
+      "sha256": "ed948ffcc93be68d58116ef8071b966488a68fc6beab45edd4c203da5575eaa8",
+      "owners": [
+        "ui/src/lib/portal/trace.ts",
+        "ui/src/lib/portal/delivery.ts"
+      ],
+      "status": "partial",
+      "remaining": "Basic labels exist; all size/duration/date formats open.",
+      "work_packages": [
+        "P2",
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/icons-nBy1wc7w.js",
+      "sha256": "6094497027ee05eeeba8dc744d226aa81c938adb345b07c17d756d41eb4d67a6",
+      "owners": [
+        "ui/src/lib/catalog"
+      ],
+      "status": "partial",
+      "remaining": "Icon and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/index-7cDRjdpB.js",
+      "sha256": "79269544bc2d765d64f7245f2b18b1dc130602a0ca0960890b81ad636d6ea105",
+      "owners": [
+        "ui/src/app.html",
+        "ui/src/routes/+layout.svelte",
+        "ui/src/lib/token"
+      ],
+      "status": "partial",
+      "remaining": "Svelte entry/styles deployed; fixed-screen and visual parity open.",
+      "work_packages": [
+        "P1",
+        "P3",
+        "P5",
+        "R1"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/index-CmZR2p5P.css",
+      "sha256": "ebd4d2b70664a8c203684c24ffd31c1e17475eb77be0307eaef61920f7c4c762",
+      "owners": [
+        "ui/src/app.html",
+        "ui/src/routes/+layout.svelte",
+        "ui/src/lib/token"
+      ],
+      "status": "partial",
+      "remaining": "Svelte entry/styles deployed; fixed-screen and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/input-DDh05rfP.js",
+      "sha256": "5d1863164af844b173563fe662a119a7dc960d858237e7daf5b7eddea23b22ca",
+      "owners": [
+        "ui/src/lib/catalog",
+        "ui/package.json"
+      ],
+      "status": "partial",
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/inter-cyrillic-ext-wght-normal-BOeWTOD4.woff2",
+      "sha256": "ca157063339ac4ad418f214f3abfed119b0798ab4d377386ce5c9e5a7a435ebd",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/inter-cyrillic-wght-normal-DqGufNeO.woff2",
+      "sha256": "71d5ee93cc1e9f1d520a3a8b66456de18c7879d8df09d57fcd2eaff75fef0075",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/inter-greek-ext-wght-normal-DlzME5K_.woff2",
+      "sha256": "6e9e020a25f9b56d418f2c085b1d3c09725a4da23fe693a5b463064606732190",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/inter-greek-wght-normal-CkhJZR-_.woff2",
+      "sha256": "1be3448e292fbf05ffe176fe1e43f135013d50b1e7d324ad1a558f623d3bb6f6",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2",
+      "sha256": "34b9c504cab7a73e37b746343a449132e56cf7b5481af2cb81dc74dcff25c956",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/inter-latin-wght-normal-Dx4kXJAl.woff2",
+      "sha256": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/inter-vietnamese-wght-normal-CBcvBZtf.woff2",
+      "sha256": "5c66f9e07e90c6d4ac4922cc68d60de26c17b1858e677fb5e603fce3952b3ff2",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/jetbrains-mono-cyrillic-ext-wght-normal-EocZY2iu.woff2",
+      "sha256": "593ccd6fe36e299e151aeae4521be9bfe83ac487d96d7cdb44f50be4a04041c7",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/jetbrains-mono-cyrillic-wght-normal-D73BlboJ.woff2",
+      "sha256": "d274604c40757f98f07df623a8b8fb5194508a6fa4f5413a7a107f09e3b7452a",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/jetbrains-mono-greek-wght-normal-Bw9x6K1M.woff2",
+      "sha256": "ee863198077f3093ffa81c072581cc4bd608a04e60a8a9c0b846396ce4f14109",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/jetbrains-mono-latin-ext-wght-normal-DBQx-q_a.woff2",
+      "sha256": "79bfdab9ba467e26eea4122e6f2567e188dd8a09a8c730d501fc487c4ab99c6e",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/jetbrains-mono-latin-wght-normal-B9CIFXIH.woff2",
+      "sha256": "18be452724bfdc236c074ca94a249a7f41a86752c7d04ab258ce9ed5651f6a7e",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/jetbrains-mono-vietnamese-wght-normal-Bt-aOZkq.woff2",
+      "sha256": "2288795da89dd97e648954b96e22b4501bd85dfc453264460b252f888b582ca2",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/jmapErrors-DzuHzs3H.js",
+      "sha256": "8dc5dccdfc91ade13e97f5a3a34976a2e0c60c620bbb8ecb15b458f791acbd79",
+      "owners": [
+        "ui/src/lib/adapter/jmap.ts",
+        "ui/src/lib/adapter/portal.ts",
+        "ui/src/lib/adapter/actions.ts"
+      ],
+      "status": "partial",
+      "remaining": "Method/set failures and property names displayed; full localized field-error parity open.",
+      "work_packages": [
+        "P1",
+        "P3",
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/jmapUtils-BRWTc_iM.js",
+      "sha256": "509ca268253c942b3a7d43836089d5959e799a1d864998149840a7a3036c8ede",
+      "owners": [
+        "ui/src/lib/adapter/portal-call.ts"
+      ],
+      "status": "partial",
+      "remaining": "Capabilities and cells exist; complete traversal parity open.",
+      "work_packages": [
+        "P1"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/jsx-runtime-BhAlOjtF.js",
+      "sha256": "4875239b097c0b9caf6d08f359dc789902f8ebd6c0ea7e53cda28ef169cef2f0",
+      "owners": [
+        "ui/package.json"
+      ],
+      "status": "runtime-replaced",
+      "remaining": "React runtime replaced by Svelte; no functional parity implied.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/label-CM-p6Ed8.js",
+      "sha256": "1d859264be9fa6ac6b7f6e6f7a174eb2a8a2cb3e65ad1462eb26f44a5207f340",
+      "owners": [
+        "ui/src/lib/catalog",
+        "ui/package.json"
+      ],
+      "status": "partial",
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/LiveTracingPage-BbeVPf9D.js",
+      "sha256": "f5e07d4ff48b58e1c5cf454f68774856544b9d7e22dc50df1645f69ce2eaccce",
+      "owners": [
+        "ui/src/lib/shippin/admin/LiveTracing.svelte",
+        "ui/src/lib/shippin/admin/LiveTracingPanel.svelte"
+      ],
+      "status": "partial",
+      "remaining": "Enterprise stream and permission/lifecycle cases unverified.",
+      "work_packages": [
+        "P4"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/MarkdownRenderer-D1Irlngp.js",
+      "sha256": "c296e3af4f5199f948fba9a4fa3bcd371738baee56cfb4f9b25fa0649ec8967a",
+      "owners": [
+        "ui/src/lib/shippin/admin/SchemaField.svelte"
+      ],
+      "status": "pending",
+      "remaining": "No equivalent markdown renderer; descriptions are plain text.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/mutations-CojN7Mws.js",
+      "sha256": "0e9c6fa32fe13f3b24740a4cbb66cc664b46aeb5a15db86c11914a73abbeb53f",
+      "owners": [
+        "ui/src/lib/adapter/writes-call.ts",
+        "ui/src/lib/adapter/portal.ts",
+        "ui/src/lib/adapter/actions.ts",
+        "ui/src/lib/shippin/admin/SchemaField.svelte"
+      ],
+      "status": "partial",
+      "remaining": "CRUD, keyed maps/lists and action verified. Blobs and specialized mutation workflows open.",
+      "work_packages": [
+        "P1",
+        "P2"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/objects-BMCuJm01.js",
+      "sha256": "dde5ba8eea1e429bed6dc1a50c79787842eb03409b6eaafa2a87060fa296e15d",
+      "owners": [
+        "ui/src/lib/adapter/portal.ts",
+        "ui/src/lib/shippin/admin/RegistryEditor.svelte"
+      ],
+      "status": "partial",
+      "remaining": "Representative reads/writes verified. Query pagination, filters and invalidation coverage open.",
+      "work_packages": [
+        "P1"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/OtpAuthField-DmxMF0QG.js",
+      "sha256": "88d3a9cb41439b6768bdd060ed4880b5ed223abc95acee00e673be1746663bf4",
+      "owners": [
+        "ui/src/lib/catalog/login/Login.svelte",
+        "ui/src/routes/(account)/login/+page.svelte"
+      ],
+      "status": "partial",
+      "remaining": "OTP login exists; enrollment, QR/recovery and real MFA proof open.",
+      "work_packages": [
+        "P3"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/plus-jakarta-sans-cyrillic-ext-wght-normal-lLTsRRxN.woff2",
+      "sha256": "c46a510ab43925a55ecfe6c2d5fad0ce1902cd48ab276621d41f7afa42e4daee",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/plus-jakarta-sans-latin-ext-wght-normal-DmpS2jIq.woff2",
+      "sha256": "38e3b8fd8045048eb311d90170a4429ed2c8f405852dc3d91b5af8452758703f",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/plus-jakarta-sans-latin-wght-normal-eXO_dkmS.woff2",
+      "sha256": "153fc85b70298beeb1d61a5f723331649e7f23bb77302a66e61cb3e2fbdb5e79",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/plus-jakarta-sans-vietnamese-wght-normal-qRpaaN48.woff2",
+      "sha256": "b275d1258601dda240fc6a1d4a6cad56e691d898f5cdf1b0e4fd6ca0022d8e40",
+      "owners": [
+        "ui/src/lib/token"
+      ],
+      "status": "retained-asset",
+      "remaining": "Original font source retained. CSS loads selected subsets; complete locale subset coverage open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/popover-DHIYljkq.js",
+      "sha256": "4d9dcc7b6a699078448bb85a8e4aeabecbc22564bf704bf0d2cbab24202856b6",
+      "owners": [
+        "ui/src/lib/catalog",
+        "ui/package.json"
+      ],
+      "status": "partial",
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/schemaStore-CkCqaJbK.js",
+      "sha256": "e196ab85ea148f03681c09bf990c2e920733b3e4f7fcdcaa2b8ff93527cd9401",
+      "owners": [
+        "ui/scripts/emit-portal.ts",
+        "ui/src/lib/portal/schema.ts",
+        "ui/src/lib/adapter/portal.ts"
+      ],
+      "status": "partial",
+      "remaining": "Editing uses live schema. Navigation uses build-time catalog; drift/capability handling open.",
+      "work_packages": [
+        "P1"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/select-djzeV50X.js",
+      "sha256": "f99ba2e57b43763bfc1825bcfc07eb46a1b1529f05cb1d89f253282b53d8359f",
+      "owners": [
+        "ui/src/lib/catalog",
+        "ui/package.json"
+      ],
+      "status": "partial",
+      "remaining": "Svelte/bits-ui primitives used; full original interaction and visual parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/sha2-B6xCAIQP.js",
+      "sha256": "d664c6b82826b3d17cd9e517ae1f6aa14b15a96d009355786a60a10275426334",
+      "owners": [
+        "ui/src/lib/adapter/oauth.ts"
+      ],
+      "status": "runtime-replaced",
+      "remaining": "Web Crypto used; complete identity parity open.",
+      "work_packages": [
+        "P3"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/sse-D6xFfUUY.js",
+      "sha256": "7fe99314bcecbab826942dfa9e61b75d0e3124b7ebecf0a05f127cbcd3ed0932",
+      "owners": [
+        "ui/src/lib/adapter/delivery.ts",
+        "ui/src/lib/shippin/admin/LiveTracing.svelte"
+      ],
+      "status": "partial",
+      "remaining": "Delivery lifecycle implemented; tracing/metrics lifecycle proof open.",
+      "work_packages": [
+        "P4"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/TraceDetailView-MajjBv1N.js",
+      "sha256": "d19ceca2e1ab1d417136ad833f6f16c9532807b2727e16ef1b1122b4b8b7deac",
+      "owners": [
+        "ui/src/lib/shippin/admin/TraceDetail.svelte"
+      ],
+      "status": "partial",
+      "remaining": "Archived trace route integration open.",
+      "work_packages": [
+        "P4"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/TraceTimeline-D-kokpJu.js",
+      "sha256": "b41c7e2e83d63c9011a09f598693dab1a35fc0aa691af718b4ced44ea8800db7",
+      "owners": [
+        "ui/src/lib/shippin/admin/TraceTimeline.svelte"
+      ],
+      "status": "partial",
+      "remaining": "Archived/live detail integration and source parity open.",
+      "work_packages": [
+        "P4"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/useEventStream-CFNJLHvS.js",
+      "sha256": "6f4733e54c3df23d8f9fac863a0a31aeab704d5685087f9b358385990c736753",
+      "owners": [
+        "ui/src/lib/adapter/delivery.ts",
+        "ui/src/lib/shippin/admin/LiveTracing.svelte"
+      ],
+      "status": "partial",
+      "remaining": "Delivery closes on completion/cancel/unmount/error/timeout; shared retry/token renewal open.",
+      "work_packages": [
+        "P4"
+      ]
+    },
+    {
+      "source": "assets/webui/assets/useTranslation-D-irC-Yp.js",
+      "sha256": "73c9d693795f7084fb0a65535b035994da4b5aeaca2d5f6526a396a216c23ecc",
+      "owners": [
+        "ui/src/lib/portal/actions.ts"
+      ],
+      "status": "pending",
+      "remaining": "English copy exists; original translation and locale coverage unported.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/favicon.ico",
+      "sha256": "c494ca04740c7bc7b0a26a61fd20baf866b2dd22bc19621c67fbf27a52c00fc1",
+      "owners": [
+        "ui/src/app.html"
+      ],
+      "status": "pending",
+      "remaining": "Original retained; branding and favicon wiring parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/index.html",
+      "sha256": "19990b4e8a3cb3c60a8a32194c396ad01ae3ecca515e63d2560e2202ebe67f18",
+      "owners": [
+        "ui/src/app.html"
+      ],
+      "status": "runtime-replaced",
+      "remaining": "Svelte HTML entry deployed; routing and fixed screens tracked separately.",
+      "work_packages": [
+        "P1",
+        "P3",
+        "P5",
+        "R1"
+      ]
+    },
+    {
+      "source": "assets/webui/logo.svg",
+      "sha256": "c65cc5a512a80150a59eb8bf28a528132c724a35ccf0cd77b7520540e953bc70",
+      "owners": [
+        "ui/src/app.html"
+      ],
+      "status": "pending",
+      "remaining": "Original retained; branding and favicon wiring parity open.",
+      "work_packages": [
+        "P5"
+      ]
+    },
+    {
+      "source": "assets/webui/oauth-client.json",
+      "sha256": "472109f5ba4f7e8b48fc34d5e4ff39062c88c11609c6e3c0514f739d656f1c79",
+      "owners": [
+        "ui/src/lib/adapter/oauth.ts",
+        "Dockerfile"
+      ],
+      "status": "partial",
+      "remaining": "Metadata retained; legacy application-bundle/OAuth cutover open.",
+      "work_packages": [
+        "P3"
+      ]
+    },
+    {
+      "source": "assets/webui/shippintech-app.json",
+      "sha256": "c07d91f3e4ee2b8dc3fd7b94b8c5c1651e1e4a837fda2cee4dd7d83c07ba00d3",
+      "owners": [
+        "ui/src/lib/adapter/oauth.ts",
+        "Dockerfile"
+      ],
+      "status": "partial",
+      "remaining": "Metadata retained; legacy application-bundle/OAuth cutover open.",
+      "work_packages": [
+        "R1"
+      ]
+    }
+  ]
+}

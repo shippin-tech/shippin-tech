@@ -1,0 +1,17 @@
+{
+  "id": "calendar-templates",
+  "a2ui": "CalendarEmails",
+  "variants": [
+    "invite",
+    "alarm"
+  ],
+  "engine": "crates/common/src/shippin/calendar_templates.rs",
+  "routes": [
+    "/shippin/admin/templates"
+  ],
+  "emits": [
+    "calendar.template.saved",
+    "calendar.template.reset"
+  ],
+  "kernel": "ui/src/lib/ai-runtime/admin/kernel/instruction.md"
+}

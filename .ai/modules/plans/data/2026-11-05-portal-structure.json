@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-11-05-portal-structure",
+  "title": "Split the portal view and keep the schema field type",
+  "costar": {
+    "context": "The UI review named the next code change: a test gate, a split of PortalView, and the schema field type kept on the catalog row. The maintainer said go.",
+    "objective": "Add Vitest and Playwright, split the portal view into dashboard, list, and form, and emit each field's type and format.",
+    "style": "One plan, then the generator, the three catalog components, and the test gate.",
+    "tone": "Direct.",
+    "audience": "The maintainer.",
+    "response": "The form still shows a readonly value. The catalog row now carries the schema type and format. Vitest is the gate for the pure modules and that row."
+  },
+  "sources": [
+    {"kind": "code", "ref": "resources/schema/schema.json.gz"},
+    {"kind": "code", "ref": "ui/scripts/emit-portal.ts"},
+    {"kind": "code", "ref": "ui/src/lib/catalog/portal/PortalView.svelte"},
+    {"kind": "code", "ref": "ui/package.json"},
+    {"kind": "code", "ref": "ui/scripts/prove-portal-dashboard.ts"},
+    {"kind": "code", "ref": "ui/scripts/prove-portal-records.ts"},
+    {"kind": "code", "ref": "ui/scripts/prove-portal-copy.ts"}
+  ],
+  "concerns": [
+    "Schema fields are keyed by object name, and each property type is an object with type and format. A form field whose property is missing keeps an empty type rather than a guessed widget.",
+    "Sieve is not a format on these properties. The sieve editor still waits. This slice stores the schema type that exists.",
+    "Playwright needs the dev server. Vitest does not. A browser failure does not erase the unit gate.",
+    "The catalog does not fetch, and this slice does not install layerchart, bits-ui, CodeMirror, or a date library."
+  ],
+  "context": "schema.fields[object].properties[name].type is the widget type. emit-portal keeps only name and label. PortalView.svelte renders the dashboard, the list, and the form. Proofs are node scripts. package.json has no test script.",
+  "current_state": "Each form field is still a readonly input, and the catalog row now carries the schema type and format. DashboardPanel, RecordTable, and RecordForm are the three catalog components. PortalView composes them.",
+  "target_design": "The generator writes type and format onto each field. DashboardPanel, RecordTable, and RecordForm are the three catalog components. PortalView composes them and still does not fetch. npm test runs Vitest. Playwright covers the portal search control against the dev server.",
+  "changes": [
+    "Keep type and format in emit-portal and regenerate the catalog.",
+    "Split the dashboard, the list, and the form.",
+    "Add Vitest for the pure modules and the field type, and Playwright for the search control."
+  ],
+  "boundaries": [
+    "Do not install layerchart, bits-ui, CodeMirror, or a date library.",
+    "Do not change the readonly input into a typed widget yet.",
+    "Do not build the Astro site.",
+    "The catalog does not fetch."
+  ],
+  "verification": [
+    {
+      "name": "unit-gate",
+      "command": "npm test",
+      "proves": "A catalog field carries its schema type and format. Copy, search, and the split components still hold, and the catalog does not fetch.",
+      "expected": "vitest passed",
+      "result": "Vitest 5.1.0: Test Files 1 passed (1), Tests 5 passed (5)."
+    },
+    {
+      "name": "ui-types",
+      "command": "npm run check",
+      "proves": "The split components and the regenerated catalog typecheck.",
+      "expected": "svelte-check found 0 errors and 0 warnings",
+      "result": "svelte-check found 0 errors and 0 warnings"
+    },
+    {
+      "name": "search-browser",
+      "command": "npm run test:browser",
+      "proves": "The dashboard renders, the portal search control opens and finds Domains, the open dialog has no axe violations, and a signed-out list offers sign-in.",
+      "expected": "2 passed",
+      "result": "2 passed (2.5s). The dashboard heading and Last 24 hours rendered, the search dialog opened with no axe violations, and the signed-out Domains list offered sign-in."
+    }
+  ],
+  "status": "implemented"
+}
